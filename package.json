@@ -1,0 +1,22 @@
+{
+  "name": "machine-sim-starter",
+  "version": "1.0.0",
+  "description": "Multi-machine production line simulation (starter for the Track B hackathon case)",
+  "type": "module",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test",
+    "scenarios": "node src/scenarios/scenarios.js",
+    "sweep": "node src/scenarios/sweep.js",
+    "countermeasures": "node src/countermeasures/evaluate.js"
+  },
+  "dependencies": {
+    "fastify": "^4.28.0",
+    "@fastify/static": "^7.0.4"
+  }
+}

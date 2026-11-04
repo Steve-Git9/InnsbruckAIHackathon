@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Machine Production Line Simulation</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <header>
+    <h1>Multi-Machine Production Line Simulation</h1>
+    <div class="header-status">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-label">Paused</span>
+      <span>Tick: <strong id="tick-counter">0</strong></span>
+      <span>Shift: <strong id="shift-counter">1</strong> <span class="shift-minute" id="shift-minute">(min 0/480)</span></span>
+      <span class="hdr-badge hdr-outage" id="badge-outage" hidden>OUTAGE</span>
+      <span class="hdr-badge hdr-down" id="badge-down" hidden></span>
+      <span>Time: <strong id="time-counter">0.0</strong> s</span>
+    </div>
+  </header>
+  <div id="toast" class="toast" hidden></div>
+
+  <!-- ── Scenario bar (CEO interface) ────────────────────────────────────── -->
+  <div id="scenario-bar">
+    <label for="scenario-select">Scenario</label>
+    <select id="scenario-select">
+      <option value="standard" selected>Standard</option>
+      <option value="demand-swing">Demand Swing</option>
+      <option value="supplier-outage">Supplier Outage</option>
+      <option value="machinery-breakdown">Machinery Breakdown</option>
+    </select>
+    <button id="btn-simulate" type="button">Simulate</button>
+    <span id="run-status"></span>
+  </div>
+
+  <!-- ── Pipeline visualisation ──────────────────────────────────────────── -->
+  <div id="pipeline-container">
+    <div id="suggestion-banner" class="legacy-hidden" hidden></div>
+    <svg id="pipeline-svg" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid meet"></svg>
+
+    <!-- Machine detail panel (overlay, opened by clicking a machine) -->
+    <aside id="machine-detail" hidden aria-live="polite">
+      <header class="md-header">
+        <div class="md-title">
+          <span class="md-id" id="md-id">M1</span>
+          <span class="md-name" id="md-name">Machine name</span>
+          <span class="md-bottleneck" id="md-bottleneck" hidden>Bottleneck</span>
+        </div>
+        <button class="md-close" id="md-close" aria-label="Close detail panel">&times;</button>
+      </header>
+      <div class="md-station-controls">
+        <button id="md-spawn" type="button">+ Parallel machine</button>
+        <button id="md-remove" type="button">– Remove machine</button>
+      </div>
+
+      <div class="md-state-row">
+        <div class="md-state-group">
+          <span class="state-badge" id="md-state">IDLE</span>
+          <span class="state-desc" id="md-state-desc">Idle</span>
+        </div>
+        <span class="md-current-part">Current part: <strong id="md-part">—</strong></span>
+      </div>
+
+      <div class="md-cycle">
+        <div class="md-cycle-label">
+          <span>Cycle progress</span>
+          <span id="md-cycle-text">0 / 0 ticks</span>
+        </div>
+        <div class="md-cycle-bar"><div class="md-cycle-fill" id="md-cycle-fill"></div></div>
+      </div>
+
+      <div class="md-stats">
+        <div class="md-stat">
+          <div class="md-stat-label">Utilization</div>
+          <div class="md-stat-value" id="md-util">0%</div>
+        </div>
+        <div class="md-stat">
+          <div class="md-stat-label">Parts processed</div>
+          <div class="md-stat-value" id="md-processed">0</div>
+        </div>
+        <div class="md-stat">
+          <div class="md-stat-label">Avg queue wait</div>
+          <div class="md-stat-value" id="md-wait">0 ticks</div>
+        </div>
+        <div class="md-stat md-stat-gate" id="md-reject-stat">
+          <div class="md-stat-label">Reject rate (Quality Gate) <span id="md-reject-val">0%</span></div>
+          <input type="range" id="md-reject-slider" min="0" max="50" step="1" value="0" />
+        </div>
+      </div>
+
+      <div class="md-breakdown">
+        <div class="md-cycle-label">
+          <span>Time breakdown</span>
+          <span id="md-total-ticks">0 ticks</span>
+        </div>
+        <div class="md-stack" id="md-stack">
+          <div class="md-stack-seg md-seg-processing"></div>
+          <div class="md-stack-seg md-seg-blocked"></div>
+          <div class="md-stack-seg md-seg-starved"></div>
+          <div class="md-stack-seg md-seg-idle"></div>
+          <div class="md-stack-seg md-seg-down"></div>
+        </div>
+        <div class="md-legend">
+          <span><span class="dot dot-processing"></span>Processing <strong id="md-pct-processing">0%</strong></span>
+          <span><span class="dot dot-blocked"></span>Blocked <strong id="md-pct-blocked">0%</strong></span>
+          <span><span class="dot dot-starved"></span>Starved <strong id="md-pct-starved">0%</strong></span>
+          <span><span class="dot dot-idle"></span>Idle <strong id="md-pct-idle">0%</strong></span>
+          <span><span class="dot dot-down"></span>Down <strong id="md-pct-down">0%</strong></span>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ── Results (CEO interface) ─────────────────────────────────────────── -->
+  <section id="results">
+    <h2>Results</h2>
+    <div id="results-empty">Choose a scenario and click Simulate.</div>
+    <div id="result-tiles" class="tiles"></div>
+  </section>
+
+  <!-- ── AI shift advisor ────────────────────────────────────────────────── -->
+  <section id="advisor">
+    <h2>AI shift advisor</h2>
+    <div class="advisor-buttons">
+      <button id="btn-explain" class="advisor-btn" type="button" disabled>Explain me these results</button>
+      <button id="btn-improve" class="advisor-btn" type="button" disabled>How to improve the results?</button>
+    </div>
+    <div id="advisor-output" class="advisor-card" hidden>
+      <div class="advisor-label">AI explanation – based only on the simulation numbers above</div>
+      <div id="advisor-text" class="advisor-text"></div>
+    </div>
+    <div id="proposal-card" class="advisor-card" hidden></div>
+  </section>
+
+  <!-- ── Controls ────────────────────────────────────────────────────────── -->
+  <section id="controls" class="legacy-hidden">
+    <!-- Start prompt: shown on initial load (sim paused, not yet started) -->
+    <div id="start-banner" hidden>
+      <span class="start-banner-text">&#9654; Simulation ready &ndash; not started yet.</span>
+      <button id="btn-start" type="button">&#9654; Start simulation</button>
+    </div>
+
+    <!-- Playback controls -->
+    <div class="controls-row">
+      <span class="section-label">Simulation Control</span>
+      <button id="btn-play">&#9654; Play</button>
+      <button id="btn-pause">&#9646;&#9646; Pause</button>
+      <button id="btn-reset">&#8635; Reset</button>
+      <button id="btn-reset-defaults">&#8635; Reset to Defaults</button>
+      <button id="btn-export-csv" title="Download per-tick history as CSV">&#8595; Export CSV</button>
+      <button id="btn-export-json" title="Download per-tick history as JSON">&#8595; Export JSON</button>
+    </div>
+
+    <!-- Scenario presets: curated, read-only teaching configs (buttons generated by app.js) -->
+    <div class="controls-row" id="preset-row">
+      <span class="section-label">Scenarios <span class="info-icon" data-tip="Prepared example scenarios. After loading, the simulation is paused — press Play to start.">i</span></span>
+      <!-- Generated by app.js from GET /api/presets -->
+    </div>
+
+    <!-- Plant default + realism layer (orders, outage, breakdowns, supply). All off unless switched on. -->
+    <div class="controls-row" id="plant-row">
+      <span class="section-label">Plant default <span class="info-icon" data-tip="The plant as described in the data package: unlimited material, the 60-shift demand profile, seed 1. Separate from the teaching scenarios above. After loading, the simulation is paused.">i</span></span>
+      <button id="btn-plant-default" class="plant-default-btn" type="button">Load plant default</button>
+    </div>
+
+    <div class="controls-row" id="realism-row">
+      <span class="section-label">Realism <span class="info-icon" data-tip="Seeded random numbers, customer orders, a supplier outage, machine breakdowns and a raw-material supply model. Applying resets the run to tick 0 (it stays paused).">i</span></span>
+      <label class="field-group">Seed <input type="number" id="rl-seed" value="1" step="1" /></label>
+      <label class="field-group">Demand
+        <select id="rl-demand">
+          <option value="none">none</option>
+          <option value="flat">flat 34 / shift</option>
+          <option value="profile">demand profile</option>
+        </select>
+      </label>
+      <label class="field-group">Start stock (FG) <input type="number" id="rl-fg" value="0" min="0" step="1" /></label>
+      <label class="field-group check"><input type="checkbox" id="rl-outage" /> Supplier outage</label>
+      <label class="field-group">from tick <input type="number" id="rl-out-start" value="4800" min="0" step="1" /></label>
+      <label class="field-group">to tick <input type="number" id="rl-out-end" value="5760" min="0" step="1" /></label>
+      <label class="field-group check"><input type="checkbox" id="rl-failures" /> Breakdowns</label>
+      <label class="field-group">Supply
+        <select id="rl-supply">
+          <option value="jit">just in time (source halts)</option>
+          <option value="inventory">raw stock (s,Q)</option>
+          <option value="safety">raw stock + safety stock</option>
+          <option value="second">raw stock + second supplier</option>
+          <option value="expedite">raw stock + expediting</option>
+        </select>
+      </label>
+      <button id="btn-apply-realism" type="button">Apply &amp; reset</button>
+    </div>
+
+    <!-- Speed selector -->
+    <div class="controls-row">
+      <span class="section-label">Speed</span>
+      <button class="speed-btn active" data-speed="1">1&times;</button>
+      <button class="speed-btn" data-speed="2">2&times;</button>
+      <button class="speed-btn" data-speed="5">5&times;</button>
+      <button class="speed-btn" data-speed="10">10&times;</button>
+    </div>
+
+    <!-- Source settings -->
+    <div class="controls-row">
+      <span class="section-label">Source</span>
+      <div class="slider-group">
+        <label>Source interval (ticks) <span class="info-icon" data-tip="Time between two parts released by the source (1 tick = 1 minute of plant time; the wall-clock speed is a separate setting).">i</span><span id="val-src-interval">11</span></label>
+        <input type="range" id="src-interval" min="1" max="30" step="1" value="11" />
+      </div>
+      <div class="slider-group">
+        <label>Material stock <span class="info-icon" data-tip="Stock of raw parts in the source; at the right end (∞) the stock is unlimited.">i</span><span id="val-material-stock">200</span></label>
+        <input type="range" id="material-stock" min="10" max="510" step="10" value="200" />
+      </div>
+    </div>
+
+    <!-- Per-machine cycle times -->
+    <div class="controls-row" id="machine-sliders">
+      <span class="section-label">Machine Cycle Times <span class="info-icon" data-tip="Ticks a machine needs for one complete processing cycle.">i</span></span>
+      <!-- Generated by app.js -->
+    </div>
+
+    <!-- Buffer capacities -->
+    <div class="controls-row" id="buffer-sliders">
+      <span class="section-label">Buffer Capacities <span class="info-icon" data-tip="Maximum number of parts a buffer can hold at once.">i</span></span>
+      <!-- Generated by app.js -->
+    </div>
+
+
+  </section>
+
+  <!-- ── Metrics dashboard ────────────────────────────────────────────────── -->
+  <section id="metrics" class="legacy-hidden">
+    <div class="metric-cards">
+      <div class="metric-card">
+        <div class="label">Throughput <span class="info-icon" data-tip="Number of finished parts per 100 simulation ticks.">i</span></div>
+        <div class="value" id="m-throughput">0</div>
+        <div class="unit">parts / 100 ticks</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Avg Lead Time <span class="info-icon" data-tip="Average lead time of a part from source to sink, in ticks. Median (p50) and p95 show the spread — a high p95 means some parts take much longer than the average.">i</span></div>
+        <div class="value" id="m-leadtime">0</div>
+        <div class="unit">ticks (source → sink)</div>
+        <div class="unit" id="m-leadtime-spread">p50 0 · p95 0 · σ 0</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Flow Efficiency <span class="info-icon" data-tip="Value-added ratio: theoretical processing time (sum of cycle times) divided by the average lead time. Low values mean parts spend most of their time waiting in buffers instead of being processed.">i</span></div>
+        <div class="value" id="m-flow-efficiency">0</div>
+        <div class="unit">value-added ratio</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Parts in System <span class="info-icon" data-tip="Total number of parts currently in buffers or machines.">i</span></div>
+        <div class="value" id="m-in-system">0</div>
+        <div class="unit">buffers + machines</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Scrapped Parts <span class="info-icon" data-tip="Number of parts rejected and scrapped at the quality gate (M2).">i</span></div>
+        <div class="value" id="m-scrapped">0</div>
+        <div class="unit">rejected at quality gate</div>
+      </div>
+    </div>
+
+    <!-- Orders and economics (polled from GET /api/kpis) -->
+    <div id="kpi-panel">
+      <h2>Orders &amp; economics <span id="kpi-shifts"></span></h2>
+      <div class="metric-cards">
+        <div class="metric-card"><div class="label">Service level</div><div class="value" id="k-sl">–</div><div class="unit" id="k-sl-sub">no demand loaded</div></div>
+        <div class="metric-card"><div class="label">Orders</div><div class="value" id="k-orders">–</div><div class="unit">units ordered</div></div>
+        <div class="metric-card"><div class="label">Backlog</div><div class="value" id="k-backlog">–</div><div class="unit">units past due</div></div>
+        <div class="metric-card"><div class="label">Finished goods</div><div class="value" id="k-fg">–</div><div class="unit">units in stock</div></div>
+        <div class="metric-card"><div class="label">Cost / good unit</div><div class="value" id="k-cost">–</div><div class="unit" id="k-cost-sub">EUR (baseline ~102.8)</div></div>
+        <div class="metric-card"><div class="label">Profit</div><div class="value" id="k-profit">–</div><div class="unit">EUR so far</div></div>
+        <div class="metric-card"><div class="label">Breakdowns</div><div class="value" id="k-breakdowns">–</div><div class="unit" id="k-breakdowns-sub">off</div></div>
+        <div class="metric-card"><div class="label">Raw stock</div><div class="value" id="k-raw">–</div><div class="unit" id="k-raw-sub">just in time</div></div>
+      </div>
+      <div class="kpi-note" id="kpi-note"></div>
+      <details id="shift-table-wrap" open>
+        <summary>Per-shift results</summary>
+        <div class="shift-table-scroll">
+          <table id="shift-table">
+            <thead><tr>
+              <th>Shift</th><th>Produced</th><th>Scrap</th><th>Orders</th><th>Shipped</th>
+              <th>On time</th><th>Backlog</th><th>FG stock</th><th>Avg WIP</th>
+            </tr></thead>
+            <tbody id="shift-table-body">
+              <tr><td colspan="9" class="shift-empty">No closed shift yet. Shifts close every 480 ticks once a demand is loaded (Realism → Demand, or Load plant default).</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </div>
+
+    <!-- Sparkline -->
+    <div class="sparkline-wrap">
+      <div class="label">Throughput (last 60 samples)</div>
+      <canvas id="sparkline"></canvas>
+    </div>
+
+    <!-- Per-machine table -->
+    <div class="machine-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Machine</th>
+            <th>State <span class="info-icon" data-tip="Current operating state of the machine (e.g. Processing, Blocked, Starved).">i</span></th>
+            <th>Utilization <span class="info-icon" data-tip="Percentage of time the machine was actively processing a part.">i</span></th>
+            <th>Throughput <span class="info-icon" data-tip="Parts processed by this machine per 100 simulation ticks.">i</span></th>
+            <th>Avg Queue Wait <span class="info-icon" data-tip="Average time a part waits in the buffer in front of this machine, in ticks.">i</span></th>
+            <th>Blocked Time <span class="info-icon" data-tip="Total number of ticks the machine was blocked (output buffer full).">i</span></th>
+            <th>Starved Time <span class="info-icon" data-tip="Total number of ticks the machine waited for supply.">i</span></th>
+            <th>Bottleneck <span class="info-icon" data-tip="Shows whether this machine limits the overall performance of the line.">i</span></th>
+          </tr>
+        </thead>
+        <tbody id="machine-table-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+</div><!-- #app -->
+
+<script src="app.js" type="module"></script>
+</body>
+</html>

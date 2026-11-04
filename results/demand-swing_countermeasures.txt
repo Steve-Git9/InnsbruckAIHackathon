@@ -1,0 +1,25 @@
+Countermeasures for: Demand swing — 20 shifts, 30 runs each (same seeds), mean values
+Without any countermeasure: 56.8% of orders on time, profit EUR 20,432
+Profit change: conservative (extra unsold stock worth 0) with 95% CI; official rule in brackets.
+
+■ Overtime on busy shifts (maxMinutesPerShift=120)
+  On time: 56.8% → 87.8%   (31.0 pts, 95% CI 30.9 to 31.0)
+  Profit:  +EUR 9,134 conservative (CI +EUR 9,101 to +EUR 9,166); official +EUR 13,930
+  Output:  39.1 good sets/shift; extra unsold stock 47 sets; overtime 10.0 h
+  Cost:    ASSUMPTION (no rate-card row): EUR 405 per overtime hour = hour rates of all four machines (270) + 50% overtime premium.
+  VERDICT: Effective: more orders on time and more profit.
+
+■ Faster M3 (assembly) (minutesSaved=2)
+  On time: 56.8% → 82.0%   (25.1 pts, 95% CI 25.0 to 25.2)
+  Profit:  +EUR 3,209 conservative (CI +EUR 3,158 to +EUR 3,259); official +EUR 17,100
+  Output:  43.5 good sets/shift; extra unsold stock 135 sets
+  Cost:    Rate card: EUR 30,000 one-time per minute removed, amortised over 1,920 shifts. Faster release costs only material and holding.
+  VERDICT: Effective: more orders on time and more profit.
+
+■ Second M3 (parallel assembly machine) (releaseInterval=8)
+  On time: 56.8% → 96.8%   (39.9 pts, 95% CI 39.7 to 40.2)
+  Profit:  −EUR 18,878 conservative (CI −EUR 19,147 to −EUR 18,609); official +EUR 16,478
+  Output:  53.9 good sets/shift; extra unsold stock 343 sets
+  Cost:    Rate card: EUR 95,000 investment (EUR 49.48 per shift amortised) + EUR 90 per scheduled hour (EUR 720 per shift).
+  VERDICT: Improves delivery, but costs more than it earns.
+

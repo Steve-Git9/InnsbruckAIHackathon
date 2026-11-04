@@ -1,0 +1,6 @@
+mode,description,suggested_station,failures_in_dataset,dataset_rows,probability_per_part,assumed_repair_time_ticks,example_mtbf_ticks_if_at_M3
+TWF,Tool wear failure,M1,46,10000,0.0046,20,2826
+HDF,Heat dissipation failure,M1,115,10000,0.0115,45,1130
+PWF,Power failure,M3,95,10000,0.0095,30,1368
+OSF,Overstrain failure,M3,98,10000,0.0098,60,1327
+RNF,Random failure (any station),any,19,10000,0.0019,15,6842

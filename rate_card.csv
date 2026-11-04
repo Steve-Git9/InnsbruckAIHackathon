@@ -1,0 +1,21 @@
+category,item,value,unit,note
+time,ticks_per_shift,480.0,ticks,1 tick = 1 minute
+time,shift_hours,8.0,h,One shift = 8 hours
+machine,machine_hour_rate_M1,85.0,EUR/h,"Accrues for every scheduled hour, whether the machine works or waits"
+machine,machine_hour_rate_M2,55.0,EUR/h,"Accrues for every scheduled hour, whether the machine works or waits"
+machine,machine_hour_rate_M3,90.0,EUR/h,"Accrues for every scheduled hour, whether the machine works or waits"
+machine,machine_hour_rate_M4,40.0,EUR/h,"Accrues for every scheduled hour, whether the machine works or waits"
+material,material_cost_per_part,38.0,EUR/part,Incurred when a part is released from the source
+scrap,scrap_cost_per_part,46.42,EUR/part,"Value lost when M2 rejects a part: material plus processing at M1 and M2. Already contained in material and machine cost, so do not add it a second time to total cost"
+revenue,selling_price_per_good_unit,180.0,EUR/unit,Price per delivered stand-and-frame set
+holding,holding_cost_wip,0.3,EUR/unit/h,"Per scheduled hour (8 per shift), per part in buffers or machines. Includes space, handling and capital"
+holding,holding_cost_finished_goods,0.5,EUR/unit/h,"Per scheduled hour (8 per shift), per good unit in finished-goods stock"
+service,lost_sales_penalty,90.0,EUR/unit,Per ordered unit that is not delivered by its due tick: lost margin plus the customer's line-stop penalty and goodwill. Charged once per unit
+countermeasure,expediting_premium,40.0,% of material cost,Surcharge for emergency replenishment during a supplier outage
+countermeasure,second_supplier_price_premium,8.0,% of material cost,Parts bought from the second supplier
+countermeasure,second_supplier_qualification,2000.0,EUR one-time,Audit and set-up of the second supplier
+countermeasure,extra_buffer_slot,150.0,EUR one-time per slot,One more place in any buffer
+countermeasure,parallel_machine_investment,95000.0,EUR one-time,One more machine at a station (the simulation can spawn up to 3)
+countermeasure,parallel_machine_depreciation_per_shift,49.48,EUR/shift,Depreciation only: 95000 EUR over 8 years at 240 shifts per year. The extra machine also accrues the machine_hour_rate of its station for every scheduled hour
+countermeasure,cycle_time_reduction_investment,30000.0,EUR one-time per tick per machine,"Tooling, fixtures and training to take one tick (one minute) off the cycle time of one machine. Organiser assumption; amortised over 1920 shifts like the other one-time costs"
+countermeasure,reject_rate_reduction_investment,8000.0,EUR one-time per percentage point,"Better gauges, process control and training to lower the reject rate of M2 by one percentage point. Organiser assumption; amortised over 1920 shifts"

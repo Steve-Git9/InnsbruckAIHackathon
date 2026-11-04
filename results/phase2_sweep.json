@@ -1,0 +1,5852 @@
+[
+  {
+    "scenario": "baseline",
+    "label": "Baseline",
+    "baseline": {
+      "serviceLevel": {
+        "mean": 0.9997666666666666,
+        "sd": 0.000626062315579293
+      },
+      "profit": {
+        "mean": 49139.34293333334,
+        "sd": 308.4478434501206
+      },
+      "goodPerShift": {
+        "mean": 36.77833333333333,
+        "sd": 0.036396602089728246
+      },
+      "avgWip": {
+        "mean": 13.277666666666669,
+        "sd": 0.5905793960074343
+      },
+      "costPerGoodUnit": {
+        "mean": 102.6026475048832,
+        "sd": 0.4138382244732348
+      }
+    },
+    "candidates": [
+      {
+        "id": "fg10",
+        "label": "Finished-goods stock 10",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 48358.142933333336,
+          "sd": 295.2519886319127
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 13.277666666666669,
+          "sd": 0.5905793960074343
+        },
+        "costPerGoodUnit": {
+          "mean": 102.6026475048832,
+          "sd": 0.4138382244732348
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.00023333333333333355,
+          "lo": -4.159285541647671e-7,
+          "hi": 0.0004670825952208319
+        },
+        "dProfit": {
+          "mean": -781.2,
+          "lo": -798.1947975717791,
+          "hi": -764.205202428221
+        },
+        "dProfitCons": {
+          "mean": -781.2,
+          "lo": -798.1947975717791,
+          "hi": -764.205202428221
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 10
+        }
+      },
+      {
+        "id": "fg20",
+        "label": "Finished-goods stock 20",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 47558.142933333336,
+          "sd": 295.2519886319127
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 13.277666666666669,
+          "sd": 0.5905793960074343
+        },
+        "costPerGoodUnit": {
+          "mean": 102.6026475048832,
+          "sd": 0.4138382244732348
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.00023333333333333355,
+          "lo": -4.159285541647671e-7,
+          "hi": 0.0004670825952208319
+        },
+        "dProfit": {
+          "mean": -1581.2,
+          "lo": -1598.1947975717792,
+          "hi": -1564.205202428221
+        },
+        "dProfitCons": {
+          "mean": -1581.2,
+          "lo": -1598.1947975717792,
+          "hi": -1564.205202428221
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 20
+        }
+      },
+      {
+        "id": "fg30",
+        "label": "Finished-goods stock 30",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 46758.142933333336,
+          "sd": 295.2519886319127
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 13.277666666666669,
+          "sd": 0.5905793960074343
+        },
+        "costPerGoodUnit": {
+          "mean": 102.6026475048832,
+          "sd": 0.4138382244732348
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.00023333333333333355,
+          "lo": -4.159285541647671e-7,
+          "hi": 0.0004670825952208319
+        },
+        "dProfit": {
+          "mean": -2381.2,
+          "lo": -2398.194797571779,
+          "hi": -2364.2052024282207
+        },
+        "dProfitCons": {
+          "mean": -2381.2,
+          "lo": -2398.194797571779,
+          "hi": -2364.2052024282207
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 30
+        }
+      },
+      {
+        "id": "fg40",
+        "label": "Finished-goods stock 40",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 45958.142933333336,
+          "sd": 295.2519886319127
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 13.277666666666669,
+          "sd": 0.5905793960074343
+        },
+        "costPerGoodUnit": {
+          "mean": 102.6026475048832,
+          "sd": 0.4138382244732348
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.00023333333333333355,
+          "lo": -4.159285541647671e-7,
+          "hi": 0.0004670825952208319
+        },
+        "dProfit": {
+          "mean": -3181.2,
+          "lo": -3198.194797571779,
+          "hi": -3164.2052024282207
+        },
+        "dProfitCons": {
+          "mean": -3181.2,
+          "lo": -3198.194797571779,
+          "hi": -3164.2052024282207
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 40
+        }
+      },
+      {
+        "id": "fg50",
+        "label": "Finished-goods stock 50",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 45158.142933333336,
+          "sd": 295.2519886319127
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 13.277666666666669,
+          "sd": 0.5905793960074343
+        },
+        "costPerGoodUnit": {
+          "mean": 102.6026475048832,
+          "sd": 0.4138382244732348
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.00023333333333333355,
+          "lo": -4.159285541647671e-7,
+          "hi": 0.0004670825952208319
+        },
+        "dProfit": {
+          "mean": -3981.2,
+          "lo": -3998.194797571779,
+          "hi": -3964.2052024282207
+        },
+        "dProfitCons": {
+          "mean": -3981.2,
+          "lo": -3998.194797571779,
+          "hi": -3964.2052024282207
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 50
+        }
+      },
+      {
+        "id": "fg60",
+        "label": "Finished-goods stock 60",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 44358.142933333336,
+          "sd": 295.2519886319127
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 13.277666666666669,
+          "sd": 0.5905793960074343
+        },
+        "costPerGoodUnit": {
+          "mean": 102.6026475048832,
+          "sd": 0.4138382244732348
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.00023333333333333355,
+          "lo": -4.159285541647671e-7,
+          "hi": 0.0004670825952208319
+        },
+        "dProfit": {
+          "mean": -4781.2,
+          "lo": -4798.1947975717785,
+          "hi": -4764.205202428221
+        },
+        "dProfitCons": {
+          "mean": -4781.2,
+          "lo": -4798.1947975717785,
+          "hi": -4764.205202428221
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 60
+        }
+      },
+      {
+        "id": "fg80",
+        "label": "Finished-goods stock 80",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 42758.14293333334,
+          "sd": 295.2519886319127
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 13.277666666666669,
+          "sd": 0.5905793960074343
+        },
+        "costPerGoodUnit": {
+          "mean": 102.6026475048832,
+          "sd": 0.4138382244732348
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.00023333333333333355,
+          "lo": -4.159285541647671e-7,
+          "hi": 0.0004670825952208319
+        },
+        "dProfit": {
+          "mean": -6381.2,
+          "lo": -6398.1947975717785,
+          "hi": -6364.205202428221
+        },
+        "dProfitCons": {
+          "mean": -6381.2,
+          "lo": -6398.1947975717785,
+          "hi": -6364.205202428221
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 80
+        }
+      },
+      {
+        "id": "fg100",
+        "label": "Finished-goods stock 100",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 41158.14293333334,
+          "sd": 295.2519886319127
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 13.277666666666669,
+          "sd": 0.5905793960074343
+        },
+        "costPerGoodUnit": {
+          "mean": 102.6026475048832,
+          "sd": 0.4138382244732348
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.00023333333333333355,
+          "lo": -4.159285541647671e-7,
+          "hi": 0.0004670825952208319
+        },
+        "dProfit": {
+          "mean": -7981.2,
+          "lo": -7998.1947975717785,
+          "hi": -7964.205202428221
+        },
+        "dProfitCons": {
+          "mean": -7981.2,
+          "lo": -7998.1947975717785,
+          "hi": -7964.205202428221
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 100
+        }
+      },
+      {
+        "id": "m3b",
+        "label": "Parallel M3",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 35820.32226666667,
+          "sd": 522.6968492024603
+        },
+        "goodPerShift": {
+          "mean": 39.178333333333335,
+          "sd": 0.36262532514536455
+        },
+        "avgWip": {
+          "mean": 1.8619999999999999,
+          "sd": 0.012148506364839705
+        },
+        "costPerGoodUnit": {
+          "mean": 115.92238185511557,
+          "sd": 1.072732024068442
+        },
+        "extraStock": 48,
+        "dSL": {
+          "mean": 0.00023333333333333355,
+          "lo": -4.159285541647671e-7,
+          "hi": 0.0004670825952208319
+        },
+        "dProfit": {
+          "mean": -13319.020666666673,
+          "lo": -13436.959774873558,
+          "hi": -13201.081558459788
+        },
+        "dProfitCons": {
+          "mean": -18263.020666666667,
+          "lo": -18489.874484037286,
+          "hi": -18036.16684929605
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              },
+              {
+                "id": "M3b",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "m3b-i9",
+        "label": "Parallel M3 + release every 9 min",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 39536.63026666667,
+          "sd": 529.0783296778757
+        },
+        "goodPerShift": {
+          "mean": 47.94833333333333,
+          "sd": 0.37289254561430035
+        },
+        "avgWip": {
+          "mean": 2.2770000000000006,
+          "sd": 0.01207733699809347
+        },
+        "costPerGoodUnit": {
+          "mean": 102.42591941610986,
+          "sd": 0.7984839440798264
+        },
+        "extraStock": 223.4,
+        "dSL": {
+          "mean": 0.00023333333333333355,
+          "lo": -4.159285541647671e-7,
+          "hi": 0.0004670825952208319
+        },
+        "dProfit": {
+          "mean": -9602.712666666666,
+          "lo": -9760.475616896945,
+          "hi": -9444.949716436387
+        },
+        "dProfitCons": {
+          "mean": -32612.912666666663,
+          "lo": -32856.086973197795,
+          "hi": -32369.738360135532
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              },
+              {
+                "id": "M3b",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              }
+            ],
+            "source": {
+              "interval": 9,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "m3b-i8",
+        "label": "Parallel M3 + release every 8 min",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 41971.37906666666,
+          "sd": 612.9448586403412
+        },
+        "goodPerShift": {
+          "mean": 53.94166666666667,
+          "sd": 0.40323761569655664
+        },
+        "avgWip": {
+          "mean": 2.561666666666666,
+          "sd": 0.013412123525798018
+        },
+        "costPerGoodUnit": {
+          "mean": 95.77804198268608,
+          "sd": 0.7192138738651552
+        },
+        "extraStock": 343.26666666666665,
+        "dSL": {
+          "mean": 0.00023333333333333355,
+          "lo": -4.159285541647671e-7,
+          "hi": 0.0004670825952208319
+        },
+        "dProfit": {
+          "mean": -7167.963866666668,
+          "lo": -7386.357995174311,
+          "hi": -6949.569738159024
+        },
+        "dProfitCons": {
+          "mean": -42524.43053333333,
+          "lo": -42772.55171357524,
+          "hi": -42276.30935309143
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              },
+              {
+                "id": "M3b",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              }
+            ],
+            "source": {
+              "interval": 8,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "m3b-i7",
+        "label": "Parallel M3 + release every 7 min",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 45220.94653333334,
+          "sd": 673.5674919723422
+        },
+        "goodPerShift": {
+          "mean": 61.66666666666667,
+          "sd": 0.4585083260503255
+        },
+        "avgWip": {
+          "mean": 2.9276666666666666,
+          "sd": 0.014546793303071941
+        },
+        "costPerGoodUnit": {
+          "mean": 89.06306508663634,
+          "sd": 0.6667469054947448
+        },
+        "extraStock": 497.76666666666665,
+        "dSL": {
+          "mean": 0.00023333333333333355,
+          "lo": -4.159285541647671e-7,
+          "hi": 0.0004670825952208319
+        },
+        "dProfit": {
+          "mean": -3918.3964000000005,
+          "lo": -4155.501136882452,
+          "hi": -3681.2916631175494
+        },
+        "dProfitCons": {
+          "mean": -55188.363066666665,
+          "lo": -55440.60196305526,
+          "hi": -54936.12417027807
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              },
+              {
+                "id": "M3b",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              }
+            ],
+            "source": {
+              "interval": 7,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "m3-ct12",
+        "label": "M3 cycle 13→12",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 50793.58853333335,
+          "sd": 409.321650836561
+        },
+        "goodPerShift": {
+          "mean": 39.099999999999994,
+          "sd": 0.3145878529781128
+        },
+        "avgWip": {
+          "mean": 3.7676666666666674,
+          "sd": 1.0792899432539875
+        },
+        "costPerGoodUnit": {
+          "mean": 97.85343186631998,
+          "sd": 0.7482034246634434
+        },
+        "extraStock": 46.43333333333333,
+        "dSL": {
+          "mean": 0.00023333333333333355,
+          "lo": -4.159285541647671e-7,
+          "hi": 0.0004670825952208319
+        },
+        "dProfit": {
+          "mean": 1654.2455999999995,
+          "lo": 1577.8586050758577,
+          "hi": 1730.6325949241414
+        },
+        "dProfitCons": {
+          "mean": -3128.3877333333326,
+          "lo": -3346.043827475701,
+          "hi": -2910.731639190964
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 12,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "m3-ct12-i10",
+        "label": "M3 cycle 13→12 + release every 10 min",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 50094.73466666668,
+          "sd": 303.3283202237265
+        },
+        "goodPerShift": {
+          "mean": 39.873333333333335,
+          "sd": 0.03651483716701096
+        },
+        "avgWip": {
+          "mean": 13.900666666666666,
+          "sd": 0.3946882954620173
+        },
+        "costPerGoodUnit": {
+          "mean": 97.97192132540853,
+          "sd": 0.38549634105807196
+        },
+        "extraStock": 61.9,
+        "dSL": {
+          "mean": 0.00023333333333333355,
+          "lo": -4.159285541647671e-7,
+          "hi": 0.0004670825952208319
+        },
+        "dProfit": {
+          "mean": 955.3917333333331,
+          "lo": 915.3950652947163,
+          "hi": 995.38840137195
+        },
+        "dProfitCons": {
+          "mean": -5420.308266666668,
+          "lo": -5460.74252046857,
+          "hi": -5379.874012864766
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 12,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              }
+            ],
+            "source": {
+              "interval": 10,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "m3-ct11-i9",
+        "label": "M3 cycle 13→11 + release every 9 min",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 51310.101866666686,
+          "sd": 314.735920119987
+        },
+        "goodPerShift": {
+          "mean": 43.52166666666666,
+          "sd": 0.03639660208972824
+        },
+        "avgWip": {
+          "mean": 14.385,
+          "sd": 0.2692870536089311
+        },
+        "costPerGoodUnit": {
+          "mean": 93.29289264719775,
+          "sd": 0.3677780969744883
+        },
+        "extraStock": 134.86666666666667,
+        "dSL": {
+          "mean": 0.00023333333333333355,
+          "lo": -4.159285541647671e-7,
+          "hi": 0.0004670825952208319
+        },
+        "dProfit": {
+          "mean": 2170.7589333333335,
+          "lo": 2121.435656004989,
+          "hi": 2220.082210661678
+        },
+        "dProfitCons": {
+          "mean": -11720.507733333336,
+          "lo": -11771.82508474879,
+          "hi": -11669.19038191788
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 11,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              }
+            ],
+            "source": {
+              "interval": 9,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "i10",
+        "label": "Release every 10 min",
+        "kind": "flow",
+        "serviceLevel": {
+          "mean": 0.9999666666666667,
+          "sd": 0.00018257418583505553
+        },
+        "profit": {
+          "mean": 49117.57279999999,
+          "sd": 312.1162637531092
+        },
+        "goodPerShift": {
+          "mean": 36.833333333333336,
+          "sd": 0.030323921743157373
+        },
+        "avgWip": {
+          "mean": 14.868000000000002,
+          "sd": 0.16518328378313377
+        },
+        "costPerGoodUnit": {
+          "mean": 102.5960846049304,
+          "sd": 0.436401111789998
+        },
+        "extraStock": 1.1,
+        "dSL": {
+          "mean": 0.00020000000000000017,
+          "lo": -0.00002784817994324262,
+          "hi": 0.00042784817994324296
+        },
+        "dProfit": {
+          "mean": -21.770133333334282,
+          "lo": -45.03850823348756,
+          "hi": 1.4982415668190008
+        },
+        "dProfitCons": {
+          "mean": -135.07013333333427,
+          "lo": -159.78209896262868,
+          "hi": -110.35816770403986
+        },
+        "countermeasure": {
+          "config": {
+            "source": {
+              "interval": 10,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "buf2-8",
+        "label": "BUF2 (before M3) 6→8",
+        "kind": "flow",
+        "serviceLevel": {
+          "mean": 0.9997666666666666,
+          "sd": 0.000626062315579293
+        },
+        "profit": {
+          "mean": 48987.8454,
+          "sd": 300.4146959050046
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 14.652666666666669,
+          "sd": 0.7360797058290176
+        },
+        "costPerGoodUnit": {
+          "mean": 102.80435961385834,
+          "sd": 0.40276970906563964
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0,
+          "lo": 0,
+          "hi": 0
+        },
+        "dProfit": {
+          "mean": -151.4975333333333,
+          "lo": -157.8245700573263,
+          "hi": -145.17049660934032
+        },
+        "dProfitCons": {
+          "mean": -151.4975333333333,
+          "lo": -157.8245700573263,
+          "hi": -145.17049660934032
+        },
+        "countermeasure": {
+          "config": {
+            "buffers": [
+              {
+                "id": "BUF0",
+                "capacity": 4
+              },
+              {
+                "id": "BUF1",
+                "capacity": 3
+              },
+              {
+                "id": "BUF2",
+                "capacity": 8
+              },
+              {
+                "id": "BUF3",
+                "capacity": 2
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "rej5",
+        "label": "M2 reject 10%→5%",
+        "kind": "quality",
+        "serviceLevel": {
+          "mean": 0.9999333333333333,
+          "sd": 0.00025370813170246263
+        },
+        "profit": {
+          "mean": 50257.622133333345,
+          "sd": 277.21389182168394
+        },
+        "goodPerShift": {
+          "mean": 36.79499999999998,
+          "sd": 0.01525642883146737
+        },
+        "avgWip": {
+          "mean": 14.633333333333333,
+          "sd": 0.22034977419662993
+        },
+        "costPerGoodUnit": {
+          "mean": 100.48959777679188,
+          "sd": 0.3762825488183044
+        },
+        "extraStock": 0.3333333333333333,
+        "dSL": {
+          "mean": 0.00016666666666666682,
+          "lo": -0.000005503905553725638,
+          "hi": 0.00033883723888705926
+        },
+        "dProfit": {
+          "mean": 1118.2792000000022,
+          "lo": 1039.8115617557753,
+          "hi": 1196.7468382442291
+        },
+        "dProfitCons": {
+          "mean": 1083.945866666669,
+          "lo": 999.0672098521629,
+          "hi": 1168.824523481175
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.05,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "fg10+m3-ct12",
+        "label": "Finished-goods stock 10 + M3 cycle 13→12",
+        "kind": "combo",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 49993.58853333335,
+          "sd": 409.321650836561
+        },
+        "goodPerShift": {
+          "mean": 39.099999999999994,
+          "sd": 0.3145878529781128
+        },
+        "avgWip": {
+          "mean": 3.7676666666666674,
+          "sd": 1.0792899432539875
+        },
+        "costPerGoodUnit": {
+          "mean": 97.85343186631998,
+          "sd": 0.7482034246634434
+        },
+        "extraStock": 46.43333333333333,
+        "dSL": {
+          "mean": 0.00023333333333333355,
+          "lo": -4.159285541647671e-7,
+          "hi": 0.0004670825952208319
+        },
+        "dProfit": {
+          "mean": 854.2455999999996,
+          "lo": 777.8586050758578,
+          "hi": 930.6325949241415
+        },
+        "dProfitCons": {
+          "mean": -3928.3877333333326,
+          "lo": -4146.043827475702,
+          "hi": -3710.731639190964
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 10,
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 12,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "recommendation": {
+      "id": "rej5",
+      "label": "M2 reject 10%→5%",
+      "kind": "quality",
+      "cm": {
+        "config": {
+          "machines": [
+            {
+              "id": "M1",
+              "stationId": "S1",
+              "name": "Machining",
+              "cycleTime": 4,
+              "inputBufferId": "BUF0",
+              "outputBufferId": "BUF1"
+            },
+            {
+              "id": "M2",
+              "stationId": "S2",
+              "name": "Quality Check",
+              "cycleTime": 3,
+              "rejectRate": 0.05,
+              "inputBufferId": "BUF1",
+              "outputBufferId": "BUF2"
+            },
+            {
+              "id": "M3",
+              "stationId": "S3",
+              "name": "Assembly",
+              "cycleTime": 13,
+              "inputBufferId": "BUF2",
+              "outputBufferId": "BUF3"
+            },
+            {
+              "id": "M4",
+              "stationId": "S4",
+              "name": "Packaging",
+              "cycleTime": 2,
+              "inputBufferId": "BUF3",
+              "outputBufferId": null
+            }
+          ]
+        }
+      },
+      "serviceLevel": {
+        "mean": 0.9999333333333333,
+        "sd": 0.00025370813170246263
+      },
+      "profit": {
+        "mean": 50257.622133333345,
+        "sd": 277.21389182168394
+      },
+      "goodPerShift": {
+        "mean": 36.79499999999998,
+        "sd": 0.01525642883146737
+      },
+      "avgWip": {
+        "mean": 14.633333333333333,
+        "sd": 0.22034977419662993
+      },
+      "costPerGoodUnit": {
+        "mean": 100.48959777679188,
+        "sd": 0.3762825488183044
+      },
+      "extraStock": 0.3333333333333333,
+      "dSL": {
+        "mean": 0.00016666666666666682,
+        "lo": -0.000005503905553725638,
+        "hi": 0.00033883723888705926
+      },
+      "dProfit": {
+        "mean": 1118.2792000000022,
+        "lo": 1039.8115617557753,
+        "hi": 1196.7468382442291
+      },
+      "dProfitCons": {
+        "mean": 1083.945866666669,
+        "lo": 999.0672098521629,
+        "hi": 1168.824523481175
+      }
+    },
+    "holdout": []
+  },
+  {
+    "scenario": "supplier-outage",
+    "label": "Supplier outage",
+    "baseline": {
+      "serviceLevel": {
+        "mean": 0.7720333333333333,
+        "sd": 0.023052389109985152
+      },
+      "profit": {
+        "mean": 32776.0336,
+        "sd": 1771.4706099408616
+      },
+      "goodPerShift": {
+        "mean": 33.713333333333345,
+        "sd": 0.08703282509305393
+      },
+      "avgWip": {
+        "mean": 10.145666666666667,
+        "sd": 0.9800024044070904
+      },
+      "costPerGoodUnit": {
+        "mean": 107.85740105670689,
+        "sd": 0.49856542472823473
+      }
+    },
+    "candidates": [
+      {
+        "id": "fg10",
+        "label": "Finished-goods stock 10",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 0.8958666666666666,
+          "sd": 0.018014808723195868
+        },
+        "profit": {
+          "mean": 40309.36693333333,
+          "sd": 1326.733220400444
+        },
+        "goodPerShift": {
+          "mean": 33.713333333333345,
+          "sd": 0.08703282509305393
+        },
+        "avgWip": {
+          "mean": 10.145666666666667,
+          "sd": 0.9800024044070904
+        },
+        "costPerGoodUnit": {
+          "mean": 107.85740105670689,
+          "sd": 0.49856542472823473
+        },
+        "extraStock": -5.733333333333333,
+        "dSL": {
+          "mean": 0.12383333333333331,
+          "lo": 0.12188195280104322,
+          "hi": 0.1257847138656234
+        },
+        "dProfit": {
+          "mean": 7533.333333333333,
+          "lo": 7360.757427550398,
+          "hi": 7705.9092391162685
+        },
+        "dProfitCons": {
+          "mean": 7533.333333333333,
+          "lo": 7360.757427550398,
+          "hi": 7705.9092391162685
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 10
+        }
+      },
+      {
+        "id": "fg20",
+        "label": "Finished-goods stock 20",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 0.9742666666666665,
+          "sd": 0.009373231633986644
+        },
+        "profit": {
+          "mean": 44532.10026666665,
+          "sd": 786.6508850798374
+        },
+        "goodPerShift": {
+          "mean": 33.713333333333345,
+          "sd": 0.08703282509305393
+        },
+        "avgWip": {
+          "mean": 10.145666666666667,
+          "sd": 0.9800024044070904
+        },
+        "costPerGoodUnit": {
+          "mean": 107.85740105670689,
+          "sd": 0.49856542472823473
+        },
+        "extraStock": -5.733333333333333,
+        "dSL": {
+          "mean": 0.20223333333333335,
+          "lo": 0.19702679761035263,
+          "hi": 0.20743986905631406
+        },
+        "dProfit": {
+          "mean": 11756.066666666668,
+          "lo": 11377.30443374598,
+          "hi": 12134.828899587355
+        },
+        "dProfitCons": {
+          "mean": 11756.066666666668,
+          "lo": 11377.30443374598,
+          "hi": 12134.828899587355
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 20
+        }
+      },
+      {
+        "id": "fg30",
+        "label": "Finished-goods stock 30",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 0.9998666666666666,
+          "sd": 0.0007302967433402222
+        },
+        "profit": {
+          "mean": 45358.30026666666,
+          "sd": 301.14565061867836
+        },
+        "goodPerShift": {
+          "mean": 33.713333333333345,
+          "sd": 0.08703282509305393
+        },
+        "avgWip": {
+          "mean": 10.145666666666667,
+          "sd": 0.9800024044070904
+        },
+        "costPerGoodUnit": {
+          "mean": 107.85740105670689,
+          "sd": 0.49856542472823473
+        },
+        "extraStock": -5.733333333333333,
+        "dSL": {
+          "mean": 0.2278333333333333,
+          "lo": 0.21936399213745827,
+          "hi": 0.23630267452920833
+        },
+        "dProfit": {
+          "mean": 12582.266666666666,
+          "lo": 11994.39183687368,
+          "hi": 13170.141496459653
+        },
+        "dProfitCons": {
+          "mean": 12582.266666666666,
+          "lo": 11994.39183687368,
+          "hi": 13170.141496459653
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 30
+        }
+      },
+      {
+        "id": "fg40",
+        "label": "Finished-goods stock 40",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 44567.70026666666,
+          "sd": 284.41665655851864
+        },
+        "goodPerShift": {
+          "mean": 33.713333333333345,
+          "sd": 0.08703282509305393
+        },
+        "avgWip": {
+          "mean": 10.145666666666667,
+          "sd": 0.9800024044070904
+        },
+        "costPerGoodUnit": {
+          "mean": 107.85740105670689,
+          "sd": 0.49856542472823473
+        },
+        "extraStock": -5.733333333333333,
+        "dSL": {
+          "mean": 0.22796666666666662,
+          "lo": 0.21935972961725086,
+          "hi": 0.23657360371608238
+        },
+        "dProfit": {
+          "mean": 11791.666666666666,
+          "lo": 11194.153900295029,
+          "hi": 12389.179433038304
+        },
+        "dProfitCons": {
+          "mean": 11791.666666666666,
+          "lo": 11194.153900295029,
+          "hi": 12389.179433038304
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 40
+        }
+      },
+      {
+        "id": "fg50",
+        "label": "Finished-goods stock 50",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 43767.70026666666,
+          "sd": 284.41665655851864
+        },
+        "goodPerShift": {
+          "mean": 33.713333333333345,
+          "sd": 0.08703282509305393
+        },
+        "avgWip": {
+          "mean": 10.145666666666667,
+          "sd": 0.9800024044070904
+        },
+        "costPerGoodUnit": {
+          "mean": 107.85740105670689,
+          "sd": 0.49856542472823473
+        },
+        "extraStock": -5.733333333333333,
+        "dSL": {
+          "mean": 0.22796666666666662,
+          "lo": 0.21935972961725086,
+          "hi": 0.23657360371608238
+        },
+        "dProfit": {
+          "mean": 10991.666666666666,
+          "lo": 10394.153900295029,
+          "hi": 11589.179433038304
+        },
+        "dProfitCons": {
+          "mean": 10991.666666666666,
+          "lo": 10394.153900295029,
+          "hi": 11589.179433038304
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 50
+        }
+      },
+      {
+        "id": "fg60",
+        "label": "Finished-goods stock 60",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 42967.70026666666,
+          "sd": 284.41665655851864
+        },
+        "goodPerShift": {
+          "mean": 33.713333333333345,
+          "sd": 0.08703282509305393
+        },
+        "avgWip": {
+          "mean": 10.145666666666667,
+          "sd": 0.9800024044070904
+        },
+        "costPerGoodUnit": {
+          "mean": 107.85740105670689,
+          "sd": 0.49856542472823473
+        },
+        "extraStock": -5.733333333333333,
+        "dSL": {
+          "mean": 0.22796666666666662,
+          "lo": 0.21935972961725086,
+          "hi": 0.23657360371608238
+        },
+        "dProfit": {
+          "mean": 10191.666666666666,
+          "lo": 9594.153900295029,
+          "hi": 10789.179433038304
+        },
+        "dProfitCons": {
+          "mean": 10191.666666666666,
+          "lo": 9594.153900295029,
+          "hi": 10789.179433038304
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 60
+        }
+      },
+      {
+        "id": "fg80",
+        "label": "Finished-goods stock 80",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 41367.70026666667,
+          "sd": 284.4166565585187
+        },
+        "goodPerShift": {
+          "mean": 33.713333333333345,
+          "sd": 0.08703282509305393
+        },
+        "avgWip": {
+          "mean": 10.145666666666667,
+          "sd": 0.9800024044070904
+        },
+        "costPerGoodUnit": {
+          "mean": 107.85740105670689,
+          "sd": 0.49856542472823473
+        },
+        "extraStock": -5.733333333333333,
+        "dSL": {
+          "mean": 0.22796666666666662,
+          "lo": 0.21935972961725086,
+          "hi": 0.23657360371608238
+        },
+        "dProfit": {
+          "mean": 8591.666666666666,
+          "lo": 7994.153900295028,
+          "hi": 9189.179433038304
+        },
+        "dProfitCons": {
+          "mean": 8591.666666666666,
+          "lo": 7994.153900295028,
+          "hi": 9189.179433038304
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 80
+        }
+      },
+      {
+        "id": "fg100",
+        "label": "Finished-goods stock 100",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 39767.70026666667,
+          "sd": 284.4166565585187
+        },
+        "goodPerShift": {
+          "mean": 33.713333333333345,
+          "sd": 0.08703282509305393
+        },
+        "avgWip": {
+          "mean": 10.145666666666667,
+          "sd": 0.9800024044070904
+        },
+        "costPerGoodUnit": {
+          "mean": 107.85740105670689,
+          "sd": 0.49856542472823473
+        },
+        "extraStock": -5.733333333333333,
+        "dSL": {
+          "mean": 0.22796666666666662,
+          "lo": 0.21935972961725086,
+          "hi": 0.23657360371608238
+        },
+        "dProfit": {
+          "mean": 6991.666666666667,
+          "lo": 6394.1539002950285,
+          "hi": 7589.179433038305
+        },
+        "dProfitCons": {
+          "mean": 6991.666666666667,
+          "lo": 6394.1539002950285,
+          "hi": 7589.179433038305
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 100
+        }
+      },
+      {
+        "id": "m3b",
+        "label": "Parallel M3",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 0.9448666666666666,
+          "sd": 0.03317844474055855
+        },
+        "profit": {
+          "mean": 30382.783600000006,
+          "sd": 2449.65845779184
+        },
+        "goodPerShift": {
+          "mean": 35.27166666666667,
+          "sd": 0.3768479372586403
+        },
+        "avgWip": {
+          "mean": 1.6766666666666665,
+          "sd": 0.012410599844719329
+        },
+        "costPerGoodUnit": {
+          "mean": 124.06575906750814,
+          "sd": 1.3254178876385971
+        },
+        "extraStock": 25.433333333333334,
+        "dSL": {
+          "mean": 0.17283333333333328,
+          "lo": 0.16262523225950348,
+          "hi": 0.18304143440716308
+        },
+        "dProfit": {
+          "mean": -2393.249999999999,
+          "lo": -3065.84210877269,
+          "hi": -1720.657891227308
+        },
+        "dProfitCons": {
+          "mean": -5012.883333333332,
+          "lo": -5558.653321840213,
+          "hi": -4467.113344826452
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              },
+              {
+                "id": "M3b",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "m3b-i9",
+        "label": "Parallel M3 + release every 9 min",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 37077.2116,
+          "sd": 540.6684355962857
+        },
+        "goodPerShift": {
+          "mean": 43.12333333333333,
+          "sd": 0.3890158522905376
+        },
+        "avgWip": {
+          "mean": 2.048333333333334,
+          "sd": 0.013152509484776139
+        },
+        "costPerGoodUnit": {
+          "mean": 109.20510404276652,
+          "sd": 0.9871404235256384
+        },
+        "extraStock": 182.46666666666667,
+        "dSL": {
+          "mean": 0.22796666666666662,
+          "lo": 0.21935972961725086,
+          "hi": 0.23657360371608238
+        },
+        "dProfit": {
+          "mean": 4301.178000000001,
+          "lo": 3687.6831353168864,
+          "hi": 4914.672864683115
+        },
+        "dProfitCons": {
+          "mean": -14492.888666666666,
+          "lo": -15248.257573912138,
+          "hi": -13737.519759421193
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              },
+              {
+                "id": "M3b",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              }
+            ],
+            "source": {
+              "interval": 9,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "m3b-i8",
+        "label": "Parallel M3 + release every 8 min",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 39247.84600000001,
+          "sd": 512.7198952564801
+        },
+        "goodPerShift": {
+          "mean": 48.521666666666675,
+          "sd": 0.361434720898898
+        },
+        "avgWip": {
+          "mean": 2.3040000000000003,
+          "sd": 0.011626367179523605
+        },
+        "costPerGoodUnit": {
+          "mean": 101.76476434309363,
+          "sd": 0.760736475665411
+        },
+        "extraStock": 290.43333333333334,
+        "dSL": {
+          "mean": 0.22796666666666662,
+          "lo": 0.21935972961725086,
+          "hi": 0.23657360371608238
+        },
+        "dProfit": {
+          "mean": 6471.812399999997,
+          "lo": 5825.72033906335,
+          "hi": 7117.904460936644
+        },
+        "dProfitCons": {
+          "mean": -23442.82093333334,
+          "lo": -24200.49768899904,
+          "hi": -22685.14417766764
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              },
+              {
+                "id": "M3b",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              }
+            ],
+            "source": {
+              "interval": 8,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "m3b-i7",
+        "label": "Parallel M3 + release every 7 min",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 42110.33373333332,
+          "sd": 639.690954619706
+        },
+        "goodPerShift": {
+          "mean": 55.47166666666667,
+          "sd": 0.41888261324404624
+        },
+        "avgWip": {
+          "mean": 2.6350000000000002,
+          "sd": 0.01332614748892386
+        },
+        "costPerGoodUnit": {
+          "mean": 94.30422277825087,
+          "sd": 0.7160465870679952
+        },
+        "extraStock": 429.43333333333334,
+        "dSL": {
+          "mean": 0.22796666666666662,
+          "lo": 0.21935972961725086,
+          "hi": 0.23657360371608238
+        },
+        "dProfit": {
+          "mean": 9334.300133333332,
+          "lo": 8684.063962186947,
+          "hi": 9984.536304479718
+        },
+        "dProfitCons": {
+          "mean": -34897.3332,
+          "lo": -35656.968049165516,
+          "hi": -34137.698350834486
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              },
+              {
+                "id": "M3b",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              }
+            ],
+            "source": {
+              "interval": 7,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "m3-ct12",
+        "label": "M3 cycle 13→12",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 0.9399333333333334,
+          "sd": 0.0352057335978235
+        },
+        "profit": {
+          "mean": 45007.82533333332,
+          "sd": 2529.323625415455
+        },
+        "goodPerShift": {
+          "mean": 35.186666666666675,
+          "sd": 0.3285110960529111
+        },
+        "avgWip": {
+          "mean": 3.0090000000000012,
+          "sd": 0.5137646717428462
+        },
+        "costPerGoodUnit": {
+          "mean": 103.98888437119965,
+          "sd": 0.9509304868571985
+        },
+        "extraStock": 23.733333333333334,
+        "dSL": {
+          "mean": 0.16789999999999994,
+          "lo": 0.15708849871039832,
+          "hi": 0.17871150128960156
+        },
+        "dProfit": {
+          "mean": 12231.791733333337,
+          "lo": 11532.725334629446,
+          "hi": 12930.858132037229
+        },
+        "dProfitCons": {
+          "mean": 9787.258399999999,
+          "lo": 9209.070865130001,
+          "hi": 10365.445934869997
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 12,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "m3-ct12-i10",
+        "label": "M3 cycle 13→12 + release every 10 min",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 48523.08133333333,
+          "sd": 296.8857950118462
+        },
+        "goodPerShift": {
+          "mean": 36.49333333333334,
+          "sd": 0.07279320417946034
+        },
+        "avgWip": {
+          "mean": 11.165666666666668,
+          "sd": 0.6227396828881858
+        },
+        "costPerGoodUnit": {
+          "mean": 102.93396188268956,
+          "sd": 0.4472872464526538
+        },
+        "extraStock": 49.86666666666667,
+        "dSL": {
+          "mean": 0.22796666666666662,
+          "lo": 0.21935972961725086,
+          "hi": 0.23657360371608238
+        },
+        "dProfit": {
+          "mean": 15747.047733333335,
+          "lo": 15148.773115029224,
+          "hi": 16345.322351637446
+        },
+        "dProfitCons": {
+          "mean": 10610.781066666666,
+          "lo": 9985.67486055177,
+          "hi": 11235.887272781563
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 12,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              }
+            ],
+            "source": {
+              "interval": 10,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "m3-ct11-i9",
+        "label": "M3 cycle 13→11 + release every 9 min",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 49492.12426666667,
+          "sd": 310.60365020557964
+        },
+        "goodPerShift": {
+          "mean": 39.77833333333333,
+          "sd": 0.06654442816299616
+        },
+        "avgWip": {
+          "mean": 11.97133333333334,
+          "sd": 0.38304346861756394
+        },
+        "costPerGoodUnit": {
+          "mean": 97.99740833441882,
+          "sd": 0.41434434825358163
+        },
+        "extraStock": 115.56666666666666,
+        "dSL": {
+          "mean": 0.22796666666666662,
+          "lo": 0.21935972961725086,
+          "hi": 0.23657360371608238
+        },
+        "dProfit": {
+          "mean": 16716.090666666667,
+          "lo": 16108.03969335846,
+          "hi": 17324.141639974874
+        },
+        "dProfitCons": {
+          "mean": 4812.724,
+          "lo": 4178.096109505527,
+          "hi": 5447.351890494473
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 11,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              }
+            ],
+            "source": {
+              "interval": 9,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "i10",
+        "label": "Release every 10 min",
+        "kind": "flow",
+        "serviceLevel": {
+          "mean": 0.7910333333333334,
+          "sd": 0.014502041077113913
+        },
+        "profit": {
+          "mean": 33959.19386666667,
+          "sd": 1145.828601644806
+        },
+        "goodPerShift": {
+          "mean": 33.785000000000004,
+          "sd": 0.05746063120024884
+        },
+        "avgWip": {
+          "mean": 12.722,
+          "sd": 0.27273076277808717
+        },
+        "costPerGoodUnit": {
+          "mean": 107.9442257647638,
+          "sd": 0.4833774947919337
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.019000000000000017,
+          "lo": 0.012569667868465974,
+          "hi": 0.02543033213153406
+        },
+        "dProfit": {
+          "mean": 1183.1602666666672,
+          "lo": 733.6260420892461,
+          "hi": 1632.6944912440883
+        },
+        "dProfitCons": {
+          "mean": 1183.1602666666672,
+          "lo": 733.6260420892461,
+          "hi": 1632.6944912440883
+        },
+        "countermeasure": {
+          "config": {
+            "source": {
+              "interval": 10,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "buf2-8",
+        "label": "BUF2 (before M3) 6→8",
+        "kind": "flow",
+        "serviceLevel": {
+          "mean": 0.7980333333333332,
+          "sd": 0.023702878238340764
+        },
+        "profit": {
+          "mean": 34519.727,
+          "sd": 1835.2845066299285
+        },
+        "goodPerShift": {
+          "mean": 33.81333333333333,
+          "sd": 0.09090856844155
+        },
+        "avgWip": {
+          "mean": 10.783,
+          "sd": 1.1557715738996537
+        },
+        "costPerGoodUnit": {
+          "mean": 107.82168213280717,
+          "sd": 0.5152214404435786
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.02599999999999999,
+          "lo": 0.02407361833432751,
+          "hi": 0.027926381665672465
+        },
+        "dProfit": {
+          "mean": 1743.6934000000006,
+          "lo": 1605.060081318545,
+          "hi": 1882.3267186814562
+        },
+        "dProfitCons": {
+          "mean": 1743.6934000000006,
+          "lo": 1605.060081318545,
+          "hi": 1882.3267186814562
+        },
+        "countermeasure": {
+          "config": {
+            "buffers": [
+              {
+                "id": "BUF0",
+                "capacity": 4
+              },
+              {
+                "id": "BUF1",
+                "capacity": 3
+              },
+              {
+                "id": "BUF2",
+                "capacity": 8
+              },
+              {
+                "id": "BUF3",
+                "capacity": 2
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "rej5",
+        "label": "M2 reject 10%→5%",
+        "kind": "quality",
+        "serviceLevel": {
+          "mean": 0.7913333333333333,
+          "sd": 0.013142018249803232
+        },
+        "profit": {
+          "mean": 35088.67413333334,
+          "sd": 1050.9672775500637
+        },
+        "goodPerShift": {
+          "mean": 33.78666666666666,
+          "sd": 0.052413036897146215
+        },
+        "avgWip": {
+          "mean": 12.167666666666666,
+          "sd": 0.31017996259494635
+        },
+        "costPerGoodUnit": {
+          "mean": 105.68949376949611,
+          "sd": 0.4253216885331439
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.01930000000000002,
+          "lo": 0.010545397846892457,
+          "hi": 0.02805460215310758
+        },
+        "dProfit": {
+          "mean": 2312.640533333336,
+          "lo": 1646.4290784244613,
+          "hi": 2978.8519882422106
+        },
+        "dProfitCons": {
+          "mean": 2312.640533333336,
+          "lo": 1646.4290784244613,
+          "hi": 2978.8519882422106
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.05,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "sup-raw",
+        "label": "Raw stock (s=60, Q=100)",
+        "kind": "supply",
+        "serviceLevel": {
+          "mean": 0.9988666666666666,
+          "sd": 0.003645813218335318
+        },
+        "profit": {
+          "mean": 45272.15743333334,
+          "sd": 545.2969896519022
+        },
+        "goodPerShift": {
+          "mean": 35.404999999999994,
+          "sd": 0.320922699898815
+        },
+        "avgWip": {
+          "mean": 10.757666666666667,
+          "sd": 0.9006077769018497
+        },
+        "costPerGoodUnit": {
+          "mean": 104.75917197547093,
+          "sd": 0.8999405816996642
+        },
+        "extraStock": 28.1,
+        "dSL": {
+          "mean": 0.2268333333333334,
+          "lo": 0.21849555457277842,
+          "hi": 0.23517111209388836
+        },
+        "dProfit": {
+          "mean": 12496.123833333337,
+          "lo": 11935.935575435913,
+          "hi": 13056.31209123076
+        },
+        "dProfitCons": {
+          "mean": 9601.823833333332,
+          "lo": 8896.020150553708,
+          "hi": 10307.627516112956
+        },
+        "countermeasure": {
+          "config": {
+            "supply": {
+              "mode": "inventory"
+            }
+          }
+        }
+      },
+      {
+        "id": "sup-safety",
+        "label": "Raw safety stock (250 start, s=150)",
+        "kind": "supply",
+        "serviceLevel": {
+          "mean": 0.9997666666666666,
+          "sd": 0.000626062315579293
+        },
+        "profit": {
+          "mean": 40762.33343333334,
+          "sd": 259.17074248399
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 13.277666666666669,
+          "sd": 0.5905793960074343
+        },
+        "costPerGoodUnit": {
+          "mean": 102.6026475048832,
+          "sd": 0.4138382244732348
+        },
+        "extraStock": 55.56666666666667,
+        "dSL": {
+          "mean": 0.22773333333333337,
+          "lo": 0.21927941564689696,
+          "hi": 0.23618725101976978
+        },
+        "dProfit": {
+          "mean": 7986.299833333333,
+          "lo": 7382.541623501419,
+          "hi": 8590.058043165245
+        },
+        "dProfitCons": {
+          "mean": 2262.9331666666667,
+          "lo": 1645.6554136201642,
+          "hi": 2880.2109197131695
+        },
+        "countermeasure": {
+          "config": {
+            "supply": {
+              "mode": "inventory",
+              "reorderPoint": 150,
+              "orderQty": 150,
+              "initialStock": 250
+            }
+          }
+        }
+      },
+      {
+        "id": "sup-second",
+        "label": "Second supplier",
+        "kind": "supply",
+        "serviceLevel": {
+          "mean": 0.9997666666666666,
+          "sd": 0.000626062315579293
+        },
+        "profit": {
+          "mean": 44351.35843333316,
+          "sd": 533.6939756637372
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 13.277666666666669,
+          "sd": 0.5905793960074343
+        },
+        "costPerGoodUnit": {
+          "mean": 103.3327888461018,
+          "sd": 0.504158585465024
+        },
+        "extraStock": 55.56666666666667,
+        "dSL": {
+          "mean": 0.22773333333333337,
+          "lo": 0.21927941564689696,
+          "hi": 0.23618725101976978
+        },
+        "dProfit": {
+          "mean": 11575.324833333165,
+          "lo": 11046.87373274285,
+          "hi": 12103.77593392348
+        },
+        "dProfitCons": {
+          "mean": 5851.958166666494,
+          "lo": 5308.131937505156,
+          "hi": 6395.784395827833
+        },
+        "countermeasure": {
+          "config": {
+            "supply": {
+              "mode": "inventory",
+              "secondSupplier": {
+                "enabled": true
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "sup-expedite",
+        "label": "Expediting",
+        "kind": "supply",
+        "serviceLevel": {
+          "mean": 0.9997666666666666,
+          "sd": 0.000626062315579293
+        },
+        "profit": {
+          "mean": 42064.92510000016,
+          "sd": 1067.4498050552536
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 13.277666666666669,
+          "sd": 0.5905793960074343
+        },
+        "costPerGoodUnit": {
+          "mean": 106.25335421097493,
+          "sd": 1.1036461616439572
+        },
+        "extraStock": 55.56666666666667,
+        "dSL": {
+          "mean": 0.22773333333333337,
+          "lo": 0.21927941564689696,
+          "hi": 0.23618725101976978
+        },
+        "dProfit": {
+          "mean": 9288.89150000015,
+          "lo": 8802.818949593568,
+          "hi": 9774.964050406734
+        },
+        "dProfitCons": {
+          "mean": 3565.5248333334875,
+          "lo": 3062.8223187163117,
+          "hi": 4068.2273479506634
+        },
+        "countermeasure": {
+          "config": {
+            "supply": {
+              "mode": "inventory",
+              "expediting": {
+                "enabled": true
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "fg30+sup-raw",
+        "label": "Finished-goods stock 30 + Raw stock (s=60, Q=100)",
+        "kind": "combo",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 42950.49076666668,
+          "sd": 389.21540843703264
+        },
+        "goodPerShift": {
+          "mean": 35.404999999999994,
+          "sd": 0.320922699898815
+        },
+        "avgWip": {
+          "mean": 10.757666666666667,
+          "sd": 0.9006077769018497
+        },
+        "costPerGoodUnit": {
+          "mean": 104.75917197547093,
+          "sd": 0.8999405816996642
+        },
+        "extraStock": 28.1,
+        "dSL": {
+          "mean": 0.22796666666666662,
+          "lo": 0.21935972961725086,
+          "hi": 0.23657360371608238
+        },
+        "dProfit": {
+          "mean": 10174.457166666667,
+          "lo": 9597.114701385624,
+          "hi": 10751.79963194771
+        },
+        "dProfitCons": {
+          "mean": 7280.157166666668,
+          "lo": 6546.1577175576795,
+          "hi": 8014.156615775656
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 30,
+          "config": {
+            "supply": {
+              "mode": "inventory"
+            }
+          }
+        }
+      },
+      {
+        "id": "fg30+m3-ct12-i10",
+        "label": "Finished-goods stock 30 + M3 cycle 13→12 + release every 10 min",
+        "kind": "combo",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 46123.08133333333,
+          "sd": 296.8857950118462
+        },
+        "goodPerShift": {
+          "mean": 36.49333333333334,
+          "sd": 0.07279320417946034
+        },
+        "avgWip": {
+          "mean": 11.165666666666668,
+          "sd": 0.6227396828881858
+        },
+        "costPerGoodUnit": {
+          "mean": 102.93396188268956,
+          "sd": 0.4472872464526538
+        },
+        "extraStock": 49.86666666666667,
+        "dSL": {
+          "mean": 0.22796666666666662,
+          "lo": 0.21935972961725086,
+          "hi": 0.23657360371608238
+        },
+        "dProfit": {
+          "mean": 13347.047733333333,
+          "lo": 12748.773115029222,
+          "hi": 13945.322351637444
+        },
+        "dProfitCons": {
+          "mean": 8210.781066666666,
+          "lo": 7585.67486055177,
+          "hi": 8835.887272781563
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 30,
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 12,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              }
+            ],
+            "source": {
+              "interval": 10,
+              "materialStock": -1
+            }
+          }
+        }
+      }
+    ],
+    "recommendation": {
+      "id": "fg30",
+      "label": "Finished-goods stock 30",
+      "kind": "stock",
+      "cm": {
+        "initialFinishedGoods": 30
+      },
+      "serviceLevel": {
+        "mean": 0.9998666666666666,
+        "sd": 0.0007302967433402222
+      },
+      "profit": {
+        "mean": 45358.30026666666,
+        "sd": 301.14565061867836
+      },
+      "goodPerShift": {
+        "mean": 33.713333333333345,
+        "sd": 0.08703282509305393
+      },
+      "avgWip": {
+        "mean": 10.145666666666667,
+        "sd": 0.9800024044070904
+      },
+      "costPerGoodUnit": {
+        "mean": 107.85740105670689,
+        "sd": 0.49856542472823473
+      },
+      "extraStock": -5.733333333333333,
+      "dSL": {
+        "mean": 0.2278333333333333,
+        "lo": 0.21936399213745827,
+        "hi": 0.23630267452920833
+      },
+      "dProfit": {
+        "mean": 12582.266666666666,
+        "lo": 11994.39183687368,
+        "hi": 13170.141496459653
+      },
+      "dProfitCons": {
+        "mean": 12582.266666666666,
+        "lo": 11994.39183687368,
+        "hi": 13170.141496459653
+      }
+    },
+    "holdout": []
+  },
+  {
+    "scenario": "demand-swing",
+    "label": "Demand swing",
+    "baseline": {
+      "serviceLevel": {
+        "mean": 0.5684666666666665,
+        "sd": 0.004994709845104244
+      },
+      "profit": {
+        "mean": 20432.476266666665,
+        "sd": 438.97013074655894
+      },
+      "goodPerShift": {
+        "mean": 36.77833333333333,
+        "sd": 0.036396602089728246
+      },
+      "avgWip": {
+        "mean": 13.277666666666669,
+        "sd": 0.5905793960074343
+      },
+      "costPerGoodUnit": {
+        "mean": 102.6026475048832,
+        "sd": 0.4138382244732348
+      }
+    },
+    "candidates": [
+      {
+        "id": "fg10",
+        "label": "Finished-goods stock 10",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 0.6537000000000002,
+          "sd": 0.008785371854434494
+        },
+        "profit": {
+          "mean": 24793.34293333333,
+          "sd": 617.157194633305
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 13.277666666666669,
+          "sd": 0.5905793960074343
+        },
+        "costPerGoodUnit": {
+          "mean": 102.6026475048832,
+          "sd": 0.4138382244732348
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.08523333333333337,
+          "lo": 0.08374412042150936,
+          "hi": 0.08672254624515738
+        },
+        "dProfit": {
+          "mean": 4360.866666666667,
+          "lo": 4273.69152130199,
+          "hi": 4448.041812031343
+        },
+        "dProfitCons": {
+          "mean": 4360.866666666667,
+          "lo": 4273.69152130199,
+          "hi": 4448.041812031343
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 10
+        }
+      },
+      {
+        "id": "fg20",
+        "label": "Finished-goods stock 20",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 0.7673666666666664,
+          "sd": 0.009915099364217134
+        },
+        "profit": {
+          "mean": 30709.34293333333,
+          "sd": 673.384512478771
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 13.277666666666669,
+          "sd": 0.5905793960074343
+        },
+        "costPerGoodUnit": {
+          "mean": 102.6026475048832,
+          "sd": 0.4138382244732348
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.19890000000000008,
+          "lo": 0.1969777400101988,
+          "hi": 0.20082225998980135
+        },
+        "dProfit": {
+          "mean": 10276.866666666667,
+          "lo": 10163.90619952772,
+          "hi": 10389.827133805613
+        },
+        "dProfitCons": {
+          "mean": 10276.866666666667,
+          "lo": 10163.90619952772,
+          "hi": 10389.827133805613
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 20
+        }
+      },
+      {
+        "id": "fg30",
+        "label": "Finished-goods stock 30",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 0.8773999999999998,
+          "sd": 0.006521053437216609
+        },
+        "profit": {
+          "mean": 36392.6096,
+          "sd": 495.8216205755654
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 13.277666666666669,
+          "sd": 0.5905793960074343
+        },
+        "costPerGoodUnit": {
+          "mean": 102.6026475048832,
+          "sd": 0.4138382244732348
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.3089333333333333,
+          "lo": 0.3081679550205455,
+          "hi": 0.30969871164612106
+        },
+        "dProfit": {
+          "mean": 15960.133333333333,
+          "lo": 15914.172158463809,
+          "hi": 16006.094508202857
+        },
+        "dProfitCons": {
+          "mean": 15960.133333333333,
+          "lo": 15914.172158463809,
+          "hi": 16006.094508202857
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 30
+        }
+      },
+      {
+        "id": "fg40",
+        "label": "Finished-goods stock 40",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 0.9563999999999996,
+          "sd": 0.006139751764048609
+        },
+        "profit": {
+          "mean": 40226.80960000001,
+          "sd": 465.34984586219963
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 13.277666666666669,
+          "sd": 0.5905793960074343
+        },
+        "costPerGoodUnit": {
+          "mean": 102.6026475048832,
+          "sd": 0.4138382244732348
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.3879333333333334,
+          "lo": 0.38713717178279267,
+          "hi": 0.38872949488387415
+        },
+        "dProfit": {
+          "mean": 19794.333333333332,
+          "lo": 19754.811380760217,
+          "hi": 19833.855285906448
+        },
+        "dProfitCons": {
+          "mean": 19794.333333333332,
+          "lo": 19754.811380760217,
+          "hi": 19833.855285906448
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 40
+        }
+      },
+      {
+        "id": "fg50",
+        "label": "Finished-goods stock 50",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 0.9905333333333334,
+          "sd": 0.001431982790624134
+        },
+        "profit": {
+          "mean": 41444.676266666684,
+          "sd": 308.6223222390154
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 13.277666666666669,
+          "sd": 0.5905793960074343
+        },
+        "costPerGoodUnit": {
+          "mean": 102.6026475048832,
+          "sd": 0.4138382244732348
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.4220666666666666,
+          "lo": 0.4206258506476113,
+          "hi": 0.42350748268572186
+        },
+        "dProfit": {
+          "mean": 21012.2,
+          "lo": 20926.144421696838,
+          "hi": 21098.255578303164
+        },
+        "dProfitCons": {
+          "mean": 21012.2,
+          "lo": 20926.144421696838,
+          "hi": 21098.255578303164
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 50
+        }
+      },
+      {
+        "id": "fg60",
+        "label": "Finished-goods stock 60",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 41196.14293333334,
+          "sd": 295.2519886319127
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 13.277666666666669,
+          "sd": 0.5905793960074343
+        },
+        "costPerGoodUnit": {
+          "mean": 102.6026475048832,
+          "sd": 0.4138382244732348
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.43153333333333355,
+          "lo": 0.4296684874376737,
+          "hi": 0.4333981792289934
+        },
+        "dProfit": {
+          "mean": 20763.666666666668,
+          "lo": 20650.129041049327,
+          "hi": 20877.20429228401
+        },
+        "dProfitCons": {
+          "mean": 20763.666666666668,
+          "lo": 20650.129041049327,
+          "hi": 20877.20429228401
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 60
+        }
+      },
+      {
+        "id": "fg80",
+        "label": "Finished-goods stock 80",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 39596.142933333336,
+          "sd": 295.2519886319127
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 13.277666666666669,
+          "sd": 0.5905793960074343
+        },
+        "costPerGoodUnit": {
+          "mean": 102.6026475048832,
+          "sd": 0.4138382244732348
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.43153333333333355,
+          "lo": 0.4296684874376737,
+          "hi": 0.4333981792289934
+        },
+        "dProfit": {
+          "mean": 19163.666666666668,
+          "lo": 19050.129041049327,
+          "hi": 19277.20429228401
+        },
+        "dProfitCons": {
+          "mean": 19163.666666666668,
+          "lo": 19050.129041049327,
+          "hi": 19277.20429228401
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 80
+        }
+      },
+      {
+        "id": "fg100",
+        "label": "Finished-goods stock 100",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 37996.142933333336,
+          "sd": 295.2519886319127
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 13.277666666666669,
+          "sd": 0.5905793960074343
+        },
+        "costPerGoodUnit": {
+          "mean": 102.6026475048832,
+          "sd": 0.4138382244732348
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.43153333333333355,
+          "lo": 0.4296684874376737,
+          "hi": 0.4333981792289934
+        },
+        "dProfit": {
+          "mean": 17563.666666666668,
+          "lo": 17450.129041049327,
+          "hi": 17677.20429228401
+        },
+        "dProfitCons": {
+          "mean": 17563.666666666668,
+          "lo": 17450.129041049327,
+          "hi": 17677.20429228401
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 100
+        }
+      },
+      {
+        "id": "m3b",
+        "label": "Parallel M3",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 0.6605666666666666,
+          "sd": 0.024910437271502706
+        },
+        "profit": {
+          "mean": 12653.188933333333,
+          "sd": 1601.2979303686623
+        },
+        "goodPerShift": {
+          "mean": 39.178333333333335,
+          "sd": 0.36262532514536455
+        },
+        "avgWip": {
+          "mean": 1.8619999999999999,
+          "sd": 0.012148506364839705
+        },
+        "costPerGoodUnit": {
+          "mean": 115.92238185511557,
+          "sd": 1.072732024068442
+        },
+        "extraStock": 48,
+        "dSL": {
+          "mean": 0.09210000000000004,
+          "lo": 0.08276803218214682,
+          "hi": 0.10143196781785327
+        },
+        "dProfit": {
+          "mean": -7779.287333333332,
+          "lo": -8315.41325879478,
+          "hi": -7243.161407871882
+        },
+        "dProfitCons": {
+          "mean": -12723.287333333337,
+          "lo": -13173.937034451299,
+          "hi": -12272.637632215376
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              },
+              {
+                "id": "M3b",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "m3b-i9",
+        "label": "Parallel M3 + release every 9 min",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 0.9172666666666667,
+          "sd": 0.01459554332861479
+        },
+        "profit": {
+          "mean": 31502.29693333333,
+          "sd": 936.782384838617
+        },
+        "goodPerShift": {
+          "mean": 47.94833333333333,
+          "sd": 0.37289254561430035
+        },
+        "avgWip": {
+          "mean": 2.2770000000000006,
+          "sd": 0.01207733699809347
+        },
+        "costPerGoodUnit": {
+          "mean": 102.42591941610986,
+          "sd": 0.7984839440798264
+        },
+        "extraStock": 223.4,
+        "dSL": {
+          "mean": 0.3488000000000001,
+          "lo": 0.34329746776474696,
+          "hi": 0.35430253223525326
+        },
+        "dProfit": {
+          "mean": 11069.820666666667,
+          "lo": 10756.26434307304,
+          "hi": 11383.376990260293
+        },
+        "dProfitCons": {
+          "mean": -11940.379333333336,
+          "lo": -12271.290441899951,
+          "hi": -11609.46822476672
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              },
+              {
+                "id": "M3b",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              }
+            ],
+            "source": {
+              "interval": 9,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "m3b-i8",
+        "label": "Parallel M3 + release every 8 min",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 0.9677333333333334,
+          "sd": 0.00650163551483903
+        },
+        "profit": {
+          "mean": 36910.579066666665,
+          "sd": 795.0268423895109
+        },
+        "goodPerShift": {
+          "mean": 53.94166666666667,
+          "sd": 0.40323761569655664
+        },
+        "avgWip": {
+          "mean": 2.561666666666666,
+          "sd": 0.013412123525798018
+        },
+        "costPerGoodUnit": {
+          "mean": 95.77804198268608,
+          "sd": 0.7192138738651552
+        },
+        "extraStock": 343.26666666666665,
+        "dSL": {
+          "mean": 0.3992666666666667,
+          "lo": 0.3966670713076442,
+          "hi": 0.4018662620256892
+        },
+        "dProfit": {
+          "mean": 16478.1028,
+          "lo": 16192.924420928877,
+          "hi": 16763.281179071124
+        },
+        "dProfitCons": {
+          "mean": -18878.363866666663,
+          "lo": -19147.315515162503,
+          "hi": -18609.412218170823
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              },
+              {
+                "id": "M3b",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              }
+            ],
+            "source": {
+              "interval": 8,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "m3b-i7",
+        "label": "Parallel M3 + release every 7 min",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 0.9959000000000001,
+          "sd": 0.0031878000196871297
+        },
+        "profit": {
+          "mean": 41820.81320000001,
+          "sd": 763.0770859648923
+        },
+        "goodPerShift": {
+          "mean": 61.66666666666667,
+          "sd": 0.4585083260503255
+        },
+        "avgWip": {
+          "mean": 2.9276666666666666,
+          "sd": 0.014546793303071941
+        },
+        "costPerGoodUnit": {
+          "mean": 89.06306508663634,
+          "sd": 0.6667469054947448
+        },
+        "extraStock": 497.76666666666665,
+        "dSL": {
+          "mean": 0.4274333333333335,
+          "lo": 0.42569122759727906,
+          "hi": 0.42917543906938793
+        },
+        "dProfit": {
+          "mean": 21388.33693333333,
+          "lo": 21112.595252109957,
+          "hi": 21664.0786145567
+        },
+        "dProfitCons": {
+          "mean": -29881.62973333333,
+          "lo": -30151.336480141374,
+          "hi": -29611.92298652529
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              },
+              {
+                "id": "M3b",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              }
+            ],
+            "source": {
+              "interval": 7,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "m3-ct12",
+        "label": "M3 cycle 13→12",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 0.6459333333333332,
+          "sd": 0.01872658691463196
+        },
+        "profit": {
+          "mean": 26761.788533333332,
+          "sd": 1260.1610432806542
+        },
+        "goodPerShift": {
+          "mean": 39.099999999999994,
+          "sd": 0.3145878529781128
+        },
+        "avgWip": {
+          "mean": 3.7676666666666674,
+          "sd": 1.0792899432539875
+        },
+        "costPerGoodUnit": {
+          "mean": 97.85343186631998,
+          "sd": 0.7482034246634434
+        },
+        "extraStock": 46.43333333333333,
+        "dSL": {
+          "mean": 0.07746666666666674,
+          "lo": 0.07067939856672134,
+          "hi": 0.08425393476661214
+        },
+        "dProfit": {
+          "mean": 6329.312266666667,
+          "lo": 5924.364764724351,
+          "hi": 6734.259768608983
+        },
+        "dProfitCons": {
+          "mean": 1546.678933333333,
+          "lo": 1206.2698924051626,
+          "hi": 1887.0879742615032
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 12,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "m3-ct12-i10",
+        "label": "M3 cycle 13→12 + release every 10 min",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 0.6902,
+          "sd": 0.00799741337493908
+        },
+        "profit": {
+          "mean": 28722.80133333333,
+          "sd": 568.6706480799572
+        },
+        "goodPerShift": {
+          "mean": 39.873333333333335,
+          "sd": 0.03651483716701096
+        },
+        "avgWip": {
+          "mean": 13.900666666666666,
+          "sd": 0.3946882954620173
+        },
+        "costPerGoodUnit": {
+          "mean": 97.97192132540853,
+          "sd": 0.38549634105807196
+        },
+        "extraStock": 61.9,
+        "dSL": {
+          "mean": 0.1217333333333334,
+          "lo": 0.12031945922430935,
+          "hi": 0.12314720744235745
+        },
+        "dProfit": {
+          "mean": 8290.325066666666,
+          "lo": 8208.625286557704,
+          "hi": 8372.024846775628
+        },
+        "dProfitCons": {
+          "mean": 1914.6250666666665,
+          "lo": 1843.6339739029456,
+          "hi": 1985.6161594303874
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 12,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              }
+            ],
+            "source": {
+              "interval": 10,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "m3-ct11-i9",
+        "label": "M3 cycle 13→11 + release every 9 min",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 0.8196666666666667,
+          "sd": 0.004950327981703493
+        },
+        "profit": {
+          "mean": 37532.36853333333,
+          "sd": 440.1004646981953
+        },
+        "goodPerShift": {
+          "mean": 43.52166666666666,
+          "sd": 0.03639660208972824
+        },
+        "avgWip": {
+          "mean": 14.385,
+          "sd": 0.2692870536089311
+        },
+        "costPerGoodUnit": {
+          "mean": 93.29289264719775,
+          "sd": 0.3677780969744883
+        },
+        "extraStock": 134.86666666666667,
+        "dSL": {
+          "mean": 0.25120000000000003,
+          "lo": 0.2504571440092532,
+          "hi": 0.2519428559907469
+        },
+        "dProfit": {
+          "mean": 17099.892266666666,
+          "lo": 17047.006768529856,
+          "hi": 17152.777764803475
+        },
+        "dProfitCons": {
+          "mean": 3208.625600000001,
+          "lo": 3158.4680230037,
+          "hi": 3258.7831769963022
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 11,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              }
+            ],
+            "source": {
+              "interval": 9,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "i10",
+        "label": "Release every 10 min",
+        "kind": "flow",
+        "serviceLevel": {
+          "mean": 0.5718666666666667,
+          "sd": 0.002609443504331678
+        },
+        "profit": {
+          "mean": 20628.839466666668,
+          "sd": 384.4859752943546
+        },
+        "goodPerShift": {
+          "mean": 36.833333333333336,
+          "sd": 0.030323921743157373
+        },
+        "avgWip": {
+          "mean": 14.868000000000002,
+          "sd": 0.16518328378313377
+        },
+        "costPerGoodUnit": {
+          "mean": 102.5960846049304,
+          "sd": 0.436401111789998
+        },
+        "extraStock": 1.1,
+        "dSL": {
+          "mean": 0.0033999999999999846,
+          "lo": 0.0020112817329323547,
+          "hi": 0.0047887182670676145
+        },
+        "dProfit": {
+          "mean": 196.36319999999904,
+          "lo": 117.177666930052,
+          "hi": 275.5487330699461
+        },
+        "dProfitCons": {
+          "mean": 83.06319999999906,
+          "lo": 23.66820742596336,
+          "hi": 142.45819257403474
+        },
+        "countermeasure": {
+          "config": {
+            "source": {
+              "interval": 10,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "buf2-8",
+        "label": "BUF2 (before M3) 6→8",
+        "kind": "flow",
+        "serviceLevel": {
+          "mean": 0.5684666666666665,
+          "sd": 0.004994709845104244
+        },
+        "profit": {
+          "mean": 20280.97873333334,
+          "sd": 434.32722001853597
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 14.652666666666669,
+          "sd": 0.7360797058290176
+        },
+        "costPerGoodUnit": {
+          "mean": 102.80435961385834,
+          "sd": 0.40276970906563964
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0,
+          "lo": 0,
+          "hi": 0
+        },
+        "dProfit": {
+          "mean": -151.4975333333333,
+          "lo": -157.8245700573263,
+          "hi": -145.17049660934032
+        },
+        "dProfitCons": {
+          "mean": -151.4975333333333,
+          "lo": -157.8245700573263,
+          "hi": -145.17049660934032
+        },
+        "countermeasure": {
+          "config": {
+            "buffers": [
+              {
+                "id": "BUF0",
+                "capacity": 4
+              },
+              {
+                "id": "BUF1",
+                "capacity": 3
+              },
+              {
+                "id": "BUF2",
+                "capacity": 8
+              },
+              {
+                "id": "BUF3",
+                "capacity": 2
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "rej5",
+        "label": "M2 reject 10%→5%",
+        "kind": "quality",
+        "serviceLevel": {
+          "mean": 0.5705999999999997,
+          "sd": 0.003012617146098288
+        },
+        "profit": {
+          "mean": 21670.422133333337,
+          "sd": 339.6369137541466
+        },
+        "goodPerShift": {
+          "mean": 36.79499999999998,
+          "sd": 0.01525642883146737
+        },
+        "avgWip": {
+          "mean": 14.633333333333333,
+          "sd": 0.22034977419662993
+        },
+        "costPerGoodUnit": {
+          "mean": 100.48959777679188,
+          "sd": 0.3762825488183044
+        },
+        "extraStock": 0.3333333333333333,
+        "dSL": {
+          "mean": 0.0021333333333333204,
+          "lo": 0.0007615640308786186,
+          "hi": 0.0035051026357880224
+        },
+        "dProfit": {
+          "mean": 1237.945866666669,
+          "lo": 1138.8864244277106,
+          "hi": 1337.0053089056273
+        },
+        "dProfitCons": {
+          "mean": 1203.6125333333357,
+          "lo": 1116.1123843539322,
+          "hi": 1291.1126823127393
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.05,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "fg50+m3-ct11-i9",
+        "label": "Finished-goods stock 50 + M3 cycle 13→11 + release every 9 min",
+        "kind": "combo",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 44148.10186666668,
+          "sd": 314.7359201199866
+        },
+        "goodPerShift": {
+          "mean": 43.52166666666666,
+          "sd": 0.03639660208972824
+        },
+        "avgWip": {
+          "mean": 14.385,
+          "sd": 0.2692870536089311
+        },
+        "costPerGoodUnit": {
+          "mean": 93.29289264719775,
+          "sd": 0.3677780969744883
+        },
+        "extraStock": 134.86666666666667,
+        "dSL": {
+          "mean": 0.43153333333333355,
+          "lo": 0.4296684874376737,
+          "hi": 0.4333981792289934
+        },
+        "dProfit": {
+          "mean": 23715.625600000003,
+          "lo": 23591.057103204254,
+          "hi": 23840.194096795753
+        },
+        "dProfitCons": {
+          "mean": 9824.358933333335,
+          "lo": 9698.953809045797,
+          "hi": 9949.764057620872
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 50,
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 11,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              }
+            ],
+            "source": {
+              "interval": 9,
+              "materialStock": -1
+            }
+          }
+        }
+      }
+    ],
+    "recommendation": {
+      "id": "fg50",
+      "label": "Finished-goods stock 50",
+      "kind": "stock",
+      "cm": {
+        "initialFinishedGoods": 50
+      },
+      "serviceLevel": {
+        "mean": 0.9905333333333334,
+        "sd": 0.001431982790624134
+      },
+      "profit": {
+        "mean": 41444.676266666684,
+        "sd": 308.6223222390154
+      },
+      "goodPerShift": {
+        "mean": 36.77833333333333,
+        "sd": 0.036396602089728246
+      },
+      "avgWip": {
+        "mean": 13.277666666666669,
+        "sd": 0.5905793960074343
+      },
+      "costPerGoodUnit": {
+        "mean": 102.6026475048832,
+        "sd": 0.4138382244732348
+      },
+      "extraStock": 0,
+      "dSL": {
+        "mean": 0.4220666666666666,
+        "lo": 0.4206258506476113,
+        "hi": 0.42350748268572186
+      },
+      "dProfit": {
+        "mean": 21012.2,
+        "lo": 20926.144421696838,
+        "hi": 21098.255578303164
+      },
+      "dProfitCons": {
+        "mean": 21012.2,
+        "lo": 20926.144421696838,
+        "hi": 21098.255578303164
+      }
+    },
+    "holdout": [
+      {
+        "shifts": "21-40",
+        "withoutSL": 1,
+        "withSL": 1,
+        "dSL": {
+          "mean": 0,
+          "lo": 0,
+          "hi": 0
+        },
+        "dProfitCons": {
+          "mean": -4000,
+          "lo": -4000,
+          "hi": -4000
+        }
+      },
+      {
+        "shifts": "41-60",
+        "withoutSL": 0.9919666666666662,
+        "withSL": 1,
+        "dSL": {
+          "mean": 0.00803333333333334,
+          "lo": 0.007510041339761492,
+          "hi": 0.008556625326905189
+        },
+        "dProfitCons": {
+          "mean": -3567.6,
+          "lo": -3597.6074761849195,
+          "hi": -3537.5925238150803
+        }
+      }
+    ]
+  },
+  {
+    "scenario": "both",
+    "label": "Both (swing + outage)",
+    "baseline": {
+      "serviceLevel": {
+        "mean": 0.4855,
+        "sd": 0.0142363061850012
+      },
+      "profit": {
+        "mean": 14147.566933333332,
+        "sd": 1005.7535935651961
+      },
+      "goodPerShift": {
+        "mean": 33.713333333333345,
+        "sd": 0.08703282509305393
+      },
+      "avgWip": {
+        "mean": 10.145666666666667,
+        "sd": 0.9800024044070904
+      },
+      "costPerGoodUnit": {
+        "mean": 107.85740105670689,
+        "sd": 0.49856542472823473
+      }
+    },
+    "candidates": [
+      {
+        "id": "fg10",
+        "label": "Finished-goods stock 10",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 0.6240333333333333,
+          "sd": 0.013504745866529312
+        },
+        "profit": {
+          "mean": 21648.2336,
+          "sd": 915.1986775717476
+        },
+        "goodPerShift": {
+          "mean": 33.713333333333345,
+          "sd": 0.08703282509305393
+        },
+        "avgWip": {
+          "mean": 10.145666666666667,
+          "sd": 0.9800024044070904
+        },
+        "costPerGoodUnit": {
+          "mean": 107.85740105670689,
+          "sd": 0.49856542472823473
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.13853333333333334,
+          "lo": 0.13680772330071464,
+          "hi": 0.14025894336595204
+        },
+        "dProfit": {
+          "mean": 7500.666666666667,
+          "lo": 7400.85896585773,
+          "hi": 7600.474367475604
+        },
+        "dProfitCons": {
+          "mean": 7500.666666666667,
+          "lo": 7400.85896585773,
+          "hi": 7600.474367475604
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 10
+        }
+      },
+      {
+        "id": "fg20",
+        "label": "Finished-goods stock 20",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 0.765,
+          "sd": 0.011875793984345675
+        },
+        "profit": {
+          "mean": 29177.900266666667,
+          "sd": 798.4816551367945
+        },
+        "goodPerShift": {
+          "mean": 33.713333333333345,
+          "sd": 0.08703282509305393
+        },
+        "avgWip": {
+          "mean": 10.145666666666667,
+          "sd": 0.9800024044070904
+        },
+        "costPerGoodUnit": {
+          "mean": 107.85740105670689,
+          "sd": 0.49856542472823473
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.2795,
+          "lo": 0.2767743619037721,
+          "hi": 0.28222563809622797
+        },
+        "dProfit": {
+          "mean": 15030.333333333334,
+          "lo": 14872.554056621248,
+          "hi": 15188.11261004542
+        },
+        "dProfitCons": {
+          "mean": 15030.333333333334,
+          "lo": 14872.554056621248,
+          "hi": 15188.11261004542
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 20
+        }
+      },
+      {
+        "id": "fg30",
+        "label": "Finished-goods stock 30",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 0.8773999999999998,
+          "sd": 0.006521053437216609
+        },
+        "profit": {
+          "mean": 35002.16693333334,
+          "sd": 492.21259930454147
+        },
+        "goodPerShift": {
+          "mean": 33.713333333333345,
+          "sd": 0.08703282509305393
+        },
+        "avgWip": {
+          "mean": 10.145666666666667,
+          "sd": 0.9800024044070904
+        },
+        "costPerGoodUnit": {
+          "mean": 107.85740105670689,
+          "sd": 0.49856542472823473
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.3918999999999999,
+          "lo": 0.38810082185725053,
+          "hi": 0.3956991781427493
+        },
+        "dProfit": {
+          "mean": 20854.6,
+          "lo": 20626.54531862602,
+          "hi": 21082.654681373977
+        },
+        "dProfitCons": {
+          "mean": 20854.6,
+          "lo": 20626.54531862602,
+          "hi": 21082.654681373977
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 30
+        }
+      },
+      {
+        "id": "fg40",
+        "label": "Finished-goods stock 40",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 0.9563999999999996,
+          "sd": 0.006139751764048609
+        },
+        "profit": {
+          "mean": 38836.36693333333,
+          "sd": 460.94689264412136
+        },
+        "goodPerShift": {
+          "mean": 33.713333333333345,
+          "sd": 0.08703282509305393
+        },
+        "avgWip": {
+          "mean": 10.145666666666667,
+          "sd": 0.9800024044070904
+        },
+        "costPerGoodUnit": {
+          "mean": 107.85740105670689,
+          "sd": 0.49856542472823473
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.4709,
+          "lo": 0.4669763359448322,
+          "hi": 0.4748236640551678
+        },
+        "dProfit": {
+          "mean": 24688.8,
+          "lo": 24453.438920363362,
+          "hi": 24924.161079636637
+        },
+        "dProfitCons": {
+          "mean": 24688.8,
+          "lo": 24453.438920363362,
+          "hi": 24924.161079636637
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 40
+        }
+      },
+      {
+        "id": "fg50",
+        "label": "Finished-goods stock 50",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 0.9905333333333334,
+          "sd": 0.001431982790624134
+        },
+        "profit": {
+          "mean": 40054.2336,
+          "sd": 300.64343202900545
+        },
+        "goodPerShift": {
+          "mean": 33.713333333333345,
+          "sd": 0.08703282509305393
+        },
+        "avgWip": {
+          "mean": 10.145666666666667,
+          "sd": 0.9800024044070904
+        },
+        "costPerGoodUnit": {
+          "mean": 107.85740105670689,
+          "sd": 0.49856542472823473
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.5050333333333333,
+          "lo": 0.500059292297799,
+          "hi": 0.5100073743688677
+        },
+        "dProfit": {
+          "mean": 25906.666666666668,
+          "lo": 25609.227448778747,
+          "hi": 26204.10588455459
+        },
+        "dProfitCons": {
+          "mean": 25906.666666666668,
+          "lo": 25609.227448778747,
+          "hi": 26204.10588455459
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 50
+        }
+      },
+      {
+        "id": "fg60",
+        "label": "Finished-goods stock 60",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 39805.70026666667,
+          "sd": 284.4166565585187
+        },
+        "goodPerShift": {
+          "mean": 33.713333333333345,
+          "sd": 0.08703282509305393
+        },
+        "avgWip": {
+          "mean": 10.145666666666667,
+          "sd": 0.9800024044070904
+        },
+        "costPerGoodUnit": {
+          "mean": 107.85740105670689,
+          "sd": 0.49856542472823473
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.5145000000000001,
+          "lo": 0.5091846727874536,
+          "hi": 0.5198153272125465
+        },
+        "dProfit": {
+          "mean": 25658.133333333335,
+          "lo": 25338.78165683646,
+          "hi": 25977.48500983021
+        },
+        "dProfitCons": {
+          "mean": 25658.133333333335,
+          "lo": 25338.78165683646,
+          "hi": 25977.48500983021
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 60
+        }
+      },
+      {
+        "id": "fg80",
+        "label": "Finished-goods stock 80",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 38205.70026666667,
+          "sd": 284.4166565585187
+        },
+        "goodPerShift": {
+          "mean": 33.713333333333345,
+          "sd": 0.08703282509305393
+        },
+        "avgWip": {
+          "mean": 10.145666666666667,
+          "sd": 0.9800024044070904
+        },
+        "costPerGoodUnit": {
+          "mean": 107.85740105670689,
+          "sd": 0.49856542472823473
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.5145000000000001,
+          "lo": 0.5091846727874536,
+          "hi": 0.5198153272125465
+        },
+        "dProfit": {
+          "mean": 24058.133333333335,
+          "lo": 23738.78165683646,
+          "hi": 24377.48500983021
+        },
+        "dProfitCons": {
+          "mean": 24058.133333333335,
+          "lo": 23738.78165683646,
+          "hi": 24377.48500983021
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 80
+        }
+      },
+      {
+        "id": "fg100",
+        "label": "Finished-goods stock 100",
+        "kind": "stock",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 36605.70026666667,
+          "sd": 284.4166565585187
+        },
+        "goodPerShift": {
+          "mean": 33.713333333333345,
+          "sd": 0.08703282509305393
+        },
+        "avgWip": {
+          "mean": 10.145666666666667,
+          "sd": 0.9800024044070904
+        },
+        "costPerGoodUnit": {
+          "mean": 107.85740105670689,
+          "sd": 0.49856542472823473
+        },
+        "extraStock": 0,
+        "dSL": {
+          "mean": 0.5145000000000001,
+          "lo": 0.5091846727874536,
+          "hi": 0.5198153272125465
+        },
+        "dProfit": {
+          "mean": 22458.133333333335,
+          "lo": 22138.78165683646,
+          "hi": 22777.48500983021
+        },
+        "dProfitCons": {
+          "mean": 22458.133333333335,
+          "lo": 22138.78165683646,
+          "hi": 22777.48500983021
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 100
+        }
+      },
+      {
+        "id": "m3b",
+        "label": "Parallel M3",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 0.6443666666666666,
+          "sd": 0.03686085984490525
+        },
+        "profit": {
+          "mean": 9781.316933333334,
+          "sd": 2452.0386238161645
+        },
+        "goodPerShift": {
+          "mean": 35.27166666666667,
+          "sd": 0.3768479372586403
+        },
+        "avgWip": {
+          "mean": 1.6766666666666665,
+          "sd": 0.012410599844719329
+        },
+        "costPerGoodUnit": {
+          "mean": 124.06575906750814,
+          "sd": 1.3254178876385971
+        },
+        "extraStock": 31.166666666666668,
+        "dSL": {
+          "mean": 0.15886666666666666,
+          "lo": 0.14566015639964494,
+          "hi": 0.17207317693368837
+        },
+        "dProfit": {
+          "mean": -4366.249999999998,
+          "lo": -5161.593911758555,
+          "hi": -3570.9060882414415
+        },
+        "dProfitCons": {
+          "mean": -7576.416666666667,
+          "lo": -8222.688609332501,
+          "hi": -6930.144724000833
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              },
+              {
+                "id": "M3b",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "m3b-i9",
+        "label": "Parallel M3 + release every 9 min",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 0.9172666666666667,
+          "sd": 0.01459554332861479
+        },
+        "profit": {
+          "mean": 29042.878266666667,
+          "sd": 1025.983422827484
+        },
+        "goodPerShift": {
+          "mean": 43.12333333333333,
+          "sd": 0.3890158522905376
+        },
+        "avgWip": {
+          "mean": 2.048333333333334,
+          "sd": 0.013152509484776139
+        },
+        "costPerGoodUnit": {
+          "mean": 109.20510404276652,
+          "sd": 0.9871404235256384
+        },
+        "extraStock": 188.2,
+        "dSL": {
+          "mean": 0.43176666666666663,
+          "lo": 0.42469026198224796,
+          "hi": 0.4388430713510853
+        },
+        "dProfit": {
+          "mean": 14895.31133333333,
+          "lo": 14463.378746675842,
+          "hi": 15327.243919990817
+        },
+        "dProfitCons": {
+          "mean": -4489.288666666669,
+          "lo": -4925.786752835404,
+          "hi": -4052.790580497934
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              },
+              {
+                "id": "M3b",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              }
+            ],
+            "source": {
+              "interval": 9,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "m3b-i8",
+        "label": "Parallel M3 + release every 8 min",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 0.9677333333333334,
+          "sd": 0.00650163551483903
+        },
+        "profit": {
+          "mean": 34187.046,
+          "sd": 641.2204737509032
+        },
+        "goodPerShift": {
+          "mean": 48.521666666666675,
+          "sd": 0.361434720898898
+        },
+        "avgWip": {
+          "mean": 2.3040000000000003,
+          "sd": 0.011626367179523605
+        },
+        "costPerGoodUnit": {
+          "mean": 101.76476434309363,
+          "sd": 0.760736475665411
+        },
+        "extraStock": 296.1666666666667,
+        "dSL": {
+          "mean": 0.4822333333333332,
+          "lo": 0.4767392959819328,
+          "hi": 0.48772737068473354
+        },
+        "dProfit": {
+          "mean": 20039.47906666667,
+          "lo": 19647.800079861583,
+          "hi": 20431.158053471758
+        },
+        "dProfitCons": {
+          "mean": -10465.687600000001,
+          "lo": -10875.647389843321,
+          "hi": -10055.72781015668
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              },
+              {
+                "id": "M3b",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              }
+            ],
+            "source": {
+              "interval": 8,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "m3b-i7",
+        "label": "Parallel M3 + release every 7 min",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 0.9959000000000001,
+          "sd": 0.0031878000196871297
+        },
+        "profit": {
+          "mean": 38710.200399999994,
+          "sd": 699.437929622555
+        },
+        "goodPerShift": {
+          "mean": 55.47166666666667,
+          "sd": 0.41888261324404624
+        },
+        "avgWip": {
+          "mean": 2.6350000000000002,
+          "sd": 0.01332614748892386
+        },
+        "costPerGoodUnit": {
+          "mean": 94.30422277825087,
+          "sd": 0.7160465870679952
+        },
+        "extraStock": 435.1666666666667,
+        "dSL": {
+          "mean": 0.5103999999999999,
+          "lo": 0.5053093128549088,
+          "hi": 0.5154906871450909
+        },
+        "dProfit": {
+          "mean": 24562.633466666666,
+          "lo": 24169.89076249812,
+          "hi": 24955.376170835214
+        },
+        "dProfitCons": {
+          "mean": -20259.53320000001,
+          "lo": -20667.176112378613,
+          "hi": -19851.890287621405
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              },
+              {
+                "id": "M3b",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              }
+            ],
+            "source": {
+              "interval": 7,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "m3-ct12",
+        "label": "M3 cycle 13→12",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 0.6272333333333332,
+          "sd": 0.03135523201497073
+        },
+        "profit": {
+          "mean": 23714.025333333335,
+          "sd": 2108.009259912746
+        },
+        "goodPerShift": {
+          "mean": 35.186666666666675,
+          "sd": 0.3285110960529111
+        },
+        "avgWip": {
+          "mean": 3.0090000000000012,
+          "sd": 0.5137646717428462
+        },
+        "costPerGoodUnit": {
+          "mean": 103.98888437119965,
+          "sd": 0.9509304868571985
+        },
+        "extraStock": 29.466666666666665,
+        "dSL": {
+          "mean": 0.14173333333333332,
+          "lo": 0.13079120126805008,
+          "hi": 0.15267546539861657
+        },
+        "dProfit": {
+          "mean": 9566.4584,
+          "lo": 8909.71244887275,
+          "hi": 10223.20435112725
+        },
+        "dProfitCons": {
+          "mean": 6531.391733333335,
+          "lo": 6010.249629058548,
+          "hi": 7052.533837608122
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 12,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "m3-ct12-i10",
+        "label": "M3 cycle 13→12 + release every 10 min",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 0.6902,
+          "sd": 0.00799741337493908
+        },
+        "profit": {
+          "mean": 27151.14799999999,
+          "sd": 602.0855984638041
+        },
+        "goodPerShift": {
+          "mean": 36.49333333333334,
+          "sd": 0.07279320417946034
+        },
+        "avgWip": {
+          "mean": 11.165666666666668,
+          "sd": 0.6227396828881858
+        },
+        "costPerGoodUnit": {
+          "mean": 102.93396188268956,
+          "sd": 0.4472872464526538
+        },
+        "extraStock": 55.6,
+        "dSL": {
+          "mean": 0.20469999999999994,
+          "lo": 0.20103240964233876,
+          "hi": 0.20836759035766111
+        },
+        "dProfit": {
+          "mean": 13003.581066666666,
+          "lo": 12783.478093566062,
+          "hi": 13223.68403976727
+        },
+        "dProfitCons": {
+          "mean": 7276.7810666666655,
+          "lo": 7091.752543863098,
+          "hi": 7461.809589470233
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 12,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              }
+            ],
+            "source": {
+              "interval": 10,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "m3-ct11-i9",
+        "label": "M3 cycle 13→11 + release every 9 min",
+        "kind": "capacity",
+        "serviceLevel": {
+          "mean": 0.8196666666666667,
+          "sd": 0.004950327981703493
+        },
+        "profit": {
+          "mean": 35714.390933333336,
+          "sd": 435.6952790144887
+        },
+        "goodPerShift": {
+          "mean": 39.77833333333333,
+          "sd": 0.06654442816299616
+        },
+        "avgWip": {
+          "mean": 11.97133333333334,
+          "sd": 0.38304346861756394
+        },
+        "costPerGoodUnit": {
+          "mean": 97.99740833441882,
+          "sd": 0.41434434825358163
+        },
+        "extraStock": 121.3,
+        "dSL": {
+          "mean": 0.3341666666666667,
+          "lo": 0.3301274209970519,
+          "hi": 0.33820591233628156
+        },
+        "dProfit": {
+          "mean": 21566.824000000004,
+          "lo": 21308.81772492602,
+          "hi": 21824.83027507399
+        },
+        "dProfitCons": {
+          "mean": 9072.924,
+          "lo": 8846.210847102784,
+          "hi": 9299.637152897218
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 11,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              }
+            ],
+            "source": {
+              "interval": 9,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "i10",
+        "label": "Release every 10 min",
+        "kind": "flow",
+        "serviceLevel": {
+          "mean": 0.49889999999999995,
+          "sd": 0.008607735093988197
+        },
+        "profit": {
+          "mean": 14808.760533333332,
+          "sd": 677.6840891842594
+        },
+        "goodPerShift": {
+          "mean": 33.785000000000004,
+          "sd": 0.05746063120024884
+        },
+        "avgWip": {
+          "mean": 12.722,
+          "sd": 0.27273076277808717
+        },
+        "costPerGoodUnit": {
+          "mean": 107.9442257647638,
+          "sd": 0.4833774947919337
+        },
+        "extraStock": 1.4333333333333333,
+        "dSL": {
+          "mean": 0.013400000000000004,
+          "lo": 0.009399598061860956,
+          "hi": 0.017400401938139052
+        },
+        "dProfit": {
+          "mean": 661.1936000000006,
+          "lo": 420.932265573212,
+          "hi": 901.4549344267892
+        },
+        "dProfitCons": {
+          "mean": 513.5602666666673,
+          "lo": 315.84009459961345,
+          "hi": 711.2804387337212
+        },
+        "countermeasure": {
+          "config": {
+            "source": {
+              "interval": 10,
+              "materialStock": -1
+            }
+          }
+        }
+      },
+      {
+        "id": "buf2-8",
+        "label": "BUF2 (before M3) 6→8",
+        "kind": "flow",
+        "serviceLevel": {
+          "mean": 0.4979333333333333,
+          "sd": 0.014316456249373659
+        },
+        "profit": {
+          "mean": 14825.527000000004,
+          "sd": 1018.9757065900487
+        },
+        "goodPerShift": {
+          "mean": 33.81333333333333,
+          "sd": 0.09090856844155
+        },
+        "avgWip": {
+          "mean": 10.783,
+          "sd": 1.1557715738996537
+        },
+        "costPerGoodUnit": {
+          "mean": 107.82168213280717,
+          "sd": 0.5152214404435786
+        },
+        "extraStock": 2,
+        "dSL": {
+          "mean": 0.01243333333333334,
+          "lo": 0.011241777418135842,
+          "hi": 0.013624889248530838
+        },
+        "dProfit": {
+          "mean": 677.9600666666672,
+          "lo": 605.4458279005205,
+          "hi": 750.4743054328139
+        },
+        "dProfitCons": {
+          "mean": 471.9600666666673,
+          "lo": 410.3725271929749,
+          "hi": 533.5476061403597
+        },
+        "countermeasure": {
+          "config": {
+            "buffers": [
+              {
+                "id": "BUF0",
+                "capacity": 4
+              },
+              {
+                "id": "BUF1",
+                "capacity": 3
+              },
+              {
+                "id": "BUF2",
+                "capacity": 8
+              },
+              {
+                "id": "BUF3",
+                "capacity": 2
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "rej5",
+        "label": "M2 reject 10%→5%",
+        "kind": "quality",
+        "serviceLevel": {
+          "mean": 0.49633333333333335,
+          "sd": 0.008129695813681377
+        },
+        "profit": {
+          "mean": 15775.207466666672,
+          "sd": 632.6141542622539
+        },
+        "goodPerShift": {
+          "mean": 33.78666666666666,
+          "sd": 0.052413036897146215
+        },
+        "avgWip": {
+          "mean": 12.167666666666666,
+          "sd": 0.31017996259494635
+        },
+        "costPerGoodUnit": {
+          "mean": 105.68949376949611,
+          "sd": 0.4253216885331439
+        },
+        "extraStock": 1.4666666666666666,
+        "dSL": {
+          "mean": 0.010833333333333337,
+          "lo": 0.006209265337252886,
+          "hi": 0.015457401329413789
+        },
+        "dProfit": {
+          "mean": 1627.6405333333355,
+          "lo": 1310.220159915667,
+          "hi": 1945.060906751004
+        },
+        "dProfitCons": {
+          "mean": 1452.5405333333356,
+          "lo": 1190.9660936935072,
+          "hi": 1714.114972973164
+        },
+        "countermeasure": {
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.05,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 13,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              }
+            ]
+          }
+        }
+      },
+      {
+        "id": "sup-raw",
+        "label": "Raw stock (s=60, Q=100)",
+        "kind": "supply",
+        "serviceLevel": {
+          "mean": 0.5684666666666665,
+          "sd": 0.004994709845104244
+        },
+        "profit": {
+          "mean": 16624.8241,
+          "sd": 510.06250455763836
+        },
+        "goodPerShift": {
+          "mean": 35.404999999999994,
+          "sd": 0.320922699898815
+        },
+        "avgWip": {
+          "mean": 10.757666666666667,
+          "sd": 0.9006077769018497
+        },
+        "costPerGoodUnit": {
+          "mean": 104.75917197547093,
+          "sd": 0.8999405816996642
+        },
+        "extraStock": 33.833333333333336,
+        "dSL": {
+          "mean": 0.08296666666666662,
+          "lo": 0.07894722445910078,
+          "hi": 0.08698610887423246
+        },
+        "dProfit": {
+          "mean": 2477.257166666666,
+          "lo": 2252.668381902217,
+          "hi": 2701.845951431115
+        },
+        "dProfitCons": {
+          "mean": -1007.5761666666673,
+          "lo": -1332.9318170495064,
+          "hi": -682.2205162838281
+        },
+        "countermeasure": {
+          "config": {
+            "supply": {
+              "mode": "inventory"
+            }
+          }
+        }
+      },
+      {
+        "id": "sup-safety",
+        "label": "Raw safety stock (250 start, s=150)",
+        "kind": "supply",
+        "serviceLevel": {
+          "mean": 0.5684666666666665,
+          "sd": 0.004994709845104244
+        },
+        "profit": {
+          "mean": 12055.466766666663,
+          "sd": 409.7152807967056
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 13.277666666666669,
+          "sd": 0.5905793960074343
+        },
+        "costPerGoodUnit": {
+          "mean": 102.6026475048832,
+          "sd": 0.4138382244732348
+        },
+        "extraStock": 61.3,
+        "dSL": {
+          "mean": 0.08296666666666662,
+          "lo": 0.07894722445910078,
+          "hi": 0.08698610887423246
+        },
+        "dProfit": {
+          "mean": -2092.100166666666,
+          "lo": -2348.6620524653495,
+          "hi": -1835.5382808679828
+        },
+        "dProfitCons": {
+          "mean": -8406.000166666667,
+          "lo": -8612.908063768422,
+          "hi": -8199.092269564911
+        },
+        "countermeasure": {
+          "config": {
+            "supply": {
+              "mode": "inventory",
+              "reorderPoint": 150,
+              "orderQty": 150,
+              "initialStock": 250
+            }
+          }
+        }
+      },
+      {
+        "id": "sup-second",
+        "label": "Second supplier",
+        "kind": "supply",
+        "serviceLevel": {
+          "mean": 0.5684666666666665,
+          "sd": 0.004994709845104244
+        },
+        "profit": {
+          "mean": 15644.491766666502,
+          "sd": 613.7961065669742
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 13.277666666666669,
+          "sd": 0.5905793960074343
+        },
+        "costPerGoodUnit": {
+          "mean": 103.3327888461018,
+          "sd": 0.504158585465024
+        },
+        "extraStock": 61.3,
+        "dSL": {
+          "mean": 0.08296666666666662,
+          "lo": 0.07894722445910078,
+          "hi": 0.08698610887423246
+        },
+        "dProfit": {
+          "mean": 1496.9248333331668,
+          "lo": 1288.1260840992506,
+          "hi": 1705.723582567083
+        },
+        "dProfitCons": {
+          "mean": -4816.9751666668335,
+          "lo": -4998.194776467889,
+          "hi": -4635.755556865778
+        },
+        "countermeasure": {
+          "config": {
+            "supply": {
+              "mode": "inventory",
+              "secondSupplier": {
+                "enabled": true
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "sup-expedite",
+        "label": "Expediting",
+        "kind": "supply",
+        "serviceLevel": {
+          "mean": 0.5684666666666665,
+          "sd": 0.004994709845104244
+        },
+        "profit": {
+          "mean": 13358.058433333488,
+          "sd": 1104.4648768073191
+        },
+        "goodPerShift": {
+          "mean": 36.77833333333333,
+          "sd": 0.036396602089728246
+        },
+        "avgWip": {
+          "mean": 13.277666666666669,
+          "sd": 0.5905793960074343
+        },
+        "costPerGoodUnit": {
+          "mean": 106.25335421097493,
+          "sd": 1.1036461616439572
+        },
+        "extraStock": 61.3,
+        "dSL": {
+          "mean": 0.08296666666666662,
+          "lo": 0.07894722445910078,
+          "hi": 0.08698610887423246
+        },
+        "dProfit": {
+          "mean": -789.5084999998455,
+          "lo": -1086.770388160814,
+          "hi": -492.24661183887713
+        },
+        "dProfitCons": {
+          "mean": -7103.408499999845,
+          "lo": -7410.897768778286,
+          "hi": -6795.919231221404
+        },
+        "countermeasure": {
+          "config": {
+            "supply": {
+              "mode": "inventory",
+              "expediting": {
+                "enabled": true
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": "fg50+sup-raw",
+        "label": "Finished-goods stock 50 + Raw stock (s=60, Q=100)",
+        "kind": "combo",
+        "serviceLevel": {
+          "mean": 0.9905333333333334,
+          "sd": 0.001431982790624134
+        },
+        "profit": {
+          "mean": 37637.0241,
+          "sd": 402.1680753852286
+        },
+        "goodPerShift": {
+          "mean": 35.404999999999994,
+          "sd": 0.320922699898815
+        },
+        "avgWip": {
+          "mean": 10.757666666666667,
+          "sd": 0.9006077769018497
+        },
+        "costPerGoodUnit": {
+          "mean": 104.75917197547093,
+          "sd": 0.8999405816996642
+        },
+        "extraStock": 33.833333333333336,
+        "dSL": {
+          "mean": 0.5050333333333333,
+          "lo": 0.500059292297799,
+          "hi": 0.5100073743688677
+        },
+        "dProfit": {
+          "mean": 23489.457166666656,
+          "lo": 23204.493397967635,
+          "hi": 23774.420935365677
+        },
+        "dProfitCons": {
+          "mean": 20004.623833333328,
+          "lo": 19638.09416810734,
+          "hi": 20371.153498559317
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 50,
+          "config": {
+            "supply": {
+              "mode": "inventory"
+            }
+          }
+        }
+      },
+      {
+        "id": "fg50+m3-ct11-i9",
+        "label": "Finished-goods stock 50 + M3 cycle 13→11 + release every 9 min",
+        "kind": "combo",
+        "serviceLevel": {
+          "mean": 1,
+          "sd": 0
+        },
+        "profit": {
+          "mean": 42330.12426666668,
+          "sd": 310.6036502055797
+        },
+        "goodPerShift": {
+          "mean": 39.77833333333333,
+          "sd": 0.06654442816299616
+        },
+        "avgWip": {
+          "mean": 11.97133333333334,
+          "sd": 0.38304346861756394
+        },
+        "costPerGoodUnit": {
+          "mean": 97.99740833441882,
+          "sd": 0.41434434825358163
+        },
+        "extraStock": 121.3,
+        "dSL": {
+          "mean": 0.5145000000000001,
+          "lo": 0.5091846727874536,
+          "hi": 0.5198153272125465
+        },
+        "dProfit": {
+          "mean": 28182.557333333334,
+          "lo": 27850.444967037893,
+          "hi": 28514.669699628776
+        },
+        "dProfitCons": {
+          "mean": 15688.657333333334,
+          "lo": 15380.769128166507,
+          "hi": 15996.545538500162
+        },
+        "countermeasure": {
+          "initialFinishedGoods": 50,
+          "config": {
+            "machines": [
+              {
+                "id": "M1",
+                "stationId": "S1",
+                "name": "Machining",
+                "cycleTime": 4,
+                "inputBufferId": "BUF0",
+                "outputBufferId": "BUF1"
+              },
+              {
+                "id": "M2",
+                "stationId": "S2",
+                "name": "Quality Check",
+                "cycleTime": 3,
+                "rejectRate": 0.1,
+                "inputBufferId": "BUF1",
+                "outputBufferId": "BUF2"
+              },
+              {
+                "id": "M3",
+                "stationId": "S3",
+                "name": "Assembly",
+                "cycleTime": 11,
+                "inputBufferId": "BUF2",
+                "outputBufferId": "BUF3"
+              },
+              {
+                "id": "M4",
+                "stationId": "S4",
+                "name": "Packaging",
+                "cycleTime": 2,
+                "inputBufferId": "BUF3",
+                "outputBufferId": null
+              }
+            ],
+            "source": {
+              "interval": 9,
+              "materialStock": -1
+            }
+          }
+        }
+      }
+    ],
+    "recommendation": {
+      "id": "fg50",
+      "label": "Finished-goods stock 50",
+      "kind": "stock",
+      "cm": {
+        "initialFinishedGoods": 50
+      },
+      "serviceLevel": {
+        "mean": 0.9905333333333334,
+        "sd": 0.001431982790624134
+      },
+      "profit": {
+        "mean": 40054.2336,
+        "sd": 300.64343202900545
+      },
+      "goodPerShift": {
+        "mean": 33.713333333333345,
+        "sd": 0.08703282509305393
+      },
+      "avgWip": {
+        "mean": 10.145666666666667,
+        "sd": 0.9800024044070904
+      },
+      "costPerGoodUnit": {
+        "mean": 107.85740105670689,
+        "sd": 0.49856542472823473
+      },
+      "extraStock": 0,
+      "dSL": {
+        "mean": 0.5050333333333333,
+        "lo": 0.500059292297799,
+        "hi": 0.5100073743688677
+      },
+      "dProfit": {
+        "mean": 25906.666666666668,
+        "lo": 25609.227448778747,
+        "hi": 26204.10588455459
+      },
+      "dProfitCons": {
+        "mean": 25906.666666666668,
+        "lo": 25609.227448778747,
+        "hi": 26204.10588455459
+      }
+    },
+    "holdout": [
+      {
+        "shifts": "21-40",
+        "withoutSL": 0.9873333333333328,
+        "withSL": 1,
+        "dSL": {
+          "mean": 0.012666666666666678,
+          "lo": 0.010967443376668558,
+          "hi": 0.0143658899566648
+        },
+        "dProfitCons": {
+          "mean": -3101.2,
+          "lo": -3244.8960848908346,
+          "hi": -2957.503915109165
+        }
+      },
+      {
+        "shifts": "41-60",
+        "withoutSL": 0.9876666666666664,
+        "withSL": 1,
+        "dSL": {
+          "mean": 0.012333333333333344,
+          "lo": 0.010829185899763179,
+          "hi": 0.013837480766903509
+        },
+        "dProfitCons": {
+          "mean": -3329.4666666666667,
+          "lo": -3411.2483144547073,
+          "hi": -3247.685018878626
+        }
+      }
+    ]
+  }
+]

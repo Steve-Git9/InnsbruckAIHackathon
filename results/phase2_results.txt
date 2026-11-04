@@ -1,0 +1,31 @@
+
+> machine-sim-starter@1.0.0 scenarios
+> node src/scenarios/scenarios.js
+
+Scenarios: 20 shifts, seeds 1..30 (common random numbers), mean ±sd
+"with" = the Phase 2 recommended countermeasure (reference scenarios); extras have none, so "with" equals "without".
+
+scenario                                 countermeasure                  SL %        good/shift  scrap  WIP        yield %    OEE M1/M2/M3/M4 %  EUR/unit    profit EUR 
+---------------------------------------  ------------------------------  ----------  ----------  -----  ---------  ---------  -----------------  ----------  -----------
+Baseline                                 without                         100.0 ±0.1  36.8 ±0.0   82 ±8  13.3 ±0.6  88.4 ±0.9  35/23/100/15       102.6 ±0.4  49139 ±308 
+Baseline                                 with: M2 reject rate 10%→5%     100.0 ±0.0  36.8 ±0.0   39 ±7  14.6 ±0.2  93.1 ±0.9  33/23/100/15       100.5 ±0.4  50258 ±277 
+Supplier outage                          without                         77.2 ±2.3   33.7 ±0.1   75 ±8  10.1 ±1.0  88.2 ±0.9  32/21/91/14        107.9 ±0.5  32776 ±1771
+Supplier outage                          with: Finished-goods buffer 30  100.0 ±0.1  33.7 ±0.1   75 ±8  10.1 ±1.0  88.2 ±0.9  32/21/91/14        107.9 ±0.5  45358 ±301 
+Demand swing                             without                         56.8 ±0.5   36.8 ±0.0   82 ±8  13.3 ±0.6  88.4 ±0.9  35/23/100/15       102.6 ±0.4  20432 ±439 
+Demand swing                             with: Finished-goods buffer 50  99.1 ±0.1   36.8 ±0.0   82 ±8  13.3 ±0.6  88.4 ±0.9  35/23/100/15       102.6 ±0.4  41445 ±309 
+Both (swing + outage)                    without                         48.5 ±1.4   33.7 ±0.1   75 ±8  10.1 ±1.0  88.2 ±0.9  32/21/91/14        107.9 ±0.5  14148 ±1006
+Both (swing + outage)                    with: Finished-goods buffer 50  99.1 ±0.1   33.7 ±0.1   75 ±8  10.1 ±1.0  88.2 ±0.9  32/21/91/14        107.9 ±0.5  40054 ±301 
+Breakdowns (extra)                       without                         95.5 ±7.6   34.6 ±0.6   77 ±8  13.8 ±0.5  88.3 ±0.9  33/22/94/14        106.5 ±1.2  45291 ±5257
+Breakdowns (extra)                       with                            95.5 ±7.6   34.6 ±0.6   77 ±8  13.8 ±0.5  88.3 ±0.9  33/22/94/14        106.5 ±1.2  45291 ±5257
+Breakdowns + outage (extra)              without                         50.5 ±4.5   31.7 ±0.5   70 ±7  11.6 ±0.6  88.2 ±0.9  30/20/86/13        112.1 ±1.3  11352 ±3688
+Breakdowns + outage (extra)              with                            50.5 ±4.5   31.7 ±0.5   70 ±7  11.6 ±0.6  88.2 ±0.9  30/20/86/13        112.1 ±1.3  11352 ±3688
+Outage, raw stock (s,Q) default (extra)  without                         99.9 ±0.4   35.4 ±0.3   78 ±8  10.8 ±0.9  88.3 ±0.9  33/22/96/15        104.8 ±0.9  45272 ±545 
+Outage, raw stock (s,Q) default (extra)  with                            99.9 ±0.4   35.4 ±0.3   78 ±8  10.8 ±0.9  88.3 ±0.9  33/22/96/15        104.8 ±0.9  45272 ±545 
+Outage + safety stock (extra)            without                         100.0 ±0.1  36.8 ±0.0   82 ±8  13.3 ±0.6  88.4 ±0.9  35/23/100/15       102.6 ±0.4  40762 ±259 
+Outage + safety stock (extra)            with                            100.0 ±0.1  36.8 ±0.0   82 ±8  13.3 ±0.6  88.4 ±0.9  35/23/100/15       102.6 ±0.4  40762 ±259 
+Outage + second supplier (extra)         without                         100.0 ±0.1  36.8 ±0.0   82 ±8  13.3 ±0.6  88.4 ±0.9  35/23/100/15       103.3 ±0.5  44351 ±534 
+Outage + second supplier (extra)         with                            100.0 ±0.1  36.8 ±0.0   82 ±8  13.3 ±0.6  88.4 ±0.9  35/23/100/15       103.3 ±0.5  44351 ±534 
+Outage + expediting (extra)              without                         100.0 ±0.1  36.8 ±0.0   82 ±8  13.3 ±0.6  88.4 ±0.9  35/23/100/15       106.3 ±1.1  42065 ±1067
+Outage + expediting (extra)              with                            100.0 ±0.1  36.8 ±0.0   82 ±8  13.3 ±0.6  88.4 ±0.9  35/23/100/15       106.3 ±1.1  42065 ±1067
+
+Reference service levels from the data package: baseline ~100, supplier outage ~76, demand swing ~57, both ~48.

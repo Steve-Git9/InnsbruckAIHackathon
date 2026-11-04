@@ -1,0 +1,12 @@
+# Start with:  docker compose up --build
+# The image copies src/ at build time, so run `docker compose up --build` again after every code change
+# (or run the simulation without Docker: npm install && npm run dev).
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file: .env          # CLIENT_ID / CLIENT_SECRET for the AI advisor (not copied into the image)
+    environment:
+      - PORT=3000
+    restart: unless-stopped

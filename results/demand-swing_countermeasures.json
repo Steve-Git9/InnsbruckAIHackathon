@@ -1,0 +1,155 @@
+[
+  {
+    "disruption": {
+      "id": "demand-swing",
+      "label": "Demand swing"
+    },
+    "countermeasure": {
+      "id": "overtime",
+      "label": "Overtime on busy shifts",
+      "params": {
+        "maxMinutesPerShift": 120
+      },
+      "cost": "ASSUMPTION (no rate-card row): EUR 405 per overtime hour = hour rates of all four machines (270) + 50% overtime premium."
+    },
+    "runs": 30,
+    "shifts": 20,
+    "without": {
+      "serviceLevel": 0.5684666666666665,
+      "profit": 20432.476266666665,
+      "goodPerShift": 36.77833333333333,
+      "lostSales": 270.1666666666667
+    },
+    "with": {
+      "serviceLevel": 0.8782333333333331,
+      "profit": 34362.41946666667,
+      "goodPerShift": 39.10666666666667,
+      "lostSales": 76.06666666666666,
+      "extraUnsoldStock": 46.56666666666667,
+      "overtimeHours": 10
+    },
+    "change": {
+      "serviceLevel": {
+        "mean": 0.3097666666666666,
+        "lo": 0.30914900200281314,
+        "hi": 0.31038433133052
+      },
+      "profitOfficial": {
+        "mean": 13929.943199999998,
+        "lo": 13888.176921981069,
+        "hi": 13971.709478018927
+      },
+      "profitConservative": {
+        "mean": 9133.576533333335,
+        "lo": 9101.075712689879,
+        "hi": 9166.07735397679
+      }
+    },
+    "verdict": {
+      "code": "effective",
+      "text": "Effective: more orders on time and more profit."
+    }
+  },
+  {
+    "disruption": {
+      "id": "demand-swing",
+      "label": "Demand swing"
+    },
+    "countermeasure": {
+      "id": "faster-m3",
+      "label": "Faster M3 (assembly)",
+      "params": {
+        "minutesSaved": 2
+      },
+      "cost": "Rate card: EUR 30,000 one-time per minute removed, amortised over 1,920 shifts. Faster release costs only material and holding."
+    },
+    "runs": 30,
+    "shifts": 20,
+    "without": {
+      "serviceLevel": 0.5684666666666665,
+      "profit": 20432.476266666665,
+      "goodPerShift": 36.77833333333333,
+      "lostSales": 270.1666666666667
+    },
+    "with": {
+      "serviceLevel": 0.8196666666666667,
+      "profit": 37532.36853333333,
+      "goodPerShift": 43.52166666666666,
+      "lostSales": 112.93333333333334,
+      "extraUnsoldStock": 134.86666666666667,
+      "overtimeHours": 0
+    },
+    "change": {
+      "serviceLevel": {
+        "mean": 0.25120000000000003,
+        "lo": 0.2504571440092532,
+        "hi": 0.2519428559907469
+      },
+      "profitOfficial": {
+        "mean": 17099.892266666666,
+        "lo": 17047.006768529856,
+        "hi": 17152.777764803475
+      },
+      "profitConservative": {
+        "mean": 3208.625600000001,
+        "lo": 3158.4680230037,
+        "hi": 3258.7831769963022
+      }
+    },
+    "verdict": {
+      "code": "effective",
+      "text": "Effective: more orders on time and more profit."
+    }
+  },
+  {
+    "disruption": {
+      "id": "demand-swing",
+      "label": "Demand swing"
+    },
+    "countermeasure": {
+      "id": "second-m3",
+      "label": "Second M3 (parallel assembly machine)",
+      "params": {
+        "releaseInterval": 8
+      },
+      "cost": "Rate card: EUR 95,000 investment (EUR 49.48 per shift amortised) + EUR 90 per scheduled hour (EUR 720 per shift)."
+    },
+    "runs": 30,
+    "shifts": 20,
+    "without": {
+      "serviceLevel": 0.5684666666666665,
+      "profit": 20432.476266666665,
+      "goodPerShift": 36.77833333333333,
+      "lostSales": 270.1666666666667
+    },
+    "with": {
+      "serviceLevel": 0.9677333333333334,
+      "profit": 36910.579066666665,
+      "goodPerShift": 53.94166666666667,
+      "lostSales": 20.2,
+      "extraUnsoldStock": 343.26666666666665,
+      "overtimeHours": 0
+    },
+    "change": {
+      "serviceLevel": {
+        "mean": 0.3992666666666667,
+        "lo": 0.3966670713076442,
+        "hi": 0.4018662620256892
+      },
+      "profitOfficial": {
+        "mean": 16478.1028,
+        "lo": 16192.924420928877,
+        "hi": 16763.281179071124
+      },
+      "profitConservative": {
+        "mean": -18878.363866666663,
+        "lo": -19147.315515162503,
+        "hi": -18609.412218170823
+      }
+    },
+    "verdict": {
+      "code": "costly",
+      "text": "Improves delivery, but costs more than it earns."
+    }
+  }
+]
