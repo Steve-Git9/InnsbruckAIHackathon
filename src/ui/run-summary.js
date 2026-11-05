@@ -54,7 +54,7 @@ export function buildRunSummary(engine, scenario, rate) {
     scenario: { id: scenario.id, label: scenario.label },
     shifts,
     orders: { ordered: o.ordered, shippedOnTime: o.shippedOnTime, serviceLevel: o.ordered > 0 ? o.shippedOnTime / o.ordered : 1, late, backlogEnd: o.backlog },
-    production: { goodParts, goodPerShift: shifts ? goodParts / shifts : 0, scrap: k.scrap, released: k.released, lineYield: k.released ? goodParts / k.released : 0, overtimeHours: perShift.reduce((a, r) => a + (r.overtimeMin ?? 0), 0) / 60 },
+    production: { goodParts, goodPerShift: shifts ? goodParts / shifts : 0, scrap: k.scrap, released: k.released, lineYield: k.released ? goodParts / k.released : 0, overtimeHours: perShift.reduce((a, r) => a + (r.overtimeMin ?? 0), 0) / 60, outsourcedSets: k.outsourcedReceived ?? 0, backupParts: k.backupParts ?? 0 },
     money: { profit: econ.profit, costPerGoodUnit: econ.costPerGoodUnit, revenue: econ.revenue, lostSalesPenalty: econ.lostSales },
     worstShift: worst,
     bottleneck,

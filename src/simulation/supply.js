@@ -41,6 +41,13 @@ export const SUPPLY_DEFAULTS = {
   holdingCostRaw: 0.3,
 };
 
+// Backup supplier of the jit mode (config.source.backupSupplier): the lead time, price premium and
+// qualification cost of the second supplier of the inventory mode -- one set of numbers.
+export function backupSupplierDefaults() {
+  const { leadTime, premium, qualification } = SUPPLY_DEFAULTS.secondSupplier;
+  return { enabled: true, leadTime, premium, qualification };
+}
+
 export function normaliseSupply(cfg = {}) {
   return {
     ...SUPPLY_DEFAULTS,

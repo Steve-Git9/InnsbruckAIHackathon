@@ -49,6 +49,8 @@ export function shiftRowsFromEngine(engine) {
     released: r.released ?? 0,
     lostSales: r.lostSales,
     overtimeMin: r.overtimeMin ?? 0,
+    outsourced: r.outsourced ?? 0,                 // sets received from the outsourcing partner at the start of this shift
+    outsourcedOrdered: r.outsourcedOrdered ?? 0,   // sets ordered at the close of this shift
   }));
 }
 
@@ -71,6 +73,10 @@ export function kpisFromEngine(engine, shifts) {
     avgWip: +(perShift.reduce((a, r) => a + r.wip, 0) / n).toFixed(2),
     finishedGoodsEnd: o.stock,
     overtimeMin: perShift.reduce((a, r) => a + r.overtimeMin, 0),
+    // not production: goodParts, OEE and yield stay line-only
+    outsourcedOrdered: engine.outsourcing?.ordered ?? 0,
+    outsourcedReceived: engine.outsourcing?.received ?? 0,
+    backupParts: engine.backupParts ?? 0,
     // scheduled ticks include overtime, so utilisation stays <= 1
     machines: machineKpis(engine, Math.max(shifts * engine.orders.ticksPerShift, engine.tick)),
   };
@@ -97,6 +103,9 @@ export function liveResult(engine) {
       serviceLevel: o.ordered > 0 ? o.shippedOnTime / o.ordered : 1,
       finishedGoodsEnd: o.stock,
       backlogEnd: o.backlog,
+      outsourcedOrdered: engine.outsourcing?.ordered ?? 0,
+      outsourcedReceived: engine.outsourcing?.received ?? 0,
+      backupParts: engine.backupParts ?? 0,
     },
   };
 }

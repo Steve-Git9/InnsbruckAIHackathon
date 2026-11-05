@@ -5,63 +5,24 @@
       "label": "Demand swing"
     },
     "countermeasure": {
-      "id": "overtime",
-      "label": "Overtime on busy shifts",
-      "params": {
-        "maxMinutesPerShift": 120
-      },
-      "cost": "ASSUMPTION (no rate-card row): EUR 405 per overtime hour = hour rates of all four machines (270) + 50% overtime premium."
-    },
-    "runs": 30,
-    "shifts": 20,
-    "without": {
-      "serviceLevel": 0.5684666666666665,
-      "profit": 20432.476266666665,
-      "goodPerShift": 36.77833333333333,
-      "lostSales": 270.1666666666667
-    },
-    "with": {
-      "serviceLevel": 0.8782333333333331,
-      "profit": 34362.41946666667,
-      "goodPerShift": 39.10666666666667,
-      "lostSales": 76.06666666666666,
-      "extraUnsoldStock": 46.56666666666667,
-      "overtimeHours": 10
-    },
-    "change": {
-      "serviceLevel": {
-        "mean": 0.3097666666666666,
-        "lo": 0.30914900200281314,
-        "hi": 0.31038433133052
-      },
-      "profitOfficial": {
-        "mean": 13929.943199999998,
-        "lo": 13888.176921981069,
-        "hi": 13971.709478018927
-      },
-      "profitConservative": {
-        "mean": 9133.576533333335,
-        "lo": 9101.075712689879,
-        "hi": 9166.07735397679
-      }
-    },
-    "verdict": {
-      "code": "effective",
-      "text": "Effective: more orders on time and more profit."
-    }
-  },
-  {
-    "disruption": {
-      "id": "demand-swing",
-      "label": "Demand swing"
-    },
-    "countermeasure": {
-      "id": "faster-m3",
-      "label": "Faster M3 (assembly)",
+      "id": "improve-machine",
+      "label": "Improve a machine (faster M3)",
+      "category": "strategic",
       "params": {
         "minutesSaved": 2
       },
-      "cost": "Rate card: EUR 30,000 one-time per minute removed, amortised over 1,920 shifts. Faster release costs only material and holding."
+      "cost": "Rate card: EUR 30,000 one-time per minute removed, amortised over 1,920 shifts. Faster release costs only material and holding.",
+      "items": [
+        {
+          "id": "improve-machine",
+          "label": "Improve a machine (faster M3)",
+          "category": "strategic",
+          "params": {
+            "minutesSaved": 2
+          },
+          "cost": "Rate card: EUR 30,000 one-time per minute removed, amortised over 1,920 shifts. Faster release costs only material and holding."
+        }
+      ]
     },
     "runs": 30,
     "shifts": 20,
@@ -69,15 +30,19 @@
       "serviceLevel": 0.5684666666666665,
       "profit": 20432.476266666665,
       "goodPerShift": 36.77833333333333,
-      "lostSales": 270.1666666666667
+      "lostSales": 270.1666666666667,
+      "costPerGoodUnit": 102.6026475048832
     },
     "with": {
       "serviceLevel": 0.8196666666666667,
       "profit": 37532.36853333333,
       "goodPerShift": 43.52166666666666,
       "lostSales": 112.93333333333334,
+      "costPerGoodUnit": 93.29289264719775,
       "extraUnsoldStock": 134.86666666666667,
-      "overtimeHours": 0
+      "overtimeHours": 0,
+      "outsourcedSets": 0,
+      "backupParts": 0
     },
     "change": {
       "serviceLevel": {
@@ -99,6 +64,81 @@
     "verdict": {
       "code": "effective",
       "text": "Effective: more orders on time and more profit."
+    },
+    "costs": {
+      "basis": {
+        "runs": 30,
+        "shifts": 20
+      },
+      "label": "Improve a machine (faster M3)",
+      "pay": [
+        {
+          "key": "investmentShare",
+          "label": "Share of the investment",
+          "amount": 625,
+          "formula": "€60,000 ÷ 1,920 shifts × 20 shifts"
+        },
+        {
+          "key": "material",
+          "label": "Material",
+          "amount": 5681,
+          "formula": "149.5 extra parts × €38"
+        },
+        {
+          "key": "storage",
+          "label": "Storage",
+          "amount": 4636.3744,
+          "formula": "parts in the line €0.30/h, finished sets €0.50/h"
+        }
+      ],
+      "get": [
+        {
+          "key": "penaltiesAvoided",
+          "label": "Late-delivery penalties avoided",
+          "amount": 14151,
+          "formula": "157.2 sets no longer late × €90"
+        },
+        {
+          "key": "endStockValue",
+          "label": "Finished sets left at the end",
+          "amount": 13891.266666666666,
+          "formula": "134.9 sets × €103"
+        }
+      ],
+      "totals": {
+        "costOfImprovement": 10942.3744,
+        "benefits": 28042.266666666666,
+        "profitChangeOfficial": 17099.892266666666,
+        "unsoldStockValue": 13891.266666666668,
+        "unsoldSets": 134.86666666666667,
+        "profitChangeConservative": 3208.6255999999976
+      },
+      "investment": {
+        "cash": 60000,
+        "items": [
+          {
+            "key": "cycleTime",
+            "label": "Faster cycle time",
+            "amount": 60000,
+            "formula": "2 min × €30,000 × 1 machine",
+            "assumption": "Organiser assumption (rate card)"
+          }
+        ],
+        "chargedThisPeriod": 625
+      },
+      "rescuedOrders": 157.23333333333332,
+      "costPerRescuedOrder": 69.59322281110876,
+      "penaltyPerLateOrder": 90,
+      "payback": {
+        "shifts": 314,
+        "years": 1.3083333333333333,
+        "withinLife": true
+      },
+      "bridge": {
+        "start": 20432.476266666665,
+        "end": 37532.36853333333
+      },
+      "headline": "To deliver **157.2** more sets on time over 20 shifts, you pay **€10,942** and avoid **€14,151** in late-delivery penalties. It needs **€60,000 upfront**, paid back after about 314 shifts (≈ 1.3 years). It also builds 134.9 sets nobody ordered (worth €13,891 on paper, not counted as profit here)."
     }
   },
   {
@@ -107,12 +147,24 @@
       "label": "Demand swing"
     },
     "countermeasure": {
-      "id": "second-m3",
-      "label": "Second M3 (parallel assembly machine)",
+      "id": "new-line",
+      "label": "New assembly line (second M3)",
+      "category": "strategic",
       "params": {
         "releaseInterval": 8
       },
-      "cost": "Rate card: EUR 95,000 investment (EUR 49.48 per shift amortised) + EUR 90 per scheduled hour (EUR 720 per shift)."
+      "cost": "Rate card: EUR 95,000 investment (EUR 49.48 per shift amortised) + EUR 90 per scheduled hour (EUR 720 per shift).",
+      "items": [
+        {
+          "id": "new-line",
+          "label": "New assembly line (second M3)",
+          "category": "strategic",
+          "params": {
+            "releaseInterval": 8
+          },
+          "cost": "Rate card: EUR 95,000 investment (EUR 49.48 per shift amortised) + EUR 90 per scheduled hour (EUR 720 per shift)."
+        }
+      ]
     },
     "runs": 30,
     "shifts": 20,
@@ -120,15 +172,19 @@
       "serviceLevel": 0.5684666666666665,
       "profit": 20432.476266666665,
       "goodPerShift": 36.77833333333333,
-      "lostSales": 270.1666666666667
+      "lostSales": 270.1666666666667,
+      "costPerGoodUnit": 102.6026475048832
     },
     "with": {
       "serviceLevel": 0.9677333333333334,
       "profit": 36910.579066666665,
       "goodPerShift": 53.94166666666667,
       "lostSales": 20.2,
+      "costPerGoodUnit": 95.77804198268608,
       "extraUnsoldStock": 343.26666666666665,
-      "overtimeHours": 0
+      "overtimeHours": 0,
+      "outsourcedSets": 0,
+      "backupParts": 0
     },
     "change": {
       "serviceLevel": {
@@ -150,6 +206,552 @@
     "verdict": {
       "code": "costly",
       "text": "Improves delivery, but costs more than it earns."
+    },
+    "costs": {
+      "basis": {
+        "runs": 30,
+        "shifts": 20
+      },
+      "label": "New assembly line (second M3)",
+      "pay": [
+        {
+          "key": "investmentShare",
+          "label": "Share of the investment",
+          "amount": 989.5833333333328,
+          "formula": "€95,000 ÷ 1,920 shifts × 20 shifts"
+        },
+        {
+          "key": "machineHours",
+          "label": "Machine hours",
+          "amount": 14400,
+          "formula": "M3b: €90/h × 8 h × 20 shifts"
+        },
+        {
+          "key": "material",
+          "label": "Material",
+          "amount": 13966.266666666666,
+          "formula": "367.5 extra parts × €38"
+        },
+        {
+          "key": "storage",
+          "label": "Storage",
+          "amount": 12019.51386666667,
+          "formula": "parts in the line €0.30/h, finished sets €0.50/h"
+        }
+      ],
+      "get": [
+        {
+          "key": "penaltiesAvoided",
+          "label": "Late-delivery penalties avoided",
+          "amount": 22497,
+          "formula": "250 sets no longer late × €90"
+        },
+        {
+          "key": "endStockValue",
+          "label": "Finished sets left at the end",
+          "amount": 35356.46666666667,
+          "formula": "343.3 sets × €103"
+        }
+      ],
+      "totals": {
+        "costOfImprovement": 41375.36386666667,
+        "benefits": 57853.46666666667,
+        "profitChangeOfficial": 16478.1028,
+        "unsoldStockValue": 35356.46666666667,
+        "unsoldSets": 343.26666666666665,
+        "profitChangeConservative": -18878.363866666667
+      },
+      "investment": {
+        "cash": 95000,
+        "items": [
+          {
+            "key": "extraMachines",
+            "label": "Extra machine",
+            "amount": 95000,
+            "formula": "€95,000 per extra machine"
+          }
+        ],
+        "chargedThisPeriod": 989.5833333333328
+      },
+      "rescuedOrders": 249.96666666666667,
+      "costPerRescuedOrder": 165.523525270036,
+      "penaltyPerLateOrder": 90,
+      "payback": {
+        "shifts": null,
+        "years": null,
+        "withinLife": false
+      },
+      "bridge": {
+        "start": 20432.476266666665,
+        "end": 36910.579066666665
+      },
+      "headline": "To deliver **250** more sets on time over 20 shifts, you pay **€41,375** and avoid **€22,497** in late-delivery penalties. It needs **€95,000 upfront**, which does **not** pay back at these numbers. It also builds 343.3 sets nobody ordered (worth €35,356 on paper, not counted as profit here)."
+    }
+  },
+  {
+    "disruption": {
+      "id": "demand-swing",
+      "label": "Demand swing"
+    },
+    "countermeasure": {
+      "id": "extra-supplier",
+      "label": "Additional supplier",
+      "category": "operational",
+      "params": {},
+      "cost": "Rate card: +8% material price on the parts it supplies; EUR 2,000 one-time qualification (amortised over 1,920 shifts). The 240-minute lead time is an ASSUMPTION.",
+      "items": [
+        {
+          "id": "extra-supplier",
+          "label": "Additional supplier",
+          "category": "operational",
+          "params": {},
+          "cost": "Rate card: +8% material price on the parts it supplies; EUR 2,000 one-time qualification (amortised over 1,920 shifts). The 240-minute lead time is an ASSUMPTION."
+        }
+      ]
+    },
+    "runs": 30,
+    "shifts": 20,
+    "without": {
+      "serviceLevel": 0.5684666666666665,
+      "profit": 20432.476266666665,
+      "goodPerShift": 36.77833333333333,
+      "lostSales": 270.1666666666667,
+      "costPerGoodUnit": 102.6026475048832
+    },
+    "with": {
+      "serviceLevel": 0.5684666666666665,
+      "profit": 20411.64293333334,
+      "goodPerShift": 36.77833333333333,
+      "lostSales": 270.1666666666667,
+      "costPerGoodUnit": 102.6026475048832,
+      "extraUnsoldStock": 0,
+      "overtimeHours": 0,
+      "outsourcedSets": 0,
+      "backupParts": 0
+    },
+    "change": {
+      "serviceLevel": {
+        "mean": 0,
+        "lo": 0,
+        "hi": 0
+      },
+      "profitOfficial": {
+        "mean": -20.833333333335638,
+        "lo": -20.833333333335887,
+        "hi": -20.83333333333539
+      },
+      "profitConservative": {
+        "mean": -20.833333333335638,
+        "lo": -20.833333333335887,
+        "hi": -20.83333333333539
+      }
+    },
+    "verdict": {
+      "code": "no-effect",
+      "text": "No clear effect: do not apply."
+    },
+    "costs": {
+      "basis": {
+        "runs": 30,
+        "shifts": 20
+      },
+      "label": "Additional supplier",
+      "pay": [
+        {
+          "key": "investmentShare",
+          "label": "Share of the investment",
+          "amount": 20.833333333333332,
+          "formula": "€2,000 ÷ 1,920 shifts × 20 shifts"
+        }
+      ],
+      "get": [],
+      "totals": {
+        "costOfImprovement": 20.833333333333332,
+        "benefits": 0,
+        "profitChangeOfficial": -20.833333333333332,
+        "unsoldStockValue": 0,
+        "unsoldSets": 0,
+        "profitChangeConservative": -20.833333333333332
+      },
+      "investment": {
+        "cash": 2000,
+        "items": [
+          {
+            "key": "secondSupplier",
+            "label": "Additional supplier",
+            "amount": 2000,
+            "formula": "€2,000 qualification"
+          }
+        ],
+        "chargedThisPeriod": 20.833333333333332
+      },
+      "rescuedOrders": 0,
+      "costPerRescuedOrder": null,
+      "penaltyPerLateOrder": 90,
+      "payback": {
+        "shifts": null,
+        "years": null,
+        "withinLife": false
+      },
+      "bridge": {
+        "start": 20432.476266666665,
+        "end": 20411.64293333334
+      },
+      "headline": "This does not deliver more orders on time."
+    }
+  },
+  {
+    "disruption": {
+      "id": "demand-swing",
+      "label": "Demand swing"
+    },
+    "countermeasure": {
+      "id": "outsourcing",
+      "label": "Production outsourcing",
+      "category": "operational",
+      "params": {
+        "maxSetsPerShift": 15
+      },
+      "cost": "ASSUMPTION (no rate-card row): EUR 150 per outsourced set, at most 15 sets per shift by default, delivered in the next shift.",
+      "items": [
+        {
+          "id": "outsourcing",
+          "label": "Production outsourcing",
+          "category": "operational",
+          "params": {
+            "maxSetsPerShift": 15
+          },
+          "cost": "ASSUMPTION (no rate-card row): EUR 150 per outsourced set, at most 15 sets per shift by default, delivered in the next shift."
+        }
+      ]
+    },
+    "runs": 30,
+    "shifts": 20,
+    "without": {
+      "serviceLevel": 0.5684666666666665,
+      "profit": 20432.476266666665,
+      "goodPerShift": 36.77833333333333,
+      "lostSales": 270.1666666666667,
+      "costPerGoodUnit": 102.6026475048832
+    },
+    "with": {
+      "serviceLevel": 0.8687,
+      "profit": 31764.6096,
+      "goodPerShift": 36.77833333333333,
+      "lostSales": 82.16666666666667,
+      "costPerGoodUnit": 105.94827428137252,
+      "extraUnsoldStock": 55.86666666666667,
+      "overtimeHours": 0,
+      "outsourcedSets": 55.86666666666667,
+      "backupParts": 0
+    },
+    "change": {
+      "serviceLevel": {
+        "mean": 0.3002333333333334,
+        "lo": 0.29962350074450395,
+        "hi": 0.30084316592216287
+      },
+      "profitOfficial": {
+        "mean": 11332.133333333333,
+        "lo": 11294.742655155713,
+        "hi": 11369.524011510954
+      },
+      "profitConservative": {
+        "mean": 5577.866666666667,
+        "lo": 5513.393151578681,
+        "hi": 5642.340181754653
+      }
+    },
+    "verdict": {
+      "code": "effective",
+      "text": "Effective: more orders on time and more profit."
+    },
+    "costs": {
+      "basis": {
+        "runs": 30,
+        "shifts": 20
+      },
+      "label": "Production outsourcing",
+      "pay": [
+        {
+          "key": "outsourcing",
+          "label": "Outsourced sets",
+          "amount": 8380,
+          "assumption": "ASSUMPTION, no rate-card row: EUR 150 per outsourced set",
+          "formula": "55.9 sets × €150"
+        },
+        {
+          "key": "storage",
+          "label": "Storage",
+          "amount": 2962.133333333333,
+          "formula": "parts in the line €0.30/h, finished sets €0.50/h"
+        }
+      ],
+      "get": [
+        {
+          "key": "penaltiesAvoided",
+          "label": "Late-delivery penalties avoided",
+          "amount": 16920,
+          "formula": "188 sets no longer late × €90"
+        },
+        {
+          "key": "endStockValue",
+          "label": "Finished sets left at the end",
+          "amount": 5754.266666666666,
+          "formula": "55.9 sets × €103"
+        }
+      ],
+      "totals": {
+        "costOfImprovement": 11342.133333333333,
+        "benefits": 22674.266666666666,
+        "profitChangeOfficial": 11332.133333333333,
+        "unsoldStockValue": 5754.266666666666,
+        "unsoldSets": 55.86666666666667,
+        "profitChangeConservative": 5577.866666666667
+      },
+      "investment": {
+        "cash": 0,
+        "items": [],
+        "chargedThisPeriod": 0
+      },
+      "rescuedOrders": 188,
+      "costPerRescuedOrder": 60.33049645390071,
+      "penaltyPerLateOrder": 90,
+      "payback": null,
+      "bridge": {
+        "start": 20432.476266666665,
+        "end": 31764.6096
+      },
+      "headline": "To deliver **188** more sets on time over 20 shifts, you pay **€11,342** and avoid **€16,920** in late-delivery penalties. **No upfront investment** is needed. It also builds 55.9 sets nobody ordered (worth €5,754 on paper, not counted as profit here)."
+    }
+  },
+  {
+    "disruption": {
+      "id": "demand-swing",
+      "label": "Demand swing"
+    },
+    "countermeasure": {
+      "id": "raw-stock",
+      "label": "Increase stock of raw material",
+      "category": "operational",
+      "params": {
+        "stockLevel": 250
+      },
+      "cost": "Rate card: material at EUR 38 per part, raw-material holding EUR 0.3 per unit per hour (ASSUMPTION: same rate as work in progress).",
+      "items": [
+        {
+          "id": "raw-stock",
+          "label": "Increase stock of raw material",
+          "category": "operational",
+          "params": {
+            "stockLevel": 250
+          },
+          "cost": "Rate card: material at EUR 38 per part, raw-material holding EUR 0.3 per unit per hour (ASSUMPTION: same rate as work in progress)."
+        }
+      ]
+    },
+    "runs": 30,
+    "shifts": 20,
+    "without": {
+      "serviceLevel": 0.5684666666666665,
+      "profit": 20432.476266666665,
+      "goodPerShift": 36.77833333333333,
+      "lostSales": 270.1666666666667,
+      "costPerGoodUnit": 102.6026475048832
+    },
+    "with": {
+      "serviceLevel": 0.5684666666666665,
+      "profit": 11489.716766666663,
+      "goodPerShift": 36.77833333333333,
+      "lostSales": 270.1666666666667,
+      "costPerGoodUnit": 102.6026475048832,
+      "extraUnsoldStock": 0,
+      "overtimeHours": 0,
+      "outsourcedSets": 0,
+      "backupParts": 0
+    },
+    "change": {
+      "serviceLevel": {
+        "mean": 0,
+        "lo": 0,
+        "hi": 0
+      },
+      "profitOfficial": {
+        "mean": -8942.759499999998,
+        "lo": -8955.86961952001,
+        "hi": -8929.649380479987
+      },
+      "profitConservative": {
+        "mean": -8942.759499999998,
+        "lo": -8955.86961952001,
+        "hi": -8929.649380479987
+      }
+    },
+    "verdict": {
+      "code": "no-effect",
+      "text": "No clear effect: do not apply."
+    },
+    "costs": {
+      "basis": {
+        "runs": 30,
+        "shifts": 20
+      },
+      "label": "Increase stock of raw material",
+      "pay": [
+        {
+          "key": "storage",
+          "label": "Storage",
+          "amount": 8942.759499999998,
+          "formula": "parts in the line €0.30/h, finished sets €0.50/h"
+        }
+      ],
+      "get": [],
+      "totals": {
+        "costOfImprovement": 8942.759499999998,
+        "benefits": 0,
+        "profitChangeOfficial": -8942.759499999998,
+        "unsoldStockValue": 0,
+        "unsoldSets": 0,
+        "profitChangeConservative": -8942.759499999998
+      },
+      "investment": {
+        "cash": 0,
+        "items": [],
+        "chargedThisPeriod": 0
+      },
+      "rescuedOrders": 0,
+      "costPerRescuedOrder": null,
+      "penaltyPerLateOrder": 90,
+      "payback": null,
+      "bridge": {
+        "start": 20432.476266666665,
+        "end": 11489.716766666663
+      },
+      "headline": "This does not deliver more orders on time."
+    }
+  },
+  {
+    "disruption": {
+      "id": "demand-swing",
+      "label": "Demand swing"
+    },
+    "countermeasure": {
+      "id": "finished-stock",
+      "label": "Increase stock of finished goods",
+      "category": "operational",
+      "params": {
+        "sets": 50
+      },
+      "cost": "Rate card: stock valued at EUR 103 per set (charged at the start, credited for what is left at the end) + finished-goods holding EUR 0.5 per unit per hour.",
+      "items": [
+        {
+          "id": "finished-stock",
+          "label": "Increase stock of finished goods",
+          "category": "operational",
+          "params": {
+            "sets": 50
+          },
+          "cost": "Rate card: stock valued at EUR 103 per set (charged at the start, credited for what is left at the end) + finished-goods holding EUR 0.5 per unit per hour."
+        }
+      ]
+    },
+    "runs": 30,
+    "shifts": 20,
+    "without": {
+      "serviceLevel": 0.5684666666666665,
+      "profit": 20432.476266666665,
+      "goodPerShift": 36.77833333333333,
+      "lostSales": 270.1666666666667,
+      "costPerGoodUnit": 102.6026475048832
+    },
+    "with": {
+      "serviceLevel": 0.9905333333333334,
+      "profit": 41444.676266666684,
+      "goodPerShift": 36.77833333333333,
+      "lostSales": 5.866666666666666,
+      "costPerGoodUnit": 102.6026475048832,
+      "extraUnsoldStock": 0,
+      "overtimeHours": 0,
+      "outsourcedSets": 0,
+      "backupParts": 0
+    },
+    "change": {
+      "serviceLevel": {
+        "mean": 0.4220666666666666,
+        "lo": 0.4206258506476113,
+        "hi": 0.42350748268572186
+      },
+      "profitOfficial": {
+        "mean": 21012.2,
+        "lo": 20926.144421696838,
+        "hi": 21098.255578303164
+      },
+      "profitConservative": {
+        "mean": 21012.2,
+        "lo": 20926.144421696838,
+        "hi": 21098.255578303164
+      }
+    },
+    "verdict": {
+      "code": "effective",
+      "text": "Effective: more orders on time and more profit."
+    },
+    "costs": {
+      "basis": {
+        "runs": 30,
+        "shifts": 20
+      },
+      "label": "Increase stock of finished goods",
+      "pay": [
+        {
+          "key": "storage",
+          "label": "Storage",
+          "amount": 2774.8,
+          "formula": "parts in the line €0.30/h, finished sets €0.50/h"
+        },
+        {
+          "key": "startStock",
+          "label": "Starting stock",
+          "amount": 5150,
+          "formula": "50 sets at the start × €103"
+        }
+      ],
+      "get": [
+        {
+          "key": "penaltiesAvoided",
+          "label": "Late-delivery penalties avoided",
+          "amount": 23787,
+          "formula": "264.3 sets no longer late × €90"
+        },
+        {
+          "key": "endStockValue",
+          "label": "Finished sets left at the end",
+          "amount": 5150,
+          "formula": "50 sets × €103"
+        }
+      ],
+      "totals": {
+        "costOfImprovement": 7924.8,
+        "benefits": 28937,
+        "profitChangeOfficial": 21012.2,
+        "unsoldStockValue": 0,
+        "unsoldSets": 0,
+        "profitChangeConservative": 21012.2
+      },
+      "investment": {
+        "cash": 0,
+        "items": [],
+        "chargedThisPeriod": 0
+      },
+      "rescuedOrders": 264.3,
+      "costPerRescuedOrder": 29.98410896708286,
+      "penaltyPerLateOrder": 90,
+      "payback": null,
+      "bridge": {
+        "start": 20432.476266666665,
+        "end": 41444.676266666684
+      },
+      "headline": "To deliver **264.3** more sets on time over 20 shifts, you pay **€7,925** and avoid **€23,787** in late-delivery penalties. **No upfront investment** is needed."
     }
   }
 ]

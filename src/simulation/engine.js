@@ -24,6 +24,7 @@ import { DEFAULT_CONFIG } from './config.js';
 import { StreamSet } from './rng.js';
 import { OrderBook } from './orders.js';
 import { Supply } from './supply.js';
+import { Outsourcing, OUTSOURCING_DEFAULTS } from './outsourcing.js';
 import { failuresEnabled, drawFailure } from './failures.js';
 
 // Overtime policy defaults (config.overtime). The rate card has no overtime price: the
@@ -184,6 +185,10 @@ export class SimulationEngine extends EventEmitter {
     if (opts.overtime !== undefined) {
       if (opts.overtime) cfg.overtime = { ...OVERTIME_DEFAULTS, ...opts.overtime, enabled: true };
       else delete cfg.overtime;
+    }
+    if (opts.outsourcing !== undefined) {
+      if (opts.outsourcing) cfg.outsourcing = { ...OUTSOURCING_DEFAULTS, ...opts.outsourcing, enabled: true };
+      else delete cfg.outsourcing;
     }
     if (opts.runShifts !== undefined) {
       if (opts.runShifts) cfg.runShifts = opts.runShifts;
@@ -359,7 +364,8 @@ export class SimulationEngine extends EventEmitter {
       seed:      this._config.seed ?? 1,
       outage:    this._config.source.outage ?? null,
       failures:  failuresEnabled(this._config.failures),
-      supply:    this.supply ? this.supply.snapshot() : { mode: 'jit' },
+      supply:    this.supply ? this.supply.snapshot() : { mode: 'jit', backupParts: this.backupParts },
+      outsourcing: this.outsourcing ? { ordered: this.outsourcing.ordered, received: this.outsourcing.received, onOrder: this.outsourcing.onOrder } : null,
       orders:    this.orders ? this.orders.summary() : null,
       events:    this.events.slice(-20),
     };
@@ -387,6 +393,8 @@ export class SimulationEngine extends EventEmitter {
     this.supply    = cfg.supply?.mode === 'inventory'
       ? new Supply(cfg.supply, cfg.source.outage ?? null)
       : null;
+    this.outsourcing = cfg.outsourcing?.enabled && this.orders ? new Outsourcing(cfg.outsourcing) : null;
+    this.backupParts = 0;          // parts released by the backup supplier during an outage (jit mode)
     this._shiftWipSum  = 0;
     this._otTicks      = 0;        // overtime ticks so far (engine ticks that did not advance the plant clock)
     this._otActive     = false;    // true while the line works overtime at a shift end
@@ -456,6 +464,11 @@ export class SimulationEngine extends EventEmitter {
 
   _tick() {
     this.tick++;
+    // Outsourced sets arrive at the start of the shift (the first tick after the close)
+    if (this.outsourcing?.pending.length) {
+      const n = this.outsourcing.arrive(Math.ceil(this.plantTick / this.orders.ticksPerShift));
+      if (n > 0) this.orders.addStock(n);
+    }
     // Overtime: the line works, but the plant clock (due ticks, outage window) stands still.
     if (this._otActive) { this._otTicks++; this._otShiftMin++; }
 
@@ -562,6 +575,10 @@ export class SimulationEngine extends EventEmitter {
     if (!row) return;
     row.overtimeMin = this._otShiftMin;
     this._otShiftMin = 0;
+    if (this.outsourcing) {
+      Object.assign(row, this.outsourcing.closeShiftRow());
+      row.outsourcedOrdered = this.outsourcing.order(row.shift, this.orders.backlog);
+    }
     const tps = this.orders.ticksPerShift;
     row.scrap     = this.scrapSink.partsReceived - this._shiftScrap0;
     row.released  = this.source.totalGenerated - this._shiftReleased0;
@@ -706,9 +723,16 @@ export class SimulationEngine extends EventEmitter {
     // Supplier outage (config.source.outage): in jit mode the source is halted for
     // startTick < tick <= endTick -- its counter does not advance, no part is
     // released. In inventory mode the outage hits the supplier instead (supply.js).
+    // Backup supplier (config.source.backupSupplier, jit mode): the source stays stopped for the
+    // first leadTime ticks of the window, then releases normally; those parts cost the premium.
     const outage = this._config.source.outage;
     const pt = this.plantTick;
-    if (!this.supply && outage && pt > outage.startTick && pt <= outage.endTick) return;
+    let backup = false;
+    if (!this.supply && outage && pt > outage.startTick && pt <= outage.endTick) {
+      const bk = this._config.source.backupSupplier;
+      if (!bk?.enabled || pt <= outage.startTick + bk.leadTime) return;
+      backup = true;
+    }
 
     // Material starvation check: -1 means infinite stock; 0 means depleted.
     // In inventory mode the raw-stock model replaces this simple limit.
@@ -733,6 +757,7 @@ export class SimulationEngine extends EventEmitter {
     this.source.ticksSinceLast  = 0;
     this.source.totalGenerated++;
     this.source.lastEmitted     = true;
+    if (backup) this.backupParts++;
 
     // Decrement material stock; -1 means infinite (no decrement). Not used in inventory mode.
     if (!this.supply && this.source.materialStock > 0) {

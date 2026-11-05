@@ -27,7 +27,7 @@ const BREAKDOWNS = { enabled: true };
 function machinesWithPatch(id, patch) {
   return JSON.parse(JSON.stringify(DEFAULT_CONFIG.machines)).map(m => (m.id === id ? { ...m, ...patch } : m));
 }
-const SAFETY_STOCK = { mode: 'inventory', reorderPoint: 150, orderQty: 150, initialStock: 250 };
+export const SAFETY_STOCK = { mode: 'inventory', reorderPoint: 150, orderQty: 150, initialStock: 250 };
 
 // demand: 'flat' (34 per shift) | 'profile' (demand_profile.csv)
 export const SCENARIOS = [
@@ -69,6 +69,7 @@ export async function runVariant(spec, { config, initialFinishedGoods = 0 }, { s
   const cfg = buildConfig(config);
   const rows = [];
   for (const seed of seeds) {
+    await new Promise(resolve => setImmediate(resolve));   // let the server answer requests between runs (no effect on results)
     const r = await runHeadless({
       config: cfg, seed, shifts, demand, native: true,
       outage: spec.outage ? REFERENCE_OUTAGE : null, initialFinishedGoods,

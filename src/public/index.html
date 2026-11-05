@@ -161,7 +161,6 @@
       <div class="cmp-card" id="cmp-card-a">
         <div class="cmp-card-head">
           <span class="cmp-title">As is</span><span class="tag tag-grey">scenario</span>
-          <span class="tag tag-wait" id="cmp-wait" hidden>Shift closed – waiting</span>
         </div>
         <svg id="cmp-svg-a" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid meet"></svg>
         <div class="cmp-strip" id="cmp-strip-a"></div>
@@ -169,7 +168,6 @@
       <div class="cmp-card" id="cmp-card-b">
         <div class="cmp-card-head">
           <span class="cmp-title">With countermeasure</span><span class="tag tag-green" id="cmp-b-tag">fix</span>
-          <span class="tag tag-amber" id="cmp-ot" hidden>OVERTIME</span>
         </div>
         <svg id="cmp-svg-b" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid meet"></svg>
         <div class="cmp-strip" id="cmp-strip-b"></div>
@@ -329,7 +327,7 @@
           <table id="shift-table">
             <thead><tr>
               <th>Shift</th><th>Produced</th><th>Scrap</th><th>Orders</th><th>Shipped</th>
-              <th>On time</th><th>Backlog</th><th>FG stock</th><th>Avg WIP</th>
+              <th>On time</th><th>Backlog</th><th>FG stock</th><th>Avg WIP</th><th id="th-outsourced" hidden>Outsourced</th>
             </tr></thead>
             <tbody id="shift-table-body">
               <tr><td colspan="9" class="shift-empty">No closed shift yet. Shifts close every 480 ticks once a demand is loaded (Realism → Demand, or Load plant default).</td></tr>

@@ -7,6 +7,8 @@
  *
  *   buildUiScenario(id, shifts = 20) -> { id, label, shifts, configureOptions, disruptionId }
  * configureOptions go straight into engine.configureScenario().
+ * disruptionId is the scenario id in the countermeasure catalogue (src/countermeasures/catalog.js):
+ * all four scenarios offer the same pool of 6 countermeasures.
  */
 import { REFERENCE_OUTAGE } from '../scenarios/scenarios.js';
 import { loadDemand } from '../data/loaders.js';
@@ -26,10 +28,10 @@ export function normaliseShifts(shifts) {
 }
 
 const DEFS = {
-  standard:              { label: 'Standard',            disruptionId: null,           demand: n => Array(n).fill(FLAT_DEMAND), outage: null, failures: null },
+  standard:              { label: 'Standard',            disruptionId: 'standard', demand: n => Array(n).fill(FLAT_DEMAND), outage: null, failures: null },
   'demand-swing':        { label: 'Demand swing',        disruptionId: 'demand-swing', demand: n => loadDemand().slice(0, n), outage: null, failures: null },
-  'supplier-outage':     { label: 'Supplier outage',     disruptionId: null,           demand: n => Array(n).fill(FLAT_DEMAND), outage: REFERENCE_OUTAGE, failures: null },
-  'machinery-breakdown': { label: 'Machinery breakdown', disruptionId: null,           demand: n => Array(n).fill(FLAT_DEMAND), outage: null, failures: { enabled: true } },
+  'supplier-outage':     { label: 'Supplier outage',     disruptionId: 'supplier-outage', demand: n => Array(n).fill(FLAT_DEMAND), outage: REFERENCE_OUTAGE, failures: null },
+  'machinery-breakdown': { label: 'Machinery breakdown', disruptionId: 'machinery-breakdown', demand: n => Array(n).fill(FLAT_DEMAND), outage: null, failures: { enabled: true } },
 };
 
 export const UI_SCENARIO_IDS = Object.keys(DEFS);

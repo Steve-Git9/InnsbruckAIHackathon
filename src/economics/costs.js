@@ -18,7 +18,14 @@
  *  - one-time costs are amortised over 1,920 shifts; an extra machine counts
  *    the investment OR the per-shift depreciation, not both
  *  - finished goods are valued at EUR 103 (start charged, end credited)
+ *
+ * Countermeasure pool additions (src/countermeasures/catalog.js):
+ *  - outsourcing: EUR 150 per set RECEIVED (ASSUMPTION, no rate-card row). The cost per good set divides by
+ *    the good sets made + the sets received, so the figure stays comparable. Without outsourcing nothing changes.
+ *  - backup supplier (jit mode): parts released during the outage window cost the premium (+8%) on top
+ *    of the EUR 38; the EUR 2,000 qualification is a one-time cost like the second supplier of the inventory mode.
  */
+import { OUTSOURCING_DEFAULTS } from '../simulation/outsourcing.js';
 
 export const AMORTISATION_SHIFTS = 1920;
 // Overtime has no rate-card row. ASSUMPTION: an overtime hour costs the hour rates of all
@@ -29,6 +36,10 @@ export function overtimeRatePerHour(config, rate) {
   if (config.overtime?.ratePerHour != null) return config.overtime.ratePerHour;
   const line = config.machines.reduce((a, m) => a + rate[`machine_hour_rate_${baseId(m.id)}`], 0);
   return line * (1 + OVERTIME_PREMIUM);
+}
+// Outsourcing has no rate-card row. ASSUMPTION: EUR 150 per outsourced set (OUTSOURCING_DEFAULTS.pricePerSet).
+export function outsourcingPricePerSet(config) {
+  return config.outsourcing?.pricePerSet ?? OUTSOURCING_DEFAULTS.pricePerSet;
 }
 export const FG_VALUE = 103;
 export const SHIFT_HOURS = 8;
@@ -55,7 +66,8 @@ export function oneTimeCosts(config, baselineConfig, rate) {
     cycleTicks += Math.max(0, bm.cycleTime - m.cycleTime);
     rejectPoints += Math.max(0, ((bm.rejectRate ?? 0) - (m.rejectRate ?? 0)) * 100);
   }
-  const secondSupplier = config.supply?.mode === 'inventory' && config.supply?.secondSupplier?.enabled ? 1 : 0;
+  const secondSupplier = (config.supply?.mode === 'inventory' && config.supply?.secondSupplier?.enabled)
+    || (config.supply?.mode !== 'inventory' && config.source?.backupSupplier?.enabled) ? 1 : 0;
 
   const items = {
     extraMachines:  extraMachines * rate.parallel_machine_investment,
@@ -79,7 +91,8 @@ export function computeEconomics(result, config, baselineConfig, rate, opts = {}
     const machine = config.machines.reduce((a, m) => a + rate[`machine_hour_rate_${baseId(m.id)}`] * SHIFT_HOURS, 0);
     const released = r.released ?? null;
     const holdWip = r.wip * SHIFT_HOURS * rate.holding_cost_wip;
-    const holdFg = (prevStock + r.produced / 2) * SHIFT_HOURS * rate.holding_cost_finished_goods;
+    // outsourced sets arrive at the start of the shift, so they are in stock all shift
+    const holdFg = (prevStock + (r.outsourced ?? 0) + r.produced / 2) * SHIFT_HOURS * rate.holding_cost_finished_goods;
     prevStock = r.stock;
     const lost = (r.orders - r.shippedOnTime) * rate.lost_sales_penalty;
     const revenue = r.shipped * rate.selling_price_per_good_unit;
@@ -92,6 +105,11 @@ export function computeEconomics(result, config, baselineConfig, rate, opts = {}
   const released = result.kpis.released;
   const sup = result.supply;
   const materialCost = (sup?.mode === 'inventory' ? sup.releasedCostMult : released) * rate.material_cost_per_part;
+  // jit backup supplier: parts released inside the outage window cost the premium on top of the part price
+  const backupParts = result.kpis.backupParts ?? 0;
+  const backupPremium = sup?.mode === 'inventory' ? 0 : backupParts * rate.material_cost_per_part * (config.source?.backupSupplier?.premium ?? 0);
+  const outsourcedReceived = result.kpis.outsourcedReceived ?? 0;
+  const outsourcingCost = outsourcedReceived * outsourcingPricePerSet(config);
   const holdingWip = sum('holdWip');
   const holdingFg = sum('holdFg');
   const holdRawRate = config.supply?.holdingCostRaw ?? rate.holding_cost_wip;     // assumption, see supply.js
@@ -108,19 +126,21 @@ export function computeEconomics(result, config, baselineConfig, rate, opts = {}
   const startValue = initialFG * FG_VALUE;
   const endValue = result.kpis.finishedGoodsEnd * FG_VALUE;
 
-  const profit = revenue - machineCost - overtimeCost - materialCost - holdingWip - holdingFg - holdingRaw
-               - amortised - lostSales - startValue + endValue;
-  const good = Math.max(1, result.kpis.goodParts);
+  const profit = revenue - machineCost - overtimeCost - materialCost - backupPremium - outsourcingCost
+               - holdingWip - holdingFg - holdingRaw - amortised - lostSales - startValue + endValue;
+  // sets received from the outsourcing partner count as good sets (nothing changes without outsourcing)
+  const good = Math.max(1, result.kpis.goodParts + outsourcedReceived);
 
   return {
     shifts,
-    revenue, machineCost, overtimeHours, overtimeCost, materialCost, holdingWip, holdingFg, holdingRaw,
+    revenue, machineCost, overtimeHours, overtimeCost, materialCost, backupParts, backupPremium, outsourcedReceived, outsourcingCost,
+    holdingWip, holdingFg, holdingRaw,
     lostSales, amortised, oneTime: ot, startValue, endValue,
     profit,
     // the data package's "baseline check" definition: machine + material + WIP holding
-    costPerGoodUnit: (machineCost + overtimeCost + materialCost + holdingWip) / good,
+    costPerGoodUnit: (machineCost + overtimeCost + materialCost + backupPremium + outsourcingCost + holdingWip) / good,
     // everything that is charged against the run, per good unit
-    costPerGoodUnitAll: (machineCost + overtimeCost + materialCost + holdingWip + holdingFg + holdingRaw + amortised) / good,
+    costPerGoodUnitAll: (machineCost + overtimeCost + materialCost + backupPremium + outsourcingCost + holdingWip + holdingFg + holdingRaw + amortised) / good,
     perShift,
   };
 }

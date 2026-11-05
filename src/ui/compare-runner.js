@@ -19,12 +19,14 @@ function baseConfig() {
   return cfg;
 }
 
-// advice = { scenarioId, selection: [{ id, params }], label, shifts }
+// advice = { scenarioId, selection: [{ id, params }], label, shifts, configOverride? }
 // Engine A: as is. Engine B: the countermeasures' config override merged over the defaults.
+// configOverride (optional) replaces the selection with a raw engine config, for engine features that are
+// not in the pool of countermeasures any more (e.g. overtime); the CEO interface never sets it.
 export function buildEngines(advice) {
   const shifts = advice.shifts ?? RUN_SHIFTS;
   const sc = buildUiScenario(advice.scenarioId, shifts);
-  const { override } = resolveSelection(advice.selection, sc.disruptionId);
+  const override = advice.configOverride ? { config: advice.configOverride } : resolveSelection(advice.selection, sc.disruptionId).override;
 
   const a = new SimulationEngine(baseConfig());
   a.configureScenario({ ...sc.configureOptions, runShifts: shifts });

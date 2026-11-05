@@ -1,19 +1,19 @@
 /**
  * evaluate.js
- * Simulate one countermeasure against one disruption and say, in plain terms,
+ * Simulate one countermeasure against one scenario and say, in plain terms,
  * whether it works. This is the "check" step of the AI shift advisor: nothing is
  * called effective until this function has run it.
  *
- *   const r = await evaluateCountermeasure('demand-swing', 'overtime', { maxMinutesPerShift: 120 });
+ *   const r = await evaluateCountermeasure('demand-swing', 'new-line', { releaseInterval: 8 });
  *
  * Same seeds for "without" and "with" (common random numbers); differences are paired
  * seed by seed with a 95% confidence interval. Profit is reported twice: the official
  * rule, and a conservative one in which extra unsold stock built beyond "without" is
  * worth 0 (see src/scenarios/sweep.js).
  *
- *   node src/countermeasures/evaluate.js [demand-swing] [--seeds 30]
- *   -> evaluates every countermeasure of the disruption at its default parameters and
- *      writes results/<disruption>_countermeasures.txt and .json
+ *   node src/countermeasures/evaluate.js [scenario] [--seeds 30]
+ *   -> evaluates the 6 countermeasures of the pool at their default parameters in the given scenario
+ *      (without an argument: in all 4 scenarios) and writes results/<scenario>_countermeasures.txt and .json
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -22,7 +22,7 @@ import { runVariant, range } from '../scenarios/scenarios.js';
 import { compare } from '../scenarios/sweep.js';
 import { costBreakdown } from '../economics/breakdown.js';
 import { loadRateCard, loadDemand } from '../data/loaders.js';
-import { DISRUPTIONS, COUNTERMEASURES, resolveSelection } from './catalog.js';
+import { DISRUPTIONS, catalogueFor, resolveSelection } from './catalog.js';
 
 const baseCache = new Map();   // "disruption|seeds|shifts" -> baseline variant (the "without" run)
 
@@ -42,7 +42,7 @@ export async function evaluateSelection(disruptionId, selection, {
   seeds = range(1, 30), shifts = 20, rate = loadRateCard(), profile = loadDemand(),
 } = {}) {
   const d = DISRUPTIONS[disruptionId];
-  if (!d) throw new Error(`unknown disruption "${disruptionId}" (allowed: ${Object.keys(DISRUPTIONS).join(', ')})`);
+  if (!d) throw new Error(`unknown scenario "${disruptionId}" (allowed: ${Object.keys(DISRUPTIONS).join(', ')})`);
   const { items, label, override } = resolveSelection(selection, disruptionId);
   const ctx = { seeds, shifts, rate, profile };
 
@@ -64,20 +64,23 @@ export async function evaluateSelection(disruptionId, selection, {
     disruption: { id: d.id, label: d.label },
     countermeasure: {
       id: items.map(i => i.cm.id).join('+'), label,
+      category: items.length === 1 ? first.cm.category : (items.every(i => i.cm.category === first.cm.category) ? first.cm.category : 'mixed'),
       params: items.length === 1 ? first.params : Object.fromEntries(items.map(i => [i.cm.id, i.params])),
       cost: items.map(i => i.cm.cost).join(' | '),
-      items: items.map(i => ({ id: i.cm.id, label: i.cm.label, params: i.params, cost: i.cm.cost })),
+      items: items.map(i => ({ id: i.cm.id, label: i.cm.label, category: i.cm.category, params: i.params, cost: i.cm.cost })),
     },
     runs: seeds.length, shifts,
     without: {
       serviceLevel: base.serviceLevel.mean, profit: base.profit.mean,
-      goodPerShift: base.goodPerShift.mean, lostSales: base.lostSales.mean,
+      goodPerShift: base.goodPerShift.mean, lostSales: base.lostSales.mean, costPerGoodUnit: base.costPerGoodUnit.mean,
     },
     with: {
       serviceLevel: variant.serviceLevel.mean, profit: variant.profit.mean,
-      goodPerShift: variant.goodPerShift.mean, lostSales: variant.lostSales.mean,
+      goodPerShift: variant.goodPerShift.mean, lostSales: variant.lostSales.mean, costPerGoodUnit: variant.costPerGoodUnit.mean,
       extraUnsoldStock: c.extraStock,
       overtimeHours: mean(variant.rows.map(r => r.overtimeHours ?? 0)),
+      outsourcedSets: mean(variant.rows.map(r => r.econ.outsourcedReceived ?? 0)),
+      backupParts: mean(variant.rows.map(r => r.econ.backupParts ?? 0)),
     },
     change: { serviceLevel: c.dSL, profitOfficial: c.dProfit, profitConservative: c.dProfitCons },
     verdict: verdictOf(c),
@@ -102,13 +105,14 @@ export function formatEvaluations(list) {
   L.push('Profit change: conservative (extra unsold stock worth 0) with 95% CI; official rule in brackets.\n');
   for (const r of list) {
     const ps = Object.entries(r.countermeasure.params).map(([k, v]) => `${k}=${v}`).join(', ');
-    L.push(`■ ${r.countermeasure.label} (${ps})`);
+    L.push(`■ ${r.countermeasure.label} [${r.countermeasure.category}]${ps ? ` (${ps})` : ''}`);
     L.push(`  On time: ${pct(r.without.serviceLevel)} → ${pct(r.with.serviceLevel)}   `
       + `(${(r.change.serviceLevel.mean * 100).toFixed(1)} pts, 95% CI ${(r.change.serviceLevel.lo * 100).toFixed(1)} to ${(r.change.serviceLevel.hi * 100).toFixed(1)})`);
     L.push(`  Profit:  ${eur(r.change.profitConservative.mean)} conservative `
       + `(CI ${eur(r.change.profitConservative.lo)} to ${eur(r.change.profitConservative.hi)}); official ${eur(r.change.profitOfficial.mean)}`);
     L.push(`  Output:  ${r.with.goodPerShift.toFixed(1)} good sets/shift; extra unsold stock ${r.with.extraUnsoldStock.toFixed(0)} sets`
-      + (r.with.overtimeHours ? `; overtime ${r.with.overtimeHours.toFixed(1)} h` : ''));
+      + (r.with.outsourcedSets ? `; ${r.with.outsourcedSets.toFixed(1)} outsourced sets` : '')
+      + (r.with.backupParts ? `; ${r.with.backupParts.toFixed(0)} parts from the additional supplier` : ''));
     L.push(`  Cost:    ${r.countermeasure.cost}`);
     L.push(`  VERDICT: ${r.verdict.text}\n`);
   }
@@ -116,19 +120,22 @@ export function formatEvaluations(list) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const disruptionId = process.argv.slice(2).find(a => !a.startsWith('--') && isNaN(Number(a))) ?? 'demand-swing';
+  const given = process.argv.slice(2).find(a => !a.startsWith('--') && isNaN(Number(a)));
+  const scenarios = given ? [given] : Object.keys(DISRUPTIONS);
   const i = process.argv.indexOf('--seeds');
   const seeds = range(1, i > 0 ? Number(process.argv[i + 1]) : 30);
-  const list = [];
-  for (const cm of Object.values(COUNTERMEASURES).filter(c => c.appliesTo.includes(disruptionId))) {
-    console.error(`simulating ${cm.label} ...`);
-    list.push(await evaluateCountermeasure(disruptionId, cm.id, {}, { seeds }));
-  }
-  const text = formatEvaluations(list);
   const dir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../results');
   fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.join(dir, `${disruptionId}_countermeasures.txt`), text + '\n');
-  fs.writeFileSync(path.join(dir, `${disruptionId}_countermeasures.json`), JSON.stringify(list, null, 2));
-  console.log(text);
-  console.log(`Saved: results/${disruptionId}_countermeasures.txt and .json`);
+  for (const disruptionId of scenarios) {
+    const list = [];
+    for (const cm of catalogueFor(disruptionId)) {
+      console.error(`${disruptionId}: simulating ${cm.label} ...`);
+      list.push(await evaluateCountermeasure(disruptionId, cm.id, {}, { seeds }));
+    }
+    const text = formatEvaluations(list);
+    fs.writeFileSync(path.join(dir, `${disruptionId}_countermeasures.txt`), `${text}\n`);
+    fs.writeFileSync(path.join(dir, `${disruptionId}_countermeasures.json`), JSON.stringify(list, null, 2));
+    console.log(`${text}\n`);
+    console.log(`Saved: results/${disruptionId}_countermeasures.txt and .json\n`);
+  }
 }

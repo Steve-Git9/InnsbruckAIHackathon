@@ -3,3 +3,10 @@ node_modules/
 *.log
 .env
 .venv/
+
+# Working documents (kept locally, not part of the repository)
+INSTRUCTIONS_*.md
+PLAN.md
+PROJECT_ROADMAP.md
+phase1_results.txt
+results/*.log

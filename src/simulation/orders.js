@@ -40,6 +40,11 @@ export class OrderBook {
     this._producedThisShift += n;
   }
 
+  // Finished sets that did not come from the line (outsourcing): stock, not production.
+  addStock(n) {
+    this.stock += n;
+  }
+
   /**
    * Call at the end of every tick. At a due tick (multiple of ticksPerShift) it
    * books the shift's orders, ships oldest first and returns the shift row;

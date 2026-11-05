@@ -2,9 +2,9 @@
 
 This is a living document that tracks every change to the `machine_sim` starter. It compares each change with the folder as we received it,
 explains why the change makes the simulation closer to the Smart Tech Components plant, and records how we validated it and
-how to run it. The plant data is in [DATA_README.md](DATA_README.md); the implementation plan is in [PLAN.md](PLAN.md).
+how to run it. The plant data is in [DATA_README.md](DATA_README.md).
 
-_Last updated: 2026-11-04_
+_Last updated: 2026-11-05_
 
 ---
 
@@ -100,8 +100,10 @@ results as before and stay comparable with other teams. New behaviour appears on
 
 ### 2.11 Deliberately not modelled
 - **Product variants and changeovers:** the plant makes one product.
-- **Overtime:** there's no rate for it in the rate card.
 - **Cycle-time variability:** there's no data for it.
+- **Shift calendars, breaks and night shifts:** shifts run back to back as 480-minute blocks, as in the starter.
+
+(Overtime was later added as an engine feature with a stated price assumption, see section 6.)
 
 Every extra random process needs a number, so adding these without data would make the model *less* trustworthy.
 
@@ -164,20 +166,21 @@ Reference values from the data package: about 100 / 76 / 57 / 48%. All four matc
 ```bash
 npm install
 npm start                          # UI at http://localhost:3000
-npm test                           # 173 unit tests
+npm test                           # 201 unit tests
 node src/headless/run.check.mjs    # organisers' acceptance test → ALL PASSED
 npm run scenarios                  # scenario table (takes a few minutes)
 npm run sweep                      # Phase 2: all levers on the 4 reference scenarios (about 10 min)
-npm run countermeasures -- demand-swing   # the 3 demand-swing countermeasures, 30 runs each (about 2 min)
+npm run countermeasures                   # the 6 countermeasures in all 4 scenarios, 30 runs each (results/<scenario>_countermeasures.*)
+npm run countermeasures -- demand-swing   # one scenario only
 ```
 
 **AI features:** the "Explain" and "Ask the Intelligent Shift Advisor" buttons need a `.env` file in the root folder with `CLIENT_ID` and `CLIENT_SECRET` (the hackathon LLM proxy, see `api.py`). Everything else works without it.
 
-**CEO interface (sections 8–11):**
+**CEO interface (sections 8–13):**
 1. Choose a scenario and a number of shifts, then click **Simulate** (animated) or **Instant Simulation**.
 2. Read the **Results** tiles.
 3. Click **Explain me these results**.
-4. For Demand Swing, click **How to improve the results?**, then either tick countermeasures and click **Test my selection**, or click **Ask the Intelligent Shift Advisor**.
+4. Click **How to improve the results?**. The 6 countermeasure cards (Operational / Strategic) fill in with their simulated values. Either tick up to 3 and click **Test my selection**, or click **Ask the Intelligent Shift Advisor**.
 5. Read the **Cost of the improvement** panel, then click **Compare side by side**.
 
 With Docker: `docker compose up --build`. **Rebuild after every code change**, because the image copies the code when it is built.
@@ -226,6 +229,8 @@ If the UI looks old after an update, restart the server and press **Ctrl+F5** in
 ---
 
 ## 6. Demand swing: the three countermeasures the AI advisor can propose
+
+> **Superseded for the catalogue by section 13** (one pool of 6 countermeasures in all 4 scenarios; overtime is no longer a countermeasure). Kept for history: the overtime engine feature, its cost assumption and its tests are still in the code.
 
 We started the advisor work with one disruption, the **demand swing**, and three countermeasures chosen with the client. Each one adds **assembly capacity**, which is what limits the line during order peaks. Raw-material stock and extra suppliers were considered and rejected: during a demand swing the line never runs out of material, so they can't help (Phase 2 confirmed this).
 
@@ -304,18 +309,18 @@ Agreed product (2026-11-04):
 **Rules kept.** Simulation behaviour is unchanged (`runShifts` is off by default; the four reference scenarios give the same numbers). The secret stays on the server: it is not sent to the browser, put in a response or logged.
 
 **Known limits.**
-- Only Demand Swing has countermeasures. For the other scenarios, "How to improve" answers without calling the LLM.
+- Only Demand Swing has countermeasures. For the other scenarios, "How to improve" answers without calling the LLM. *(Lifted in section 13: all 4 scenarios.)*
 - The tiles show one run (seed 1); the simulation check shows the average of 10 runs, so the numbers differ slightly (the UI says so).
 - The check takes roughly 10–20 s and runs on the server's single thread, so the page's animation of other sessions can stutter meanwhile.
 
 **Speed and Instant Simulation (added afterwards).** Next to **Simulate**, a speed selector (×1, ×2, ×10) sets how fast the animation runs. **Instant Simulation** runs all 20 shifts at once on the server (about 0.4 s) without the animation, so the CEO goes straight to the Results.
 
-**Review (2026-11-04).** We checked the build against the handover instructions (`INSTRUCTIONS_UI_AND_ADVISOR.md`):
+**Review (2026-11-04):**
 - `npm test`: **125 / 125** pass, and `run.check.mjs` prints **ALL PASSED**, so the simulation is unchanged.
 - The LLM is called only from the server (`src/advisor/llm.js`), and the secret is not in any response or error.
 - The proxy accepts only "user" and "assistant" messages, so the system prompt is folded into the first user message (`foldSystem`).
 - AI proposals are validated against the catalogue, with one retry, before the simulation checks them.
-- Outside Demand Swing, "How to improve" answers without calling the LLM.
+- Outside Demand Swing, "How to improve" answers without calling the LLM (changed in section 13).
 
 **How to run it.** `npm install`, create `.env` with `CLIENT_ID` and `CLIENT_SECRET`, `npm run dev`, open http://localhost:3000. With Docker: `docker compose up --build` (the compose file passes `.env` to the container).
 
@@ -340,7 +345,7 @@ Agreed product (2026-11-04):
 **How it was validated.** 149 / 149 tests pass; `run.check.mjs` prints ALL PASSED. The runner tests check that engine A equals a solo run of the same scenario and that engine B equals `runHeadless` with the same countermeasure config. A live test with the LLM confirmed that "no investment + up to 1 h overtime" yields an overtime maximum of 60 minutes, and "no investment + no overtime" returns "no options" without an LLM call.
 
 **Known limits.**
-- Only Demand Swing has questions and countermeasures.
+- Only Demand Swing has questions and countermeasures *(lifted in section 13)*.
 - The comparison shows one run each (seed 1). The check above it averages 10 runs, so the numbers differ slightly (the UI says so).
 - The 10-run check blocks the server for 10–20 s. The advisor buttons are disabled while a comparison runs.
 - Instant mode runs the comparison to the end without animation.
@@ -355,7 +360,7 @@ Agreed product (2026-11-04):
 
 1. **Full interface back, with collapse toggles.** The old controls and metrics are visible again as **Advanced controls** and **Advanced metrics** (collapsed by default). Every section has a header row with a chevron button (`aria-expanded`, `aria-controls`), and so does every sub-block: Simulation Control, Scenarios, Plant default, Realism, Speed, Source, Machine cycle times and Buffer capacities in the controls; summary cards, Orders & economics, Throughput and the machines table in the metrics. One helper, `makeCollapsible`, does all of it; the state is kept in `localStorage` (`ui.collapsed.<id>`, every access in `try/catch`). The advanced controls share the engine with the CEO run, so an action that resets or reconfigures it (`src/ui/session-rules.js`) makes the server forget the run, and the Results show "The run was changed with the advanced controls – click Simulate to start a new run." `play`, `pause` and speed keep the run.
 2. **Manual selection of countermeasures.** For Demand Swing, **How to improve the results?** shows one card per countermeasure (select box, description, cost note, parameter select built from the catalogue bounds). Any combination of 1–3 can be tested with **Test my selection**. **Ask the Intelligent Shift Advisor** opens the questionnaire and LLM flow from section 9, unchanged. Both paths end in the same proposal card, titled "Your selection" or "The advisor's choice", followed by **Compare side by side**.
-3. **Placeholder comparison table** of the three countermeasures (rows built from the catalogue, every value "—", `data-placeholder="true"` on the body), to be filled from the simulation later.
+3. **Comparison table** of the countermeasures: rows built from the catalogue, every value "—" at this stage (a placeholder). It is filled from the simulated card values in section 13.
 4. **Current Situation bar** (finished-goods stock, raw-material stock, last maintenance with an "all machines" list), from the demo file `src/data/current_situation.json` through `GET /api/current-situation`. It is labelled as demo data and is **not read by the simulation**.
 5. **Shift limit** (1–60, default 20) next to Simulate and Instant Simulation. It drives the run, the Results, the 10-run check and the comparison.
 
@@ -381,7 +386,7 @@ Agreed product (2026-11-04):
 - Reference values of the data package hold only at 20 shifts; with another count the Results say so.
 - The shift limit applies to every scenario; the supplier outage sits in shifts 11–12, so the UI hints at least 12 shifts for it.
 - The Current Situation values are demo data and are not connected to the simulation.
-- The placeholder table has no values yet.
+- The placeholder table has no values yet *(filled in section 13)*.
 - The Machines sub-block of the Advanced controls was not created because that block does not exist as a separate row; the per-machine table is under Advanced metrics.
 
 **How to use it.** Choose a scenario and a number of shifts, **Simulate** or **Instant Simulation**, read the Results. For Demand Swing, click **How to improve the results?**, tick one or more countermeasures and **Test my selection** (or **Ask the Intelligent Shift Advisor**), then **Compare side by side**. Open **Advanced controls** or **Advanced metrics** for the engineering view; using an advanced control that changes the engine clears the Results.
@@ -413,9 +418,9 @@ Agreed product (2026-11-04):
 
 **Known limits.**
 - Short term only: the chosen number of shifts, 10 runs. The **long-term (one-year) view is planned as the next step**; `costBreakdown` is written so it can be reused for it unchanged.
-- The advisor's own wording (`reason`) does not see the panel's numbers: the LLM picks the countermeasure before the check exists, so there is no cost data to give it yet.
+- The advisor's own wording (`reason`) does not see the panel's numbers: the LLM picks the countermeasure before the check exists, so there is no cost data to give it yet. *(Since section 13 it reads the simulated card values of all 6 countermeasures before picking.)*
 - The single run in the side-by-side view is one random draw; the averages in the proposal card are more reliable.
-- The placeholder comparison table of the countermeasures is still a placeholder.
+- The placeholder comparison table of the countermeasures is still a placeholder *(filled in section 13)*.
 
 ---
 
@@ -425,10 +430,10 @@ Decisions taken with the client during the project that aren't visible in the co
 
 **What the AI shift advisor actually reads.** The LLM never sees the minute-by-minute log (9,600 rows × about 40 columns) or the CSV files. It receives:
 - a compact summary computed by code (`src/ui/run-summary.js`): orders, production, money, worst shift, bottleneck, what the disruption did, and one short row per shift;
-- the countermeasure catalogue, already filtered by the CEO's budget and overtime limits;
+- the countermeasure catalogue, already filtered by the CEO's budget (section 13: the pool of 6 with the class of each);
 - the CEO's answers and notes.
 
-It judges from those facts and from the countermeasures' descriptions; it does **not** know their simulated results beforehand. The client chose this order on purpose: **the AI proposes, then the simulation checks.** Sending the full log was rejected: it's costly, and LLMs add up large tables unreliably, while the code already computes those totals exactly.
+It judges from those facts and from the countermeasures' descriptions. *Updated in section 13:* it now also reads the simulated card values (on time, profit change, investment, cost per good set, verdict) of the 6 countermeasures, which the server computes before the advisor answers. The order stays: **the AI proposes, then the simulation checks** the pick in the normal 10-run check. Sending the full log was rejected: it's costly, and LLMs add up large tables unreliably, while the code already computes those totals exactly.
 
 **JEV (TypeSafe's decision model) was considered and not adopted.** It returns typed choices with probabilities, which would guarantee a valid pick and add a confidence score. But it writes no explanations, so gpt-4o would still be needed. It's an extra paid provider outside the hackathon credits, and it wouldn't make the pick better informed. Our code checks already guarantee valid picks.
 
@@ -446,20 +451,80 @@ It judges from those facts and from the countermeasures' descriptions; it does *
 - repeat the real 60-shift demand profile 4 times;
 - run in a background worker (Node `worker_threads`) with a progress bar;
 - turn off the minute-by-minute history for these runs (the engine would otherwise hit its 100,000-row cap);
-- precompute the three countermeasures at default settings when the server starts;
 - reuse `costBreakdown` unchanged.
 
-**Handover documents** (in the root folder; each was carried out by an implementing agent and reviewed):
-
-| Document | Built in section |
-|---|---|
-| `INSTRUCTIONS_UI_AND_ADVISOR.md` | 8 |
-| `INSTRUCTIONS_IMPROVE_AND_COMPARE.md` | 9 |
-| `INSTRUCTIONS_FULL_UI_AND_SELECTION.md` | 10 |
-| `INSTRUCTIONS_COST_PANEL.md` | 11 |
-| `INSTRUCTIONS_COUNTERMEASURE_POOL.md` | not built yet (planned section 13: one pool of 6 countermeasures, Strategic / Operational labels, comparison cards, overtime removed from the pool) |
-
 **Review of sections 10 and 11 (2026-11-05):** 173 / 173 tests pass and `run.check.mjs` prints ALL PASSED; the four reference scenarios are unchanged.
+
+---
+
+## 13. One pool of 6 countermeasures
+
+The old catalogue (overtime, faster M3, second M3, offered only for the demand swing, section 6) is replaced by **one common pool of 6 countermeasures, offered in all 4 scenarios** (Standard, Demand swing, Supplier outage, Machinery breakdown). Each countermeasure has a class: **Strategic** (an investment for the long term) or **Operational** (a quick, short-term fix). The CEO picks one or combines up to 3; the AI advisor picks exactly one (or "none").
+
+### 13.1 The pool
+
+| id | Label | Class | Parameter (min..max, step, default) | Cost basis |
+|---|---|---|---|---|
+| `improve-machine` | Improve a machine (faster M3) | Strategic | `minutesSaved` 1..2, 1, **2** | Rate card: EUR 30,000 per minute, amortised over 1,920 shifts |
+| `new-line` | New assembly line (second M3) | Strategic | `releaseInterval` 7..11, 1, **8** | Rate card: EUR 95,000 + EUR 90 per scheduled hour |
+| `extra-supplier` | Additional supplier | Operational | none | Rate card: +8% on the parts it supplies, EUR 2,000 qualification. **ASSUMPTION:** 240-minute lead time |
+| `outsourcing` | Production outsourcing | Operational | `maxSetsPerShift` 5..30, 5, **15** | **ASSUMPTION** (no rate-card row): EUR 150 per set, at most 15 sets per shift, delivered the next shift |
+| `raw-stock` | Increase stock of raw material | Operational | `stockLevel` 100..400, 50, **250** (re-order at level − 100) | Material EUR 38 + raw holding EUR 0.3 per unit per hour (the holding rate is itself an assumption: the WIP rate) |
+| `finished-stock` | Increase stock of finished goods | Operational | `sets` 10..100, 10, **50** | Stock valued at EUR 103 per set + FG holding EUR 0.5 per unit per hour |
+
+The old ids `faster-m3` and `second-m3` still work as **aliases** for one release (`improve-machine`, `new-line`). Every entry carries `category` and is returned by `catalogueFor(...)`; `appliesTo` is gone because every entry applies to every scenario. `catalog.js` now has the 4 scenarios (`standard` → spec `baseline`, `demand-swing`, `supplier-outage`, `machinery-breakdown` → spec `breakdowns`), and every UI scenario has a `disruptionId`.
+
+**Why overtime left the pool.** It was decided with the client: the pool has 4 operational and 2 strategic measures, and overtime isn't one of them. Overtime is removed from the pool, the UI, the AI's prompt and the questionnaire. The **engine feature** (`config.overtime`), its tests, its cost line in `computeEconomics` / `costBreakdown` and the Phase 2 results stay. The compare runner accepts a raw `advice.configOverride` so its overtime tests still run.
+
+### 13.2 New model parts
+
+- **Additional supplier in the jit baseline** (`engine.js` `_tickSource`, `supply.js`): `config.source.backupSupplier = { enabled, leadTime: 240, premium: 0.08, qualification: 2000 }` (the numbers come from `SUPPLY_DEFAULTS.secondSupplier` through `backupSupplierDefaults()`). In an outage window the source stays stopped for the first `leadTime` ticks, then releases normally; each part released inside the window is a *backup part* (`engine.backupParts`) and costs +8%. The baseline is **not** switched to inventory mode, so the "without" numbers don't change. With `raw-stock` selected too, the existing inventory-mode `secondSupplier.enabled` is used instead. Outside an outage it changes nothing except the amortised EUR 2,000 qualification.
+- **Outsourcing** (`src/simulation/outsourcing.js`, `config.outsourcing`): at each shift close, after the order book has shipped, `min(backlog − on order, maxSetsPerShift)` sets are ordered; they arrive at the start of the next shift in finished goods and ship FIFO through the normal order book (never counted twice). Tracked: `outsourcedOrdered`, `outsourcedReceived` and per shift `outsourced` / `outsourcedOrdered` (an "Outsourced" column appears in the per-shift table when used). Seed-independent. They are **not** production: `goodParts`, OEE and yield stay line-only.
+- **Economics** (`costs.js`, `breakdown.js`): new lines `outsourcingCost = received × EUR 150` ("Outsourced sets", flagged ASSUMPTION) and `backupPremium` ("Additional supplier: price premium"); the qualification is a one-time cost shown as its own investment item **"Additional supplier"**. **Cost per good set** divides by good sets made + sets received from outsourcing; without outsourcing nothing changes, and the calibration (about EUR 102.8 per good set) and the 4 reference results are unchanged (`run.check.mjs` ALL PASSED).
+- **Combination rules** (`resolveSelection`): `improve-machine` then `new-line` as before (M3b copies the faster M3, smallest release interval wins); `raw-stock` + `extra-supplier` give inventory mode with the second supplier enabled; `outsourcing` and `finished-stock` merge as they are; max 3, unique ids.
+
+### 13.3 The cards (computed on the spot)
+
+`GET /api/countermeasures/cards` runs `evaluateCountermeasure(scenario, id, defaults, { seeds: 1..10, shifts })` for the 6 countermeasures, for the scenario and **the shift limit in the top bar**. Nothing is computed at server start and nothing is written to a file.
+- A card holds the 4 comparable values: **on-time delivery** (`57% → 88% (+31 pts)`), **profit change per run** (conservative: extra unsold stock valued at EUR 0; green / red), **upfront investment** (+ running cost per shift, or "none"), **cost per good set** (`EUR 102.8 → EUR 104.1`), plus the verdict chip and the class badge. The best value of each row is starred.
+- The computation starts when the CEO picks a scenario or changes the shift limit (a short pause while typing); the cards show "simulating…" until their values arrive, the page polls once a second (`{ ready, pending }`), and the header states the basis: "Expected effect over 20 shifts (10 simulated runs each)". About 15–20 s at 20 shifts.
+- Results live in memory by `scenario|shifts|seeds` (`src/countermeasures/cards.js`), so going back to a pair that was already computed is instant. Only one computation runs at a time, on the **most recently requested** pair (an older one is deprioritised and not continued). The runner yields to the event loop between runs so the server stays responsive.
+- Only default parameters are on the cards; moving a slider shows "values at default setting — press Test to simulate yours".
+- Layout: Operational group first (4 cards), then Strategic (2); the 4 values line up across cards (CSS subgrid); phone width stacks the cards in one column. The old placeholder comparison table is now filled from the same values (class badge, on time, profit change, upfront investment, running cost, extra unsold stock, verdict). The class badge also appears in the proposal card, the side-by-side title and the cost panel headline.
+- Running cost per shift = all cost lines except the investment share and the starting stock, per shift (e.g. EUR 720 machine hours for the new line, plus the material and storage of the extra sets).
+
+### 13.4 Advisor and questionnaire
+
+- The prompt carries the scenario facts, the 6 entries with **class** and parameters and the **simulated card values** (on-time without / with, points, profit change, investment, running cost, cost per good set, verdict) read from the card store. The server waits for the cards when they aren't ready ("The advisor is reading the simulations…").
+- The LLM answers with exactly one `{ countermeasureId, params, reason }`, validated as before (`parseProposal`, `checkProposal`); `parseProposal` accepts only pool ids (old ids are mapped) or **`none`**. The reason must name the class ("an operational, short-term fix" / "a strategic investment").
+- **"No action" rule:** if no countermeasure improves on-time delivery and none has a positive conservative profit (Standard), the LLM answers `none`. The UI says "No countermeasure pays off in this scenario" and simulates nothing. Code backs it up: `none` is refused when an allowed card has a helpful verdict, and a pick whose simulated verdict is "No effect" / "Harmful" is sent back (the LLM is asked again once, as for other invalid answers).
+- **Questionnaire:** the overtime question is deleted (old payloads with `overtime` are accepted and ignored). `fixType` is now `operational` / `strategic` / `any` (old `flexible` → `operational`, `permanent` → `strategic`), still a soft preference. The budget stays a **hard** limit: `improve-machine` = EUR 30,000 × minutes, `new-line` = EUR 95,000, `extra-supplier` = EUR 2,000, the other three EUR 0 upfront (at "Up to EUR 60,000" the new line is removed and the 4 operational ones stay).
+
+### 13.5 Results (`node src/countermeasures/evaluate.js`, 30 runs, 20 shifts)
+
+Written to `results/<scenario>_countermeasures.txt` and `.json` for all 4 scenarios. On time without → with; conservative profit change per run (EUR); verdict.
+
+| Scenario (without) | Improve a machine | New line | Additional supplier | Outsourcing | Raw stock | Finished stock |
+|---|---|---|---|---|---|---|
+| **Standard** (100.0%) | 100.0%, −11,721, no effect | 100.0%, −42,524, no effect | 100.0%, −21, no effect | 100.0%, −45, no effect | 100.0%, −8,943, no effect | 100.0%, −3,981, no effect |
+| **Demand swing** (56.8%) | 82.0%, +3,209, effective | 96.8%, −18,878, costly | 56.8%, −21, no effect | 86.9%, +5,578, effective | 56.8%, −8,943, no effect | 99.1%, +21,012, effective |
+| **Supplier outage** (77.2%) | 100.0%, +4,813, effective | 100.0%, −23,443, costly | 100.0%, +11,012, effective | 94.4%, +7,280, effective | 100.0%, +2,263, effective | 100.0%, +10,992, effective |
+| **Machinery breakdown** (95.5%) | 100.0%, −7,283, costly | 100.0%, −41,575, costly | 95.5%, −21, no effect | 99.3%, +1,528, delivery only | 95.5%, −9,049, no effect | 100.0%, −1,020, delivery only |
+
+Compared with the directions we expected before running it:
+- **Standard, Demand swing (except as below), Machinery breakdown:** as expected. In Standard nothing improves delivery and profit is zero or negative; the advisor answered "none" (tested with the real LLM). Demand swing: finished stock and outsourcing are the best on profit; the new line lifts delivery but loses money; raw stock and the additional supplier have no effect. Machinery breakdown: finished stock and outsourcing help, improving a machine helps delivery (but costs more than it earns), supply measures do nothing.
+- **Supplier outage, mismatch 1: the additional supplier reaches 100%, not "less than the others".** The line makes about 37 sets per shift against 34 ordered, so about 27 surplus sets sit in the warehouse at the end of shift 10 (mean over 10 runs); the 240-minute gap costs about 18 sets, which the stock covers (0.2 late sets on average). The gap barely shows: the additional supplier has the best profit change of the six (+11,012, against +10,992 for finished stock), with EUR 2,000 upfront.
+- **Supplier outage, mismatch 2: improving a machine and the new line lift delivery to 100% instead of "barely help".** A faster M3 makes more sets before the outage: the warehouse holds about 94 sets at the end of shift 10 instead of 27, which covers the two outage shifts (0 late sets instead of 156). Delivery is lifted by the same mechanism as the finished-goods stock, paid for with capacity instead of a stock. The model allows this (unlimited warehouse); the new line still loses money, improving a machine earns +4,813 against EUR 60,000 upfront.
+
+### 13.6 Implementation notes
+
+- The cards endpoint takes **`?scenario=` and `?shifts=`** (the top bar), falling back to the session's scenario and `session.runShifts`. The CEO picks the scenario before pressing Simulate, when the session has none yet, so the session alone isn't enough to start the computation at that moment.
+- The "cost per good set" on the cards is the data package's definition (machine hours, material, WIP holding; the investment is shown in the row above). That is why a faster line shows a lower cost per good set.
+- The 4 values are also shown in the filled comparison table; the "Overtime hours" column of the placeholder table was dropped.
+
+### 13.7 Tests
+
+**201 / 201 pass** (28 more than before the pool), `node src/headless/run.check.mjs` prints ALL PASSED. New or rewritten: catalogue and aliases, combination rules, backup supplier (restart after `leadTime`, identical without an outage, +8%), outsourcing (never without a backlog, never above the maximum, arrives next shift, goodParts unchanged, cost = received × EUR 150), the questionnaire (old payload mapped, budget filter), the advisor (`none`, old ids, overtime rejected, card values in the prompt), the cards (6 values, other shift limit = other values, cache hit, newest request first, endpoint with `session.runShifts`), the cost lines. Engine overtime tests are unchanged.
 
 ---
 
@@ -476,5 +541,6 @@ It judges from those facts and from the countermeasures' descriptions; it does *
 | 2026-11-04 | CEO questionnaire (code-enforced budget and overtime limits) and side-by-side comparison of two animated lines (section 9). Tests: 149 / 149 pass; reference check ALL PASSED |
 | 2026-11-05 | Full interface with per-section collapse toggles, manual selection of countermeasures (any combination) with a placeholder comparison table, Current Situation bar (demo data), manual shift limit 1–60 that applies everywhere; faster second machine is charged its cycle-time investment (section 10). Tests: 163 / 163 pass; reference check ALL PASSED |
 | 2026-11-05 | "Cost of the improvement" panel: headline, What you pay / What you get tables with formulas, investment box, cost per rescued order and payback, profit bridge chart; for the 10-run check and for the side-by-side run (section 11). Tests: 173 / 173 pass; reference check ALL PASSED. Long-term view planned next |
-| 2026-11-05 | Documentation: "How to run it" updated (test count, AI `.env`, CEO flow); new section 12 with design decisions (what the AI reads, JEV not adopted), open explainability/finance options, the long-term plan and the list of handover documents |
-| 2026-11-05 | Handover written: `INSTRUCTIONS_COUNTERMEASURE_POOL.md`. One pool of 6 countermeasures for all 4 scenarios (improve a machine and new assembly line = Strategic; additional supplier, outsourcing, raw-material stock, finished-goods stock = Operational); overtime leaves the pool (engine kept); comparison cards with on-time %, profit change, investment, cost per good set; the advisor picks exactly one (or none). Not implemented yet |
+| 2026-11-05 | Documentation: "How to run it" updated (test count, AI `.env`, CEO flow); new section 12 with design decisions (what the AI reads, JEV not adopted), open explainability/finance options and the long-term plan |
+| 2026-11-05 | One pool of 6 countermeasures (section 13): improve a machine and new assembly line (Strategic); additional supplier (jit backup rule), production outsourcing (new engine option, EUR 150 per set ASSUMPTION), raw-material stock, finished-goods stock (Operational) in all 4 scenarios; overtime out of the pool, UI, prompt and questionnaire (engine kept); cards with 4 comparable values simulated on the spot for the scenario and shift limit of the top bar (in-memory cache, no precomputation); the advisor reads the card values and picks exactly one or "none"; class badges everywhere; new cost lines (outsourcing, additional supplier). Tests: 201 / 201 pass; reference check ALL PASSED |
+| 2026-11-05 | Repository cleanup: working documents (plans, roadmap, early result dumps, console logs) removed from the repository and listed in `.gitignore`; this document references only files in the repository |

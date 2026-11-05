@@ -1358,9 +1358,12 @@ let shiftTableKey = '';
 function renderShiftTable(rows, outage) {
   const body = $('shift-table-body');
   if (!body) return;
-  const key = rows.length ? `${rows.length}:${rows[rows.length - 1].produced}` : '0';
+  const showOut = rows.some(r => (r.outsourced ?? 0) > 0 || (r.outsourcedOrdered ?? 0) > 0);
+  const key = rows.length ? `${rows.length}:${rows[rows.length - 1].produced}:${rows[rows.length - 1].outsourced ?? 0}:${showOut}` : '0';
   if (key === shiftTableKey) return;
   shiftTableKey = key;
+  const outHead = $('th-outsourced');
+  if (outHead) outHead.hidden = !showOut;
   if (rows.length === 0) {
     body.innerHTML = '<tr><td colspan="9" class="shift-empty">No closed shift yet. Shifts close every 480 ticks '
       + 'once a demand is loaded (Realism → Demand, or Load plant default).</td></tr>';
@@ -1374,7 +1377,8 @@ function renderShiftTable(rows, outage) {
       + `<td>${r.shift}${inOutage(r.shift) ? ' <span class="mini-badge">outage</span>' : ''}</td>`
       + `<td>${r.produced}</td><td>${r.scrap}</td><td>${r.orders}</td><td>${r.shipped}</td>`
       + `<td class="${late ? 'bad' : 'good'}">${r.shippedOnTime}</td>`
-      + `<td>${r.backlog}</td><td>${r.stock}</td><td>${Number(r.wip).toFixed(1)}</td></tr>`;
+      + `<td>${r.backlog}</td><td>${r.stock}</td><td>${Number(r.wip).toFixed(1)}</td>`
+      + (showOut ? `<td title="ordered at the close of this shift: ${r.outsourcedOrdered ?? 0}">${r.outsourced ?? 0}</td>` : '') + '</tr>';
   }).join('');
 }
 
@@ -1641,10 +1645,8 @@ const QUESTIONS = [
     options: [['delivery', 'On-time delivery'], ['profit', 'Profit'], ['balance', 'A balance of both']] },
   { key: 'budget', label: 'How much can you invest?', def: 'unlimited',
     options: [['none', 'Nothing'], ['60k', 'Up to €60,000'], ['100k', 'Up to €100,000'], ['unlimited', 'No limit']] },
-  { key: 'overtime', label: 'Is overtime allowed?', def: '2h',
-    options: [['no', 'No'], ['1h', 'Up to 1 h per shift'], ['2h', 'Up to 2 h per shift'], ['4h', 'Up to 4 h per shift']] },
   { key: 'fixType', label: 'What kind of fix do you prefer?', def: 'any',
-    options: [['flexible', 'Flexible (pay only when peaks happen)'], ['permanent', 'Permanent (more capacity every shift)'], ['any', 'No preference']] },
+    options: [['operational', 'Operational — quick, no investment'], ['strategic', 'Strategic — invest for the long term'], ['any', 'No preference']] },
 ];
 let lastSummary = null;
 let qAnswers = Object.fromEntries(QUESTIONS.map(q => [q.key, q.def]));
@@ -1699,11 +1701,24 @@ async function callAdvisorJson(path, body) {
 
 // Readable settings of one catalogue item or of a whole (possibly combined) countermeasure
 function itemParamText(id, params) {
-  if (id === 'overtime') return `max ${params.maxMinutesPerShift} min per shift`;
-  if (id === 'faster-m3') return `${params.minutesSaved} min off the M3 cycle`;
-  if (id === 'second-m3') return `release a part every ${params.releaseInterval} min`;
+  if (id === 'improve-machine') return `${params.minutesSaved} min off the M3 cycle`;
+  if (id === 'new-line') return `release a part every ${params.releaseInterval} min`;
+  if (id === 'extra-supplier') return 'qualified backup supplier';
+  if (id === 'outsourcing') return `up to ${params.maxSetsPerShift} sets per shift`;
+  if (id === 'raw-stock') return `raw material stock ${params.stockLevel}, re-order at ${params.stockLevel - 100}`;
+  if (id === 'finished-stock') return `${params.sets} finished sets in stock`;
   return Object.entries(params).map(([k, v]) => `${k} = ${v}`).join(', ');
 }
+
+// Class badge: STRATEGIC (dark blue) or OPERATIONAL (teal), the same wherever a countermeasure appears
+const CLASS_TEXT = {
+  strategic: ['STRATEGIC', 'Strategic: an investment for the long term'],
+  operational: ['OPERATIONAL', 'Operational: a quick, short-term fix'],
+};
+const classBadge = (cat) => (CLASS_TEXT[cat]
+  ? `<span class="cls-badge ${cat}" title="${esc(CLASS_TEXT[cat][1])}">${CLASS_TEXT[cat][0]}</span>` : '');
+// one badge per distinct class of a (possibly combined) countermeasure
+const badgesOf = (cm) => [...new Set((cm.items ?? [cm]).map(i => i.category).filter(Boolean))].map(classBadge).join(' ');
 
 function paramText(cm) {
   if (cm.items) return cm.items.map(i => (cm.items.length > 1 ? `${i.label}: ` : '') + itemParamText(i.id, i.params)).join('; ');
@@ -1723,6 +1738,16 @@ function renderProposal(card, r) {
     document.getElementById('q-change')?.addEventListener('click', reopen);
     return;
   }
+  if (r.status === 'none') {
+    card.innerHTML = `<div class="cm-source">The advisor's choice</div>
+      <div class="cm-name">No countermeasure pays off in this scenario</div>
+      <div class="cm-reason">${esc(r.reason)}</div>
+      ${limits}
+      <div class="cm-note">Nothing was simulated: none of the countermeasures improves on-time delivery or earns more than it costs.</div>
+      <div class="cm-buttons">${change}</div>`;
+    document.getElementById('q-change').addEventListener('click', reopen);
+    return;
+  }
   const cm = r.countermeasure, c = r.check;
   const code = c.verdict.code;
   const badge = code === 'effective' ? ['green', '✅ Works']
@@ -1731,7 +1756,7 @@ function renderProposal(card, r) {
   const costs = (cm.items ?? [{ cost: cm.cost }]).map(i => `<div class="cm-cost">Cost${cm.items?.length > 1 ? ` (${esc(i.label)})` : ''}: ${esc(i.cost)}</div>`).join('');
   card.innerHTML = `
     <div class="cm-source">${manual ? 'Your selection' : 'The advisor\'s choice'}</div>
-    <div class="cm-name">${esc(cm.label)}</div>
+    <div class="cm-name">${esc(cm.label)} ${badgesOf(cm)}</div>
     <div class="cm-params">${esc(paramText(cm))}</div>
     ${limits}
     ${manual ? '' : `<div class="cm-reason">${esc(r.reason)}</div>`}
@@ -1749,7 +1774,7 @@ function renderProposal(card, r) {
       <button id="cmp-open" class="primary-btn" type="button">Compare side by side</button>
       ${change}
     </div>`;
-  renderCostPanel(document.getElementById('cost-panel-proposal'), r.costs);
+  renderCostPanel(document.getElementById('cost-panel-proposal'), r.costs, { badges: badgesOf(cm) });
   document.getElementById('q-change').addEventListener('click', reopen);
   document.getElementById('cmp-open').addEventListener('click', () => openCompare(cm));
 }
@@ -1761,7 +1786,9 @@ async function submitImprove(answers) {
   hideCompare();
   setAdvisorEnabled(false);
   card.hidden = false;
-  card.innerHTML = '<span class="spinner"></span>Asking the advisor, then testing the proposal in the simulation…';
+  // the advisor reads the 6 simulated card values: it waits for them when they are not ready yet
+  const reading = !cardsData || cardsData.pending.length > 0 || cardsData.ready.size < 6;
+  card.innerHTML = `<span class="spinner"></span>${reading ? 'The advisor is reading the simulations…' : 'Asking the advisor, then testing the proposal in the simulation…'}`;
   try {
     renderProposal(card, await callAdvisorJson('/api/advisor/improve', { answers }));
   } catch (e) {
@@ -1770,10 +1797,14 @@ async function submitImprove(answers) {
   setAdvisorEnabled(true);
 }
 
-// ── Improve panel: pick countermeasures yourself (any combination), or ask the advisor ──
+// ── Countermeasure cards: one pool of 6, the same in every scenario ───────────
+// The values on the cards are simulated on the spot (server: GET /api/countermeasures/cards) for the scenario
+// and the shift limit of the top bar. They start when the CEO picks a scenario or changes the shift limit; the
+// page polls once a second until all 6 are in. Nothing is precomputed and nothing is saved.
 
 let cmCatalogue = [];
-const cmPick = {};           // id -> { selected, value } kept while the panel is reopened
+const cmPick = {};           // id -> { selected, values: { param: number } } kept while the panel is reopened
+const MAX_PICK = 3;
 
 const stepsOf = (def) => {
   const out = [];
@@ -1781,67 +1812,258 @@ const stepsOf = (def) => {
   return out;
 };
 
+const GROUPS = [
+  ['operational', 'Operational — quick fixes, little or no investment'],
+  ['strategic', 'Strategic — investments for the long term'],
+];
+const VERDICT_CHIP = {
+  effective: ['green', 'Effective'], costly: ['red', 'Costly'], 'delivery-only': ['amber', 'Delivery only'],
+  'profit-only': ['green', 'Saves money'], 'no-effect': ['grey', 'No effect'], harmful: ['red', 'Harmful'],
+};
+const SCENARIO_LABELS = { standard: 'Standard', 'demand-swing': 'Demand swing', 'supplier-outage': 'Supplier outage', 'machinery-breakdown': 'Machinery breakdown' };
+
+let cardsData = null;        // { scenario, shifts, runs, ready: Map(id -> card), pending: [id], errors }
+let cardsToken = 0, cardsTimer = null, cardsDebounce = null;
+
+const topBarPair = () => ({ scenario: document.getElementById('scenario-select').value, shifts: shiftLimitValue() });
+
+// Start (or restart) the simulation of the 6 cards for the pair in the top bar; clears the cards to "simulating…"
+function requestCards() {
+  const { scenario, shifts } = topBarPair();
+  if (shifts === null) return;
+  clearTimeout(cardsTimer);
+  const token = ++cardsToken;
+  if (!cardsData || cardsData.scenario !== scenario || cardsData.shifts !== shifts) {
+    cardsData = { scenario, shifts, runs: 10, ready: new Map(), pending: cmCatalogue.map(c => c.id), errors: {} };
+  }
+  updateCardValues();
+  pollCards(token);
+}
+
+async function pollCards(token) {
+  const { scenario, shifts } = cardsData;
+  let r;
+  try {
+    r = await (await fetch(`/api/countermeasures/cards?scenario=${encodeURIComponent(scenario)}&shifts=${shifts}`)).json();
+    if (r.error) throw new Error(r.error);
+  } catch {
+    if (token === cardsToken) cardsTimer = setTimeout(() => pollCards(token), 3000);
+    return;
+  }
+  if (token !== cardsToken) return;                  // the CEO picked something else meanwhile
+  cardsData.runs = r.runs;
+  cardsData.ready = new Map(r.ready.map(c => [c.id, c]));
+  cardsData.pending = r.pending;
+  cardsData.errors = r.errors ?? {};
+  updateCardValues();
+  if (r.pending.length) cardsTimer = setTimeout(() => pollCards(token), 1000);
+}
+
+// A change in the top bar clears the cards and starts a new computation (after a short pause while typing)
+function scheduleCards() {
+  clearTimeout(cardsDebounce);
+  if (shiftLimitValue() === null) return;
+  const { scenario, shifts } = topBarPair();
+  if (cardsData && (cardsData.scenario !== scenario || cardsData.shifts !== shifts)) {
+    cardsData = { scenario, shifts, runs: 10, ready: new Map(), pending: cmCatalogue.map(c => c.id), errors: {} };
+    updateCardValues();
+  }
+  cardsDebounce = setTimeout(requestCards, 400);
+}
+document.getElementById('scenario-select').addEventListener('change', scheduleCards);
+document.getElementById('shift-limit').addEventListener('input', scheduleCards);
+
+const pct0 = (v) => `${Math.round(v * 100)}%`;
+const SKELETON = '<span class="skeleton">simulating…</span>';
+
+function valueHtml(row, card) {
+  if (!card) return SKELETON;
+  if (row === 'ontime') {
+    const pts = card.onTime.points;
+    const txt = `${pts >= 0 ? '+' : '−'}${Math.abs(pts) < 10 ? Math.abs(pts).toFixed(1) : Math.round(Math.abs(pts))} pts`;
+    return `${pct0(card.onTime.without)} → <strong>${pct0(card.onTime.with)}</strong> <span class="dim">(${txt})</span>`;
+  }
+  if (row === 'profit') {
+    const v = card.profit.conservative;
+    return `<span class="${v >= 0 ? 'pos' : 'neg'}" title="Extra unsold stock is valued at EUR 0">${esc(eurSigned(v))}</span>`;
+  }
+  if (row === 'invest') {
+    const { cash, runningPerShift: run } = card.investment;
+    const running = Math.abs(run) >= 0.5 ? ` <span class="dim">${run < 0 ? '−' : '+'} EUR ${fmt0(Math.abs(run))} / shift</span>` : '';
+    return (cash > 0 ? `EUR ${fmt0(cash)}` : 'none') + running;
+  }
+  return `EUR ${fmt1(card.costPerGoodSet.without)} → <strong>EUR ${fmt1(card.costPerGoodSet.with)}</strong>`;
+}
+
+// The best value of each row among the cards that are ready (a ★), unless all of them are equal
+function bestIds(cards) {
+  const best = {};
+  if (cards.length < 2) return best;
+  const pick = (key, f, higher) => {
+    const vals = cards.map(c => [c.id, Math.round(f(c) * 1000) / 1000]);
+    const target = (higher ? Math.max : Math.min)(...vals.map(v => v[1]));
+    const ids = vals.filter(v => v[1] === target).map(v => v[0]);
+    best[key] = ids.length === cards.length ? [] : ids;
+  };
+  pick('ontime', c => c.onTime.with, true);
+  pick('profit', c => c.profit.conservative, true);
+  pick('invest', c => c.investment.cash, false);
+  pick('cost', c => c.costPerGoodSet.with, false);
+  return best;
+}
+
+function cardSliderHtml(cm, pick) {
+  return Object.entries(cm.params).map(([name, def]) => `
+    <label class="cm-card-param">
+      <span>${esc(def.label)}: <output>${pick.values[name]}</output></span>
+      <input type="range" data-param="${esc(name)}" min="${def.min}" max="${def.max}" step="${def.step}" value="${pick.values[name]}" />
+    </label>`).join('');
+}
+
+const CARD_ROWS = [['ontime', 'On-time delivery'], ['profit', 'Profit change per run'], ['invest', 'Upfront investment'], ['cost', 'Cost per good set']];
+
 function renderImprovePanel() {
   const panel = document.getElementById('improve-panel');
-  const cards = cmCatalogue.map(cm => {
-    const [pname, def] = Object.entries(cm.params)[0];
-    const pick = (cmPick[cm.id] ??= { selected: false, value: def.default });
-    const opts = stepsOf(def).map(v => `<option value="${v}"${v === pick.value ? ' selected' : ''}>${v}</option>`).join('');
+  for (const cm of cmCatalogue) {
+    cmPick[cm.id] ??= { selected: false, values: Object.fromEntries(Object.entries(cm.params).map(([k, d]) => [k, d.default])) };
+  }
+  const cardHtml = (cm) => {
+    const pick = cmPick[cm.id];
     return `<div class="cm-card${pick.selected ? ' selected' : ''}" data-id="${esc(cm.id)}">
-      <label class="cm-card-head"><input type="checkbox" ${pick.selected ? 'checked' : ''} /> ${esc(cm.label)}</label>
+      <div class="cm-card-badge">${classBadge(cm.category)}</div>
+      <label class="cm-card-head"><input type="checkbox" class="cm-pick" ${pick.selected ? 'checked' : ''} /> ${esc(cm.label)}</label>
       <div class="cm-card-desc">${esc(cm.description)}</div>
+      <div class="cm-card-params">${cardSliderHtml(cm, pick)}
+        <div class="cm-card-note" hidden>values at default setting — press Test to simulate yours</div>
+      </div>
+      <div class="cm-vals">${CARD_ROWS.map(([row, label]) => `<div class="cm-val" data-row="${row}"><span class="cm-val-label">${label}</span><span class="cm-val-v"></span></div>`).join('')}</div>
+      <div class="cm-verdict"></div>
       <div class="cm-card-cost">${esc(cm.cost)}</div>
-      <label class="cm-card-param">${esc(def.label)}: <select data-param="${esc(pname)}">${opts}</select></label>
     </div>`;
-  }).join('');
-  const rows = cmCatalogue.map(cm => `<tr><td>${esc(cm.label)}</td>${'<td>—</td>'.repeat(7)}</tr>`).join('');
+  };
+  const groups = GROUPS.map(([cat, title]) => `
+    <h3 class="cm-group">${esc(title)}</h3>
+    <div class="cm-cards">${cmCatalogue.filter(c => c.category === cat).map(cardHtml).join('')}</div>`).join('');
   panel.innerHTML = `
     <div class="imp-title">Choose countermeasures</div>
-    <div class="imp-sub">Select one or any combination, set the values, and test it in the simulation. Not sure? Ask the advisor.</div>
-    <div class="cm-cards">${cards}</div>
+    <div class="imp-sub">Select one or combine up to ${MAX_PICK}, set the values, and test it in the simulation. Not sure? Ask the advisor.</div>
+    <div class="imp-basis" id="imp-basis"></div>
+    ${groups}
     <div class="imp-actions">
       <button id="imp-test" class="primary-btn" type="button">Test my selection</button>
       <button id="imp-ask" class="advisor-btn" type="button">Ask the Intelligent Shift Advisor</button>
+      <span class="cm-small" id="imp-limit">Up to ${MAX_PICK} countermeasures can be combined.</span>
     </div>
     <div class="imp-table-wrap">
       <table class="imp-table">
-        <caption>Placeholder – these figures will be filled from the simulation in a later step.</caption>
-        <thead><tr><th>Compare the countermeasures</th><th>On time</th><th>Profit change</th><th>One-time investment</th><th>Running cost</th><th>Overtime hours</th><th>Extra unsold stock</th><th>Verdict</th></tr></thead>
-        <tbody data-placeholder="true">${rows}</tbody>
+        <caption>Values at the default settings, averages of simulated runs. Unsold extra stock is valued at EUR 0 in the profit change. ★ marks the best value of a row.</caption>
+        <thead><tr><th>Compare the countermeasures</th><th>On time</th><th>Profit change</th><th>Upfront investment</th><th>Running cost / shift</th><th>Extra unsold stock</th><th>Verdict</th></tr></thead>
+        <tbody id="imp-table-body"></tbody>
       </table>
     </div>`;
 
-  const refresh = () => { document.getElementById('imp-test').disabled = !cmCatalogue.some(c => cmPick[c.id].selected); };
+  const refresh = () => {
+    const n = cmCatalogue.filter(c => cmPick[c.id].selected).length;
+    document.getElementById('imp-test').disabled = n === 0;
+    for (const cardEl of panel.querySelectorAll('.cm-card')) {
+      const box = cardEl.querySelector('.cm-pick');
+      box.disabled = !cmPick[cardEl.dataset.id].selected && n >= MAX_PICK;
+    }
+    document.getElementById('imp-limit').classList.toggle('limit-hit', n >= MAX_PICK);
+  };
   for (const cardEl of panel.querySelectorAll('.cm-card')) {
-    const id = cardEl.dataset.id;
-    cardEl.querySelector('input').addEventListener('change', (e) => {
+    const id = cardEl.dataset.id, cm = cmCatalogue.find(c => c.id === id);
+    cardEl.querySelector('.cm-pick').addEventListener('change', (e) => {
       cmPick[id].selected = e.target.checked;
       cardEl.classList.toggle('selected', e.target.checked);
       refresh();
     });
-    cardEl.querySelector('select').addEventListener('change', (e) => { cmPick[id].value = Number(e.target.value); });
+    for (const input of cardEl.querySelectorAll('input[type=range]')) {
+      input.addEventListener('input', () => {
+        cmPick[id].values[input.dataset.param] = Number(input.value);
+        input.closest('label').querySelector('output').textContent = input.value;
+        const moved = Object.entries(cm.params).some(([k, d]) => cmPick[id].values[k] !== d.default);
+        cardEl.querySelector('.cm-card-note').hidden = !moved;
+      });
+      // the note also shows for a value restored from an earlier visit
+      const moved = Object.entries(cm.params).some(([k, d]) => cmPick[id].values[k] !== d.default);
+      cardEl.querySelector('.cm-card-note').hidden = !moved;
+    }
   }
   refresh();
   document.getElementById('imp-test').addEventListener('click', testSelection);
   document.getElementById('imp-ask').addEventListener('click', openQuestionnaire);
+  updateCardValues();
+}
+
+// Fill (or clear) the values of the cards, the header and the comparison table from cardsData
+function updateCardValues() {
+  const panel = document.getElementById('improve-panel');
+  const basis = document.getElementById('imp-basis');
+  if (!basis || panel.hidden || !cardsData) return;
+  const { scenario, shifts, runs, ready, pending } = cardsData;
+  const cards = cmCatalogue.map(c => ready.get(c.id)).filter(Boolean);
+  const best = bestIds(cards);
+
+  let note = `<strong>Expected effect over ${shifts} shifts (${runs} simulated runs each)</strong> · ${esc(SCENARIO_LABELS[scenario] ?? scenario)}`;
+  if (pending.length) note += ` · <span class="spinner"></span>simulating… ${cards.length} of ${cmCatalogue.length} ready`;
+  const failed = Object.keys(cardsData.errors ?? {});
+  if (failed.length) note += ` · <span class="advisor-error">could not simulate: ${esc(failed.join(', '))}</span>`;
+  if (lastSummary && (lastSummary.scenario.id !== scenario || lastSummary.shifts !== shifts)) {
+    note += `<div class="cm-note">The results above come from a run of ${esc(lastSummary.scenario.label)} over ${lastSummary.shifts} shifts, `
+      + 'the values below from what is selected in the top bar. “Test my selection” uses the run above.</div>';
+  }
+  basis.innerHTML = note;
+
+  for (const cardEl of panel.querySelectorAll('.cm-card')) {
+    const id = cardEl.dataset.id, card = ready.get(id);
+    for (const [row] of CARD_ROWS) {
+      const rowEl = cardEl.querySelector(`.cm-val[data-row="${row}"]`);
+      const key = row === 'cost' ? 'cost' : row;
+      const isBest = !!card && (best[key] ?? []).includes(id);
+      rowEl.classList.toggle('best', isBest);
+      rowEl.classList.toggle('pending', !card);
+      rowEl.querySelector('.cm-val-v').innerHTML = valueHtml(row, card) + (isBest ? ' <span class="star" title="Best value of this row among the countermeasures">★</span>' : '');
+    }
+    const chip = card ? (VERDICT_CHIP[card.verdict.code] ?? ['grey', card.verdict.text]) : null;
+    cardEl.querySelector('.cm-verdict').innerHTML = chip
+      ? `<span class="verdict ${chip[0]}" title="${esc(card.verdict.text)}">${esc(chip[1])}</span>` : '<span class="skeleton">simulating…</span>';
+  }
+
+  document.getElementById('imp-table-body').innerHTML = cmCatalogue.map(cm => {
+    const c = ready.get(cm.id);
+    const chip = c ? (VERDICT_CHIP[c.verdict.code] ?? ['grey', c.verdict.text]) : null;
+    const dash = '<td class="skeleton-cell">—</td>';
+    return `<tr><td>${classBadge(cm.category)} ${esc(cm.label)}</td>`
+      + (c ? `<td>${valueHtml('ontime', c)}</td><td>${valueHtml('profit', c)}</td>`
+        + `<td>${c.investment.cash > 0 ? `EUR ${fmt0(c.investment.cash)}` : 'none'}</td>`
+        + `<td>${Math.abs(c.investment.runningPerShift) >= 0.5 ? `EUR ${fmt0(c.investment.runningPerShift)}` : 'none'}</td>`
+        + `<td>${c.unsold > 0.05 ? `${fmt1(c.unsold)} sets` : 'none'}</td>`
+        + `<td><span class="verdict ${chip[0]}" title="${esc(c.verdict.text)}">${esc(chip[1])}</span></td>`
+        : dash.repeat(6))
+      + '</tr>';
+  }).join('');
 }
 
 async function openImprovePanel() {
   hideCompare();
   document.getElementById('proposal-card').hidden = true;
   document.getElementById('questionnaire').hidden = true;
-  try { cmCatalogue = await (await fetch('/api/countermeasures')).json(); } catch { cmCatalogue = []; }
+  if (!cmCatalogue.length) {
+    try { cmCatalogue = await (await fetch('/api/countermeasures')).json(); } catch { cmCatalogue = []; }
+    if (!Array.isArray(cmCatalogue)) cmCatalogue = [];
+  }
   if (!cmCatalogue.length) { submitImprove(null); return; }       // no catalogue: the plain "no options" answer
-  renderImprovePanel();
   document.getElementById('improve-panel').hidden = false;
+  renderImprovePanel();
+  // normally the cards are already being computed (the CEO picked the scenario before); make sure of it
+  const { scenario, shifts } = topBarPair();
+  if (!cardsData || cardsData.scenario !== scenario || cardsData.shifts !== shifts || cardsData.ready.size < cmCatalogue.length) requestCards();
   document.getElementById('improve-panel').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
 
 async function testSelection() {
-  const selection = cmCatalogue.filter(c => cmPick[c.id].selected).map(c => {
-    const pname = Object.keys(c.params)[0];
-    return { id: c.id, params: { [pname]: cmPick[c.id].value } };
-  });
+  const selection = cmCatalogue.filter(c => cmPick[c.id].selected).map(c => ({ id: c.id, params: { ...cmPick[c.id].values } }));
   const card = document.getElementById('proposal-card');
   document.getElementById('improve-panel').hidden = true;
   hideCompare();
@@ -1856,11 +2078,8 @@ async function testSelection() {
   setAdvisorEnabled(true);
 }
 
-document.getElementById('btn-improve').addEventListener('click', () => {
-  // Only Demand Swing has countermeasures: the other scenarios get the "no options" answer, no cards
-  if (lastSummary?.scenario.id === 'demand-swing') openImprovePanel();
-  else submitImprove(null);
-});
+// "Ask the Intelligent Shift Advisor" waits for the 6 simulations (the advisor reads them), then answers
+document.getElementById('btn-improve').addEventListener('click', openImprovePanel);
 document.getElementById('q-back').addEventListener('click', openImprovePanel);
 
 // ── Side-by-side comparison: two PipelineView instances fed by the SSE stream ─
@@ -1878,7 +2097,7 @@ function openCompare(cm) {
   cmpCm = cm;
   const sec = document.getElementById('compare');
   sec.hidden = false;
-  document.getElementById('cmp-title').innerHTML = `Side-by-side: as is vs. with <em>${esc(cm.label)} – ${esc(paramText(cm))}</em>`;
+  document.getElementById('cmp-title').innerHTML = `Side-by-side: as is vs. with <em>${esc(cm.label)} – ${esc(paramText(cm))}</em> ${badgesOf(cm)}`;
   document.getElementById('cmp-b-tag').textContent = cm.label;
   document.getElementById('cmp-results').hidden = true;
   document.getElementById('cmp-status').textContent = 'Press “Run comparison”.';
@@ -1888,23 +2107,22 @@ function openCompare(cm) {
   sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function stripHtml(side, showOvertime) {
+function stripHtml(side) {
   const o = side.state.orders ?? { ordered: 0, shippedOnTime: 0, backlog: 0, stock: 0 };
   const sl = o.ordered > 0 ? (o.shippedOnTime / o.ordered) * 100 : 100;
   const shift = Math.min(cmpShifts(), Math.max(1, Math.ceil(side.state.plantTick / 480)));
   return `<span>Shift <strong>${shift}</strong></span><span>On time <strong>${fmt1(sl)}%</strong></span>`
     + `<span>Backlog <strong>${o.backlog}</strong></span><span>Finished stock <strong>${o.stock}</strong></span>`
-    + (showOvertime ? `<span>Overtime <strong>${side.overtimeMin} min</strong></span>` : '');
+    + (side.state.outsourcing ? `<span>Outsourced sets <strong>${side.state.outsourcing.received}</strong></span>` : '')
+    + ((side.state.supply?.backupParts ?? 0) > 0 ? `<span>Backup-supplier parts <strong>${side.state.supply.backupParts}</strong></span>` : '');
 }
 
 function cmpOnData(c) {
   if (document.getElementById('compare').hidden || !cmpViewA) return;
   cmpViewA.update(c.a.state, c.a.metrics);
   cmpViewB.update(c.b.state, c.b.metrics);
-  document.getElementById('cmp-strip-a').innerHTML = stripHtml(c.a, false);
-  document.getElementById('cmp-strip-b').innerHTML = stripHtml(c.b, (cmpCm?.id ?? '').split('+').includes('overtime') || c.b.overtimeMin > 0);
-  document.getElementById('cmp-ot').hidden = !c.b.state.overtimeActive;
-  document.getElementById('cmp-wait').hidden = !c.waitingA;
+  document.getElementById('cmp-strip-a').innerHTML = stripHtml(c.a);
+  document.getElementById('cmp-strip-b').innerHTML = stripHtml(c.b);
 
   const prev = cmpStatus;
   cmpStatus = c.status;
@@ -1937,15 +2155,15 @@ async function loadCompareResults() {
     arrowTile('Sets produced', a.production.goodParts, b.production.goodParts, v => fmt0(v), true),
     arrowTile('Profit', a.money.profit, b.money.profit, v => eurText(v), true),
   ];
-  if (a.production.overtimeHours > 0 || b.production.overtimeHours > 0) {
-    tiles.push(arrowTile('Overtime hours', a.production.overtimeHours, b.production.overtimeHours, v => fmt1(v), false));
-  }
+  if (b.production.outsourcedSets > 0) tiles.push(arrowTile('Outsourced sets', 0, b.production.outsourcedSets, v => fmt0(v), false));
+  if (b.production.backupParts > 0) tiles.push(arrowTile('Backup-supplier parts', 0, b.production.backupParts, v => fmt0(v), false));
   const extra = b.production.goodParts - a.production.goodParts;
   if (extra > 0) tiles.push(arrowTile('Extra unsold stock', 0, extra, v => `${fmt0(v)} sets`, false));
   document.getElementById('cmp-tiles').innerHTML = tiles.join('');
   renderCostPanel(document.getElementById('cmp-cost'), r.costs, {
     basisLabel: 'This run (one run, same random draws)',
     note: 'The averages in the proposal card above are more reliable.',
+    badges: cmpCm ? badgesOf(cmpCm) : '',
   });
   document.getElementById('cmp-results').hidden = false;
 }
@@ -2049,7 +2267,7 @@ function bridgeSvg(c) {
   return `<svg class="bridge-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(aria)}"><title>${esc(aria)}</title>${g}</svg>`;
 }
 
-function renderCostPanel(container, c, { basisLabel, note } = {}) {
+function renderCostPanel(container, c, { basisLabel, note, badges = '' } = {}) {
   if (!container) return;
   if (!c) { container.innerHTML = ''; return; }
   const t = c.totals;
@@ -2075,7 +2293,7 @@ function renderCostPanel(container, c, { basisLabel, note } = {}) {
   container.innerHTML = `
     <div class="cost-head">Cost of the improvement</div>
     <div class="cost-basis">${esc(basisLabel ?? `Averages of ${c.basis.runs} runs over ${c.basis.shifts} shifts.`)}</div>
-    <div class="cost-headline">${boldHtml(c.headline)}</div>
+    <div class="cost-headline">${badges ? `<span class="cost-badges">${badges}</span> ` : ''}${boldHtml(c.headline)}</div>
     <div class="cost-tables">
       <table class="cost-table">
         <thead><tr><th colspan="3">What you pay</th></tr><tr class="sub"><th>Item</th><th>How it's calculated</th><th class="amt">Amount</th></tr></thead>

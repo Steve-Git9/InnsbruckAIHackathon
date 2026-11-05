@@ -1,12 +1,15 @@
 /**
  * constraints.js
- * The CEO's answers to the questionnaire. Budget and overtime are HARD limits: they narrow
- * the catalogue in code before the LLM sees it, and a proposal is checked against the narrowed
- * catalogue afterwards. Goal, fix type and the free text are soft: they only go to the prompt.
+ * The CEO's answers to the questionnaire. The budget is a HARD limit: it narrows the catalogue in code
+ * before the LLM sees it, and a proposal is checked against the narrowed catalogue afterwards. Goal, kind
+ * of fix and the free text are soft: they only go to the prompt.
  *
  * answers = null ("Give me the best") or
  *   { goal: 'delivery'|'profit'|'balance', budget: 'none'|'60k'|'100k'|'unlimited',
- *     overtime: 'no'|'1h'|'2h'|'4h', fixType: 'flexible'|'permanent'|'any', notes: string }
+ *     fixType: 'operational'|'strategic'|'any', notes: string }
+ *
+ * Old payloads still work: an `overtime` answer is ignored (overtime left the pool of countermeasures),
+ * and the old fix types 'flexible' / 'permanent' mean 'operational' / 'strategic'.
  */
 import { loadRateCard } from '../data/loaders.js';
 
@@ -15,14 +18,13 @@ export const MAX_NOTES = 500;
 const OPTIONS = {
   goal: { delivery: 'On-time delivery', profit: 'Profit', balance: 'A balance of both' },
   budget: { none: 'Nothing', '60k': 'Up to €60,000', '100k': 'Up to €100,000', unlimited: 'No limit' },
-  overtime: { no: 'No overtime', '1h': 'Up to 1 h per shift', '2h': 'Up to 2 h per shift', '4h': 'Up to 4 h per shift' },
-  fixType: { flexible: 'Flexible (pay only when peaks happen)', permanent: 'Permanent (more capacity every shift)', any: 'No preference' },
+  fixType: { operational: 'Operational — quick, no investment', strategic: 'Strategic — invest for the long term', any: 'No preference' },
 };
+const LEGACY_FIX_TYPE = { flexible: 'operational', permanent: 'strategic' };
 const BUDGET_EUR = { none: 0, '60k': 60000, '100k': 100000, unlimited: Infinity };
-const OVERTIME_MIN = { no: 0, '1h': 60, '2h': 120, '4h': 240 };
-const KEYS = [...Object.keys(OPTIONS), 'notes'];
+const KEYS = [...Object.keys(OPTIONS), 'notes', 'overtime'];     // 'overtime': accepted from old clients, ignored
 
-export const DEFAULT_ANSWERS = { goal: 'balance', budget: 'unlimited', overtime: '2h', fixType: 'any', notes: '' };
+export const DEFAULT_ANSWERS = { goal: 'balance', budget: 'unlimited', fixType: 'any', notes: '' };
 
 const eur = (n) => (n === 0 ? "nothing" : `€${n.toLocaleString("en-US")}`);
 
@@ -34,8 +36,9 @@ export function validateAnswers(raw) {
   const a = { ...DEFAULT_ANSWERS };
   for (const k of Object.keys(OPTIONS)) {
     if (raw[k] === undefined) continue;
-    if (typeof raw[k] !== 'string' || !Object.hasOwn(OPTIONS[k], raw[k])) throw new Error(`invalid value for "${k}"`);
-    a[k] = raw[k];
+    const v = k === 'fixType' && Object.hasOwn(LEGACY_FIX_TYPE, raw[k]) ? LEGACY_FIX_TYPE[raw[k]] : raw[k];
+    if (typeof v !== 'string' || !Object.hasOwn(OPTIONS[k], v)) throw new Error(`invalid value for "${k}"`);
+    a[k] = v;
   }
   if (raw.notes !== undefined) {
     if (typeof raw.notes !== 'string') throw new Error('"notes" must be text');
@@ -47,9 +50,10 @@ export function validateAnswers(raw) {
 
 // One-time investment (EUR) of a countermeasure option at a given parameter value, from rate_card.csv
 export function investmentOf(id, params, rate) {
-  if (id === 'faster-m3') return rate.cycle_time_reduction_investment * (params.minutesSaved ?? 0);
-  if (id === 'second-m3') return rate.parallel_machine_investment;
-  return 0;
+  if (id === 'improve-machine' || id === 'faster-m3') return rate.cycle_time_reduction_investment * (params.minutesSaved ?? 0);
+  if (id === 'new-line' || id === 'second-m3') return rate.parallel_machine_investment;
+  if (id === 'extra-supplier') return rate.second_supplier_qualification;
+  return 0;          // outsourcing, raw-stock, finished-stock: nothing upfront
 }
 
 const clone = (o) => JSON.parse(JSON.stringify(o));
@@ -63,18 +67,9 @@ export function applyConstraints(catalogue, answers, rate = loadRateCard()) {
   const budget = BUDGET_EUR[answers.budget];
   const kept = [];
   for (const c of out) {
-    if (c.id === 'overtime') {
-      if (answers.overtime === 'no') { applied.push(`No overtime allowed: "${c.label}" removed`); continue; }
-      const p = c.params.maxMinutesPerShift;
-      const limit = OVERTIME_MIN[answers.overtime];
-      if (limit < p.max) {
-        p.max = limit;
-        p.default = Math.min(p.default, limit);
-        applied.push(`Overtime limited to ${limit} minutes per shift`);
-      }
-    } else if (budget !== Infinity) {
+    if (budget !== Infinity) {
       const p = c.params.minutesSaved;
-      if (c.id === 'faster-m3' && p) {
+      if (c.id === 'improve-machine' && p) {
         const perMin = investmentOf(c.id, { minutesSaved: 1 }, rate);
         const maxMin = Math.min(p.max, Math.floor(budget / perMin));
         if (maxMin < p.min) { applied.push(`${budget === 0 ? "No investment allowed" : `Investment limited to ${eur(budget)}`}: "${c.label}" removed`); continue; }
@@ -113,7 +108,6 @@ export function describeAnswers(answers) {
   return [
     `What matters most: ${OPTIONS.goal[answers.goal]}`,
     `Investment: ${OPTIONS.budget[answers.budget]}`,
-    `Overtime: ${OPTIONS.overtime[answers.overtime]}`,
     `Preferred kind of fix: ${OPTIONS.fixType[answers.fixType]}`,
   ].join('\n');
 }

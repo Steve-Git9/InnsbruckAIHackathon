@@ -11,7 +11,7 @@
  * All amounts are means over the runs of the paired difference (with - without), in EUR.
  * Identity: sum(get) - sum(pay) = mean(profit(with) - profit(without)).
  */
-import { AMORTISATION_SHIFTS, FG_VALUE, SHIFT_HOURS, overtimeRatePerHour, cycleReductions } from './costs.js';
+import { AMORTISATION_SHIFTS, FG_VALUE, SHIFT_HOURS, overtimeRatePerHour, outsourcingPricePerSet, cycleReductions } from './costs.js';
 import { DEFAULT_CONFIG } from '../simulation/config.js';
 
 const SHIFTS_PER_YEAR = 240;
@@ -29,6 +29,8 @@ export function runRecord({ econ, perShift, config, rate, fgStart, fgEnd, ordere
     ordered, released, goodParts, fgStart, fgEnd,
     machines: config.machines.map(m => m.id),
     overtimeRate: overtimeRatePerHour(config, rate),
+    outsourcePrice: outsourcingPricePerSet(config),
+    backupPremiumRate: config.source?.backupSupplier?.premium ?? 0,
     reductions: cycleReductions(config, DEFAULT_CONFIG),
   };
 }
@@ -42,6 +44,7 @@ const delta = (without, withRuns, f) => mean(withRuns.map((r, i) => f(r) - f(wit
 
 const NOTE_OVERTIME = 'No rate-card price for overtime: hour rates of all four machines (€270) + 50% premium';
 const NOTE_ORGANISER = 'Organiser assumption (rate card)';
+const NOTE_OUTSOURCING = 'ASSUMPTION, no rate-card row: EUR 150 per outsourced set';
 
 export function costBreakdown({ without, with: withRuns, rate, shifts, label = '' }) {
   if (!without?.length || without.length !== withRuns?.length) throw new Error('costBreakdown needs paired runs');
@@ -57,6 +60,8 @@ export function costBreakdown({ without, with: withRuns, rate, shifts, label = '
   const rescuedOrders = d(r => r.shippedOnTime);
   const dShipped = d(r => r.shipped), dReleased = d(r => r.released);
   const dOtHours = d(E('overtimeHours'));
+  const dOutCost = d(E('outsourcingCost')), dOutSets = d(E('outsourcedReceived'));
+  const dBackupPremium = d(E('backupPremium')), dBackupParts = d(E('backupParts'));
 
   // ── investment (cash, full amount) from the "with" runs ──────────────────
   const items = [];
@@ -84,7 +89,7 @@ export function costBreakdown({ without, with: withRuns, rate, shifts, label = '
       formula: `${counts.bufferSlots} slots × ${price(rate.extra_buffer_slot)}` });
   }
   if (cashOf('secondSupplier') > 0) {
-    items.push({ key: 'secondSupplier', label: 'Second supplier', amount: cashOf('secondSupplier'),
+    items.push({ key: 'secondSupplier', label: 'Additional supplier', amount: cashOf('secondSupplier'),
       formula: `${price(rate.second_supplier_qualification)} qualification` });
   }
   const cash = sum(items.map(i => i.amount));
@@ -96,6 +101,10 @@ export function costBreakdown({ without, with: withRuns, rate, shifts, label = '
       formula: `${eur(cash)} ÷ ${AMORTISATION_SHIFTS.toLocaleString('en-US')} shifts × ${shifts} shifts` },
     { key: 'overtime', label: 'Overtime', amount: dOvertime, zero: allZero(E('overtimeCost')), assumption: NOTE_OVERTIME,
       formula: `${num1(dOtHours)} h × ${price(refW.overtimeRate)}/h` },
+    { key: 'outsourcing', label: 'Outsourced sets', amount: dOutCost, zero: allZero(E('outsourcingCost')), assumption: NOTE_OUTSOURCING,
+      formula: `${num1(dOutSets)} sets × ${price(refW.outsourcePrice)}` },
+    { key: 'backupPremium', label: 'Additional supplier: price premium', amount: dBackupPremium, zero: allZero(E('backupPremium')),
+      formula: `${num1(dBackupParts)} parts × ${price(rate.material_cost_per_part)} × ${num1(refW.backupPremiumRate * 100)}%` },
     { key: 'machineHours', label: 'Machine hours', amount: dMachine, zero: allZero(E('machineCost')),
       formula: extraMachines.length
         ? extraMachines.map(id => `${id}: ${price(rate[`machine_hour_rate_${baseId(id)}`])}/h × ${SHIFT_HOURS} h × ${shifts} shifts`).join(' + ')

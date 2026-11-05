@@ -18,6 +18,7 @@
  *   GET  /api/kpis      → orders, service level and economics of the closed shifts
  *   GET  /api/results   → CEO interface: status of the scenario run + summary when done
  *   POST /api/advisor/explain, /api/advisor/improve → AI shift advisor (LLM called server-side only)
+ *   GET  /api/countermeasures[/cards] → the pool of 6 countermeasures; the cards' simulated values (computed on the spot)
  *
  * POST /api/control also takes the realism-layer options (all off by default) in
  * `params`, with action 'configureScenario' (or together with any other action):
@@ -46,6 +47,7 @@ import { buildUiScenario, normaliseShifts, UI_SCENARIO_IDS, RUN_SHIFTS } from '.
 import { reconfiguresEngine } from './ui/session-rules.js';
 import { catalogueFor, resolveSelection } from './countermeasures/catalog.js';
 import { evaluateSelection } from './countermeasures/evaluate.js';
+import { createCardStore } from './countermeasures/cards.js';
 import { range } from './scenarios/scenarios.js';
 import { buildRunSummary, engineRecord } from './ui/run-summary.js';
 import { costBreakdown } from './economics/breakdown.js';
@@ -367,7 +369,10 @@ function resultsFor(session) {
 app.get('/api/results', async (req) => resultsFor(getSession(req.sid)));
 
 // AI shift advisor. The LLM only words simulation numbers; errors carry no details.
-const advisor = createAdvisor();
+// The values on the countermeasure cards: simulated on the spot for the scenario and the run length of the
+// top bar, kept in memory only (no precomputation, no file). Shared by the cards endpoint and the advisor.
+const cardStore = createCardStore();
+const advisor = createAdvisor({ getCards: (scenarioId, shifts) => cardStore.whenReady(scenarioId, shifts) });
 
 async function advise(req, reply, run) {
   const session = getSession(req.sid);
@@ -402,17 +407,41 @@ app.post('/api/advisor/improve', async (req, reply) => {
         scenarioId: sc.id, selection: [{ id: r.countermeasure.id, params: r.countermeasure.params }],
         label: r.countermeasure.label, source: 'advisor', shifts: session.runShifts,
       };
+    } else if (r.status === 'none') {
+      dropCompare(session);                    // "no countermeasure pays off": nothing to compare
+      session.advice = null;
     }
     return r;
   });
 });
 
-// The countermeasures the CEO can pick from for the current run (one source: the catalogue)
-app.get('/api/countermeasures', async (req) => {
+// Scenario and run length of a cards request: the query (the top bar, before Simulate was pressed),
+// else the scenario and shift limit of the session. Throws a message for a bad value.
+function cardsTarget(req) {
   const session = getSession(req.sid);
-  if (!session.scenario) return [];
-  const d = buildUiScenario(session.scenario, session.runShifts).disruptionId;
-  return d ? catalogueFor(d) : [];
+  const scenario = req.query?.scenario ?? session.scenario ?? 'standard';
+  if (!UI_SCENARIO_IDS.includes(scenario)) throw new Error(`unknown scenario (allowed: ${UI_SCENARIO_IDS.join(', ')})`);
+  const shifts = normaliseShifts(req.query?.shifts === undefined ? session.runShifts : Number(req.query.shifts));
+  return { scenario: buildUiScenario(scenario, shifts).disruptionId, shifts };
+}
+
+// The pool of 6 countermeasures (the same in every scenario; one source: the catalogue)
+app.get('/api/countermeasures', async (req, reply) => {
+  try { return catalogueFor(cardsTarget(req).scenario); }
+  catch (err) { reply.code(400); return { error: err.message }; }
+});
+
+// The card values, simulated on the spot (10 runs each) for the scenario and the run length of the top bar.
+// Returns what is done so far; the page polls until `pending` is empty. Results stay in memory for this
+// server process only, so a pair that was computed before is instant.
+app.get('/api/countermeasures/cards', async (req, reply) => {
+  try {
+    const { scenario, shifts } = cardsTarget(req);
+    return cardStore.snapshot(scenario, shifts);
+  } catch (err) {
+    reply.code(400);
+    return { error: err.message };
+  }
 });
 
 // Manual selection (one or several countermeasures): the simulation checks it, no LLM involved
@@ -422,7 +451,6 @@ app.post('/api/countermeasures/test', async (req, reply) => {
   if (r.status !== 'done') { reply.code(409); return { error: 'Run a scenario to the end first' }; }
   if (session.compare?.running) { reply.code(409); return { error: 'Stop the comparison first' }; }
   const sc = buildUiScenario(session.scenario, session.runShifts);
-  if (!sc.disruptionId) { reply.code(409); return { error: 'No countermeasures are available for this scenario' }; }
   const selection = req.body?.selection;
   let resolved;
   try { resolved = resolveSelection(selection, sc.disruptionId); }

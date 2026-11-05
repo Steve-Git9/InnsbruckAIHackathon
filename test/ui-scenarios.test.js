@@ -14,7 +14,7 @@ test('the four ids build the expected options', () => {
   assert.equal(std.configureOptions.outage, null);
   assert.equal(std.configureOptions.failures, null);
   assert.equal(std.configureOptions.seed, 1);
-  assert.equal(std.disruptionId, null);
+  assert.equal(std.disruptionId, 'standard');
 
   const swing = buildUiScenario('demand-swing');
   assert.deepEqual(swing.configureOptions.demand, loadDemand().slice(0, 20));
@@ -25,11 +25,17 @@ test('the four ids build the expected options', () => {
   assert.equal(out.configureOptions.demand.length, 20);
   assert.ok(out.configureOptions.demand.every(d => d === 34));
   assert.equal(out.configureOptions.failures, null);
+  assert.equal(out.disruptionId, 'supplier-outage');
 
   const bd = buildUiScenario('machinery-breakdown');
   assert.equal(bd.configureOptions.failures.enabled, true);
   assert.equal(bd.configureOptions.outage, null);
   assert.ok(bd.configureOptions.demand.every(d => d === 34));
+  assert.equal(bd.disruptionId, 'machinery-breakdown');
+});
+
+test('all four scenarios have a disruptionId in the countermeasure catalogue', () => {
+  for (const id of UI_SCENARIO_IDS) assert.equal(buildUiScenario(id).disruptionId, id);
 });
 
 test('an unknown id throws', () => {

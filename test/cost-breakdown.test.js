@@ -3,7 +3,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { evaluateSelection } from '../src/countermeasures/evaluate.js';
 import { costBreakdown } from '../src/economics/breakdown.js';
-import { range } from '../src/scenarios/scenarios.js';
+import { range, runVariant } from '../src/scenarios/scenarios.js';
+import { DISRUPTIONS } from '../src/countermeasures/catalog.js';
+import { loadDemand } from '../src/data/loaders.js';
 import { loadRateCard } from '../src/data/loaders.js';
 import { buildEngines } from '../src/ui/compare-runner.js';
 import { engineRecord } from '../src/ui/run-summary.js';
@@ -12,10 +14,10 @@ const D = 'demand-swing';
 const rate = loadRateCard();
 const seeds = range(1, 3);
 const SELECTIONS = {
-  overtime: [{ id: 'overtime', params: {} }],
-  'faster-m3': [{ id: 'faster-m3', params: { minutesSaved: 2 } }],
-  'second-m3': [{ id: 'second-m3', params: {} }],
-  'faster+second': [{ id: 'faster-m3', params: { minutesSaved: 2 } }, { id: 'second-m3', params: {} }],
+  outsourcing: [{ id: 'outsourcing', params: {} }],
+  'improve-machine': [{ id: 'improve-machine', params: { minutesSaved: 2 } }],
+  'new-line': [{ id: 'new-line', params: {} }],
+  'improve+new': [{ id: 'improve-machine', params: { minutesSaved: 2 } }, { id: 'new-line', params: {} }],
 };
 const results = {};
 for (const [k, sel] of Object.entries(SELECTIONS)) results[k] = await evaluateSelection(D, sel, { seeds, shifts: 20 });
@@ -34,29 +36,57 @@ test('identity: sum(get) - sum(pay) = official profit change, and the conservati
 });
 
 test('investment cash from the rate card', () => {
-  assert.equal(results.overtime.costs.investment.cash, 0);
-  assert.equal(results['faster-m3'].costs.investment.cash, 60000);
-  assert.equal(results['second-m3'].costs.investment.cash, 95000);
-  assert.equal(results['faster+second'].costs.investment.cash, 2 * 2 * 30000 + 95000);
-  const items = results['faster+second'].costs.investment.items;
+  assert.equal(results.outsourcing.costs.investment.cash, 0);
+  assert.equal(results['improve-machine'].costs.investment.cash, 60000);
+  assert.equal(results['new-line'].costs.investment.cash, 95000);
+  assert.equal(results['improve+new'].costs.investment.cash, 2 * 2 * 30000 + 95000);
+  const items = results['improve+new'].costs.investment.items;
   assert.match(items.find(i => i.key === 'cycleTime').formula, /2 min × €30,000 × 2 machines/);
   assert.match(items.find(i => i.key === 'extraMachines').formula, /€95,000 per extra machine/);
   assert.ok(items.find(i => i.key === 'cycleTime').assumption);
   // charged this period = cash / 1,920 shifts x 20 shifts
-  assert.ok(Math.abs(results['second-m3'].costs.investment.chargedThisPeriod - 95000 / 1920 * 20) < 0.01);
+  assert.ok(Math.abs(results['new-line'].costs.investment.chargedThisPeriod - 95000 / 1920 * 20) < 0.01);
 });
 
-test('the overtime line is hours x the overtime rate (405 on the default line) and carries an assumption note', () => {
-  const l = results.overtime.costs.pay.find(x => x.key === 'overtime');
+test('the overtime line (engine feature, no longer in the pool) is hours x the overtime rate (405) and carries an assumption note', async () => {
+  const spec = DISRUPTIONS[D].spec, ctx = { seeds, shifts: 20, rate, profile: loadDemand() };
+  const base = await runVariant(spec, { config: {}, initialFinishedGoods: 0 }, ctx);
+  const ot = await runVariant(spec, { config: { overtime: { enabled: true, maxMinutesPerShift: 120 } }, initialFinishedGoods: 0 }, ctx);
+  const c = costBreakdown({ without: base.rows, with: ot.rows, rate, shifts: 20 });
+  const l = c.pay.find(x => x.key === 'overtime');
   assert.ok(l.assumption);
   assert.match(l.formula, /€405\/h/);
-  const hours = results.overtime.with.overtimeHours;
+  const hours = ot.rows.reduce((a, r) => a + r.overtimeHours, 0) / ot.rows.length;
   assert.ok(Math.abs(l.amount - hours * 405) < 0.01);
-  assert.equal(results['second-m3'].costs.pay.find(x => x.key === 'overtime'), undefined, 'hidden when exactly 0');
+  assert.equal(results['new-line'].costs.pay.find(x => x.key === 'overtime'), undefined, 'hidden when exactly 0');
+  assert.ok(Math.abs(sum(c.get) - sum(c.pay) - c.totals.profitChangeOfficial) < 0.01);
 });
 
-test('second M3: machine hours line = 90 x 8 x shifts', () => {
-  const l = results['second-m3'].costs.pay.find(x => x.key === 'machineHours');
+test('the outsourcing line is received sets x EUR 150, carries the ASSUMPTION note, and is hidden when 0', () => {
+  const l = results.outsourcing.costs.pay.find(x => x.key === 'outsourcing');
+  assert.match(l.assumption, /ASSUMPTION/);
+  assert.match(l.formula, /sets × €150/);
+  const sets = results.outsourcing.with.outsourcedSets;
+  assert.ok(sets > 0);
+  assert.ok(Math.abs(l.amount - sets * 150) < 0.01);
+  assert.equal(results['new-line'].costs.pay.find(x => x.key === 'outsourcing'), undefined);
+});
+
+test('additional supplier in an outage: the premium line (backup parts x EUR 38 x 8%) and the EUR 2,000 qualification as its own item', async () => {
+  const r = await evaluateSelection('supplier-outage', [{ id: 'extra-supplier', params: {} }], { seeds, shifts: 20 });
+  const prem = r.costs.pay.find(x => x.key === 'backupPremium');
+  assert.equal(prem.label, 'Additional supplier: price premium');
+  assert.ok(r.with.backupParts > 0);
+  assert.ok(Math.abs(prem.amount - r.with.backupParts * 38 * 0.08) < 0.01);
+  assert.match(prem.formula, /× €38 × 8%/);
+  const q = r.costs.investment.items.find(i => i.key === 'secondSupplier');
+  assert.equal(q.label, 'Additional supplier');
+  assert.equal(q.amount, 2000);
+  assert.ok(Math.abs(sum(r.costs.get) - sum(r.costs.pay) - r.change.profitOfficial.mean) < 0.01, 'identity holds');
+});
+
+test('new line: machine hours line = 90 x 8 x shifts', () => {
+  const l = results['new-line'].costs.pay.find(x => x.key === 'machineHours');
   assert.ok(Math.abs(l.amount - 90 * 8 * 20) < 0.01);
   assert.match(l.formula, /M3b: €90\/h × 8 h × 20 shifts/);
 });
@@ -112,11 +142,11 @@ test('headline: mentions the rescued sets and the cost, and the investment exact
     if (r.costs.investment.cash > 0) assert.match(h, /upfront/, k);
     else assert.match(h, /No upfront investment/, k);
   }
-  assert.match(results.overtime.costs.headline, /sets nobody ordered/);
+  assert.match(results['new-line'].costs.headline, /sets nobody ordered/);
 });
 
 test('a single-run breakdown (side-by-side view) works and satisfies the identity', () => {
-  const { a, b } = buildEngines({ scenarioId: D, selection: [{ id: 'overtime', params: { maxMinutesPerShift: 120 } }], shifts: 6, label: 'x' });
+  const { a, b } = buildEngines({ scenarioId: D, selection: [{ id: 'outsourcing', params: {} }], shifts: 6, label: 'x' });
   while (a.orders.rows.length < 6) a._tick();
   while (b.orders.rows.length < 6) b._tick();
   const ra = engineRecord(a, rate), rb = engineRecord(b, rate);

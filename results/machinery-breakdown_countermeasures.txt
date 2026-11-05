@@ -1,0 +1,46 @@
+Countermeasures for: Machinery breakdown — 20 shifts, 30 runs each (same seeds), mean values
+Without any countermeasure: 95.5% of orders on time, profit EUR 45,291
+Profit change: conservative (extra unsold stock worth 0) with 95% CI; official rule in brackets.
+
+■ Improve a machine (faster M3) [strategic] (minutesSaved=2)
+  On time: 95.5% → 100.0%   (4.5 pts, 95% CI 1.7 to 7.3)
+  Profit:  −EUR 7,283 conservative (CI −EUR 9,370 to −EUR 5,196); official +EUR 4,768
+  Output:  40.5 good sets/shift; extra unsold stock 117 sets
+  Cost:    Rate card: EUR 30,000 one-time per minute removed, amortised over 1,920 shifts. Faster release costs only material and holding.
+  VERDICT: Improves delivery, but costs more than it earns.
+
+■ New assembly line (second M3) [strategic] (releaseInterval=8)
+  On time: 95.5% → 100.0%   (4.5 pts, 95% CI 1.7 to 7.3)
+  Profit:  −EUR 41,575 conservative (CI −EUR 43,446 to −EUR 39,704); official −EUR 3,681
+  Output:  53.0 good sets/shift; extra unsold stock 368 sets
+  Cost:    Rate card: EUR 95,000 investment (EUR 49.48 per shift amortised) + EUR 90 per scheduled hour (EUR 720 per shift).
+  VERDICT: Improves delivery, but costs more than it earns.
+
+■ Additional supplier [operational]
+  On time: 95.5% → 95.5%   (0.0 pts, 95% CI 0.0 to 0.0)
+  Profit:  −EUR 21 conservative (CI −EUR 21 to −EUR 21); official −EUR 21
+  Output:  34.6 good sets/shift; extra unsold stock 0 sets
+  Cost:    Rate card: +8% material price on the parts it supplies; EUR 2,000 one-time qualification (amortised over 1,920 shifts). The 240-minute lead time is an ASSUMPTION.
+  VERDICT: No clear effect: do not apply.
+
+■ Production outsourcing [operational] (maxSetsPerShift=15)
+  On time: 95.5% → 99.3%   (3.8 pts, 95% CI 1.2 to 6.4)
+  Profit:  +EUR 1,528 conservative (CI −EUR 68 to +EUR 3,125); official +EUR 1,930
+  Output:  34.6 good sets/shift; extra unsold stock 4 sets; 5.1 outsourced sets
+  Cost:    ASSUMPTION (no rate-card row): EUR 150 per outsourced set, at most 15 sets per shift by default, delivered in the next shift.
+  VERDICT: Improves delivery; the profit effect is not clearly positive or negative.
+
+■ Increase stock of raw material [operational] (stockLevel=250)
+  On time: 95.5% → 95.5%   (0.0 pts, 95% CI 0.0 to 0.0)
+  Profit:  −EUR 9,049 conservative (CI −EUR 9,063 to −EUR 9,034); official −EUR 9,049
+  Output:  34.6 good sets/shift; extra unsold stock 0 sets
+  Cost:    Rate card: material at EUR 38 per part, raw-material holding EUR 0.3 per unit per hour (ASSUMPTION: same rate as work in progress).
+  VERDICT: No clear effect: do not apply.
+
+■ Increase stock of finished goods [operational] (sets=50)
+  On time: 95.5% → 100.0%   (4.5 pts, 95% CI 1.7 to 7.3)
+  Profit:  −EUR 1,020 conservative (CI −EUR 2,924 to +EUR 883); official −EUR 1,020
+  Output:  34.6 good sets/shift; extra unsold stock -1 sets
+  Cost:    Rate card: stock valued at EUR 103 per set (charged at the start, credited for what is left at the end) + finished-goods holding EUR 0.5 per unit per hour.
+  VERDICT: Improves delivery; the profit effect is not clearly positive or negative.
+
