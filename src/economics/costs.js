@@ -49,8 +49,9 @@ export function oneTimeCosts(config, baselineConfig, rate) {
   }
   let cycleTicks = 0, rejectPoints = 0;
   for (const m of config.machines) {
-    const bm = baseMachines.get(m.id);
-    if (!bm) continue;                       // spawned copies are not "improved" machines
+    // A spawned copy (M3b) is compared with the baseline machine of its station (M3): a faster
+    // copy is charged for its cycle-time reduction too ("per tick per machine" in the rate card).
+    const bm = baseMachines.get(m.id) ?? baseMachines.get(baseId(m.id));
     cycleTicks += Math.max(0, bm.cycleTime - m.cycleTime);
     rejectPoints += Math.max(0, ((bm.rejectRate ?? 0) - (m.rejectRate ?? 0)) * 100);
   }

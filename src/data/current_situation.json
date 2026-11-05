@@ -1,0 +1,12 @@
+{
+  "asOf": "2026-11-05T06:00:00",
+  "source": "demo",
+  "finishedGoods": { "value": 24, "unit": "sets" },
+  "rawMaterial":   { "value": 160, "unit": "units" },
+  "maintenance": [
+    { "machine": "M1", "name": "Machining",     "lastCompleted": "2026-10-29", "type": "Tool change" },
+    { "machine": "M2", "name": "Quality check", "lastCompleted": "2026-10-21", "type": "Gauge calibration" },
+    { "machine": "M3", "name": "Assembly",      "lastCompleted": "2026-11-02", "type": "Preventive maintenance" },
+    { "machine": "M4", "name": "Packaging",     "lastCompleted": "2026-10-15", "type": "Inspection" }
+  ]
+}

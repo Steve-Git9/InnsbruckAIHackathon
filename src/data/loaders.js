@@ -59,3 +59,22 @@ export function loadFailureRates(file = dataPath('failure_rates.csv')) {
 export function loadDemand(file = dataPath('demand_profile.csv')) {
   return readCsv(file).map(r => Number(r.orders));
 }
+
+// ── Current Situation (demo data for the CEO bar; NOT used by the simulation) ──
+const CURRENT_SITUATION_FILE = path.join(path.dirname(fileURLToPath(import.meta.url)), 'current_situation.json');
+
+const isAmount = (x) => x && Number.isFinite(x.value) && typeof x.unit === 'string';
+
+// -> the file's content, or { source: 'unavailable' } when it is missing or has the wrong shape
+export function loadCurrentSituation(file = CURRENT_SITUATION_FILE) {
+  try {
+    const d = JSON.parse(fs.readFileSync(file, 'utf8'));
+    const ok = typeof d.asOf === 'string' && typeof d.source === 'string' && isAmount(d.finishedGoods) && isAmount(d.rawMaterial)
+      && Array.isArray(d.maintenance) && d.maintenance.length > 0
+      && d.maintenance.every(m => typeof m.machine === 'string' && typeof m.name === 'string' && typeof m.type === 'string'
+        && /^\d{4}-\d{2}-\d{2}$/.test(m.lastCompleted));
+    return ok ? d : { source: 'unavailable' };
+  } catch {
+    return { source: 'unavailable' };
+  }
+}

@@ -9,6 +9,7 @@
 
 import { shouldFreezeParticles, shouldShowStartBanner } from './sim-status.js';
 import { suggestionSignature } from './suggestions-view.js';
+import { PipelineView } from './pipeline-view.js';
 
 // ── Layout constants (SVG coordinate system: 0 0 1400 300) ──────────────────
 
@@ -1386,7 +1387,8 @@ function connectSSE() {
   const es = new EventSource('/api/events');
 
   es.addEventListener('message', e => {
-    const { state, metrics } = JSON.parse(e.data);
+    const { state, metrics, compare } = JSON.parse(e.data);
+    if (compare) cmpOnData(compare);
     lastState   = state;
     lastMetrics = metrics;
 
@@ -1454,7 +1456,7 @@ connectSSE();
 // The simulation numbers come from the server (GET /api/results); the LLM is
 // only reached through the server's /api/advisor/* endpoints.
 
-const RUN_SHIFTS = 20;
+const RUN_SHIFTS = 20;          // default run length; the CEO can choose 1..60
 let ceoRunning = false;
 let ceoPoll = null;
 
@@ -1469,10 +1471,16 @@ function setAdvisorEnabled(on) {
 }
 
 function clearResults() {
+  lastSummary = null;
   document.getElementById('result-tiles').innerHTML = '';
   document.getElementById('results-empty').hidden = false;
+  document.getElementById('results-empty').textContent = 'Choose a scenario and click Simulate.';
+  document.getElementById('results-note').hidden = true;
+  document.getElementById('improve-panel').hidden = true;
   document.getElementById('advisor-output').hidden = true;
   document.getElementById('proposal-card').hidden = true;
+  document.getElementById('questionnaire').hidden = true;
+  hideCompare();
   setAdvisorEnabled(false);
 }
 
@@ -1495,6 +1503,7 @@ function disruptionTile(s) {
 }
 
 function renderResults(s) {
+  lastSummary = s;
   const sl = s.orders.serviceLevel * 100;
   const tone = sl >= 95 ? 'green' : sl >= 80 ? 'amber' : 'red';
   const w = s.worstShift;
@@ -1508,6 +1517,8 @@ function renderResults(s) {
     disruptionTile(s),
   ].join('');
   document.getElementById('results-empty').hidden = true;
+  const note = document.getElementById('results-note');
+  note.hidden = s.shifts === RUN_SHIFTS;
 }
 
 async function pollResults() {
@@ -1517,16 +1528,16 @@ async function pollResults() {
   if (r.status === 'running') {
     ceoRunning = true;
     const tick = lastState?.plantTick ?? 0;
-    const shift = Math.min(RUN_SHIFTS, Math.max(1, Math.ceil(tick / 480)));
+    const shift = Math.min(r.shiftsTotal, Math.max(1, Math.ceil(tick / 480)));
     status.textContent = `Running – shift ${shift} of ${r.shiftsTotal}`;
-    document.getElementById('btn-simulate').disabled = true;
+    setRunButtons(true);
     setAdvisorEnabled(false);
     if (!ceoPoll) ceoPoll = setInterval(pollResults, 700);
   } else if (r.status === 'done') {
     const was = ceoRunning;
     ceoRunning = false;
     status.textContent = `Finished – ${r.shiftsTotal} shifts`;
-    document.getElementById('btn-simulate').disabled = false;
+    setRunButtons(false);
     if (was || document.getElementById('result-tiles').children.length === 0) {
       renderResults(r.summary);
       setAdvisorEnabled(true);
@@ -1534,26 +1545,70 @@ async function pollResults() {
     clearInterval(ceoPoll); ceoPoll = null;
   } else {
     clearInterval(ceoPoll); ceoPoll = null;
+    // The run was reset or reconfigured with the advanced controls: the old Results no longer match
+    if (ceoRunning || lastSummary) {
+      ceoRunning = false;
+      clearResults();
+      document.getElementById('results-empty').textContent = 'The run was changed with the advanced controls – click Simulate to start a new run.';
+      document.getElementById('run-status').textContent = '';
+      setRunButtons(false);
+    }
   }
 }
 
-document.getElementById('btn-simulate').addEventListener('click', async () => {
-  const btn = document.getElementById('btn-simulate');
-  btn.disabled = true;
+// Shift limit: a whole number from 1 to 60
+function shiftLimitValue() {
+  const raw = document.getElementById('shift-limit').value.trim();
+  const n = Number(raw);
+  return raw !== '' && Number.isInteger(n) && n >= 1 && n <= 60 ? n : null;
+}
+
+let runBusy = false;
+function refreshRunButtons() {
+  const valid = shiftLimitValue() !== null;
+  document.getElementById('shift-limit').classList.toggle('invalid', !valid);
+  document.getElementById('shift-hint').hidden = valid;
+  const n = shiftLimitValue();
+  document.getElementById('shift-note').hidden = !(valid && n < 12 && document.getElementById('scenario-select').value === 'supplier-outage');
+  for (const id of ['btn-simulate', 'btn-instant']) document.getElementById(id).disabled = runBusy || !valid;
+}
+
+function setRunButtons(disabled) {
+  runBusy = disabled;
+  refreshRunButtons();
+}
+
+document.getElementById('shift-limit').addEventListener('input', refreshRunButtons);
+document.getElementById('scenario-select').addEventListener('change', refreshRunButtons);
+
+// Start a scenario run: animated, or instant (all shifts at once, no animation)
+async function startRun(instant) {
+  setRunButtons(true);
   clearResults();
-  document.getElementById('run-status').textContent = 'Starting…';
+  document.getElementById('run-status').textContent = instant ? 'Simulating…' : 'Starting…';
   try {
     const res = await fetch('/api/control', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'runScenario', params: { scenario: document.getElementById('scenario-select').value } }),
+      body: JSON.stringify({ action: 'runScenario', params: {
+        scenario: document.getElementById('scenario-select').value,
+        speed: Number(document.getElementById('speed-select').value), instant, shifts: shiftLimitValue(),
+      } }),
     });
     if (!res.ok) throw new Error('rejected');
     ceoRunning = true;
     pollResults();
   } catch {
     document.getElementById('run-status').textContent = 'Could not start the simulation';
-    btn.disabled = false;
+    setRunButtons(false);
   }
+}
+
+document.getElementById('btn-simulate').addEventListener('click', () => startRun(false));
+document.getElementById('btn-instant').addEventListener('click', () => startRun(true));
+
+// Changing the speed during a run takes effect immediately
+document.getElementById('speed-select').addEventListener('change', () => {
+  if (ceoRunning) postControl({ speed: Number(document.getElementById('speed-select').value) }, 'configure');
 });
 
 // ── Advisor ──────────────────────────────────────────────────────────────────
@@ -1579,44 +1634,487 @@ document.getElementById('btn-explain').addEventListener('click', async () => {
   setAdvisorEnabled(true);
 });
 
+// ── Questionnaire (hard limits are enforced on the server) ────────────────────
+
+const QUESTIONS = [
+  { key: 'goal', label: 'What matters most?', def: 'balance',
+    options: [['delivery', 'On-time delivery'], ['profit', 'Profit'], ['balance', 'A balance of both']] },
+  { key: 'budget', label: 'How much can you invest?', def: 'unlimited',
+    options: [['none', 'Nothing'], ['60k', 'Up to €60,000'], ['100k', 'Up to €100,000'], ['unlimited', 'No limit']] },
+  { key: 'overtime', label: 'Is overtime allowed?', def: '2h',
+    options: [['no', 'No'], ['1h', 'Up to 1 h per shift'], ['2h', 'Up to 2 h per shift'], ['4h', 'Up to 4 h per shift']] },
+  { key: 'fixType', label: 'What kind of fix do you prefer?', def: 'any',
+    options: [['flexible', 'Flexible (pay only when peaks happen)'], ['permanent', 'Permanent (more capacity every shift)'], ['any', 'No preference']] },
+];
+let lastSummary = null;
+let qAnswers = Object.fromEntries(QUESTIONS.map(q => [q.key, q.def]));
+
+function renderQuestionRows() {
+  const rows = document.getElementById('q-rows');
+  rows.innerHTML = '';
+  for (const q of QUESTIONS) {
+    const row = document.createElement('div');
+    row.className = 'q-row';
+    row.innerHTML = `<div class="q-label">${esc(q.label)}</div><div class="chips"></div>`;
+    const chips = row.querySelector('.chips');
+    for (const [value, label] of q.options) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip' + (qAnswers[q.key] === value ? ' selected' : '');
+      b.textContent = label;
+      b.addEventListener('click', () => {
+        qAnswers[q.key] = value;
+        for (const c of chips.children) c.classList.remove('selected');
+        b.classList.add('selected');
+      });
+      chips.appendChild(b);
+    }
+    rows.appendChild(row);
+  }
+}
+
+function openQuestionnaire() {
+  hideCompare();
+  document.getElementById('proposal-card').hidden = true;
+  document.getElementById('improve-panel').hidden = true;
+  renderQuestionRows();
+  const notes = document.getElementById('q-notes');
+  document.getElementById('q-count').textContent = notes.value.length;
+  document.getElementById('questionnaire').hidden = false;
+  document.getElementById('questionnaire').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+document.getElementById('q-notes').addEventListener('input', (e) => {
+  document.getElementById('q-count').textContent = e.target.value.length;
+});
+document.getElementById('q-find').addEventListener('click', () => submitImprove({ ...qAnswers, notes: document.getElementById('q-notes').value.trim() }));
+document.getElementById('q-best').addEventListener('click', () => submitImprove(null));
+
+async function callAdvisorJson(path, body) {
+  const res = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'The AI service is not reachable');
+  return data;
+}
+
+// Readable settings of one catalogue item or of a whole (possibly combined) countermeasure
+function itemParamText(id, params) {
+  if (id === 'overtime') return `max ${params.maxMinutesPerShift} min per shift`;
+  if (id === 'faster-m3') return `${params.minutesSaved} min off the M3 cycle`;
+  if (id === 'second-m3') return `release a part every ${params.releaseInterval} min`;
+  return Object.entries(params).map(([k, v]) => `${k} = ${v}`).join(', ');
+}
+
+function paramText(cm) {
+  if (cm.items) return cm.items.map(i => (cm.items.length > 1 ? `${i.label}: ` : '') + itemParamText(i.id, i.params)).join('; ');
+  return itemParamText(cm.id, cm.params);
+}
+
 function renderProposal(card, r) {
+  const limits = r.constraintsApplied?.length
+    ? `<div class="cm-limits"><strong>Your limits:</strong> ${esc(r.constraintsApplied.join('; '))}</div>` : '';
+  const change = r.source === 'manual' || !r.source
+    ? '<button id="q-change" class="link-btn" type="button">Back to the countermeasures</button>'
+    : '<button id="q-change" class="link-btn" type="button">Change my answers</button>';
+  const reopen = () => (r.source === 'manual' ? openImprovePanel() : openQuestionnaire());
   if (r.status === 'no-options') {
-    card.innerHTML = `<div class="advisor-label">Countermeasure</div><div>${esc(r.text)}</div>`;
+    card.innerHTML = `<div class="advisor-label">Countermeasure</div><div>${esc(r.text)}</div>`
+      + (r.answers ? `<div class="cm-buttons">${change}</div>` : '');
+    document.getElementById('q-change')?.addEventListener('click', reopen);
     return;
   }
   const cm = r.countermeasure, c = r.check;
-  const params = Object.entries(cm.params).map(([k, v]) => `${k} = ${v}`).join(', ');
   const code = c.verdict.code;
   const badge = code === 'effective' ? ['green', '✅ Works']
     : code === 'costly' ? ['red', '❌ Costs more than it earns'] : ['grey', c.verdict.text];
+  const manual = r.source === 'manual';
+  const costs = (cm.items ?? [{ cost: cm.cost }]).map(i => `<div class="cm-cost">Cost${cm.items?.length > 1 ? ` (${esc(i.label)})` : ''}: ${esc(i.cost)}</div>`).join('');
   card.innerHTML = `
-    <div class="advisor-label">Proposed countermeasure</div>
+    <div class="cm-source">${manual ? 'Your selection' : 'The advisor\'s choice'}</div>
     <div class="cm-name">${esc(cm.label)}</div>
-    <div class="cm-params">${esc(params)}</div>
-    <div class="cm-reason">${esc(r.reason)}</div>
-    <div class="cm-cost">Cost: ${esc(cm.cost)}</div>
+    <div class="cm-params">${esc(paramText(cm))}</div>
+    ${limits}
+    ${manual ? '' : `<div class="cm-reason">${esc(r.reason)}</div>`}
+    ${costs}
     <div class="cm-check">
-      <div class="advisor-label">Simulation check (${c.runs} runs)</div>
+      <div class="advisor-label">Simulation check (${c.runs} runs, ${c.shifts ?? cmpShifts()} shifts)</div>
       <div class="cm-check-row"><strong>Orders on time: ${fmt1(c.without.serviceLevel * 100)}% → ${fmt1(c.with.serviceLevel * 100)}%</strong></div>
       <div class="cm-check-row"><strong>Profit: ${eurSigned(c.change.profitConservative.mean)}</strong>
         <span class="cm-small">(official rule: ${eurSigned(c.change.profitOfficial.mean)})</span></div>
       <div class="cm-check-row"><span class="verdict ${badge[0]}">${esc(badge[1])}</span></div>
       <div class="cm-note">The check compares averages of ${c.runs} runs; the animation above is one run.</div>
+    </div>
+    <div class="cm-buttons">
+      <button id="cmp-open" class="primary-btn" type="button">Compare side by side</button>
+      ${change}
     </div>`;
+  document.getElementById('q-change').addEventListener('click', reopen);
+  document.getElementById('cmp-open').addEventListener('click', () => openCompare(cm));
 }
 
-document.getElementById('btn-improve').addEventListener('click', async () => {
+async function submitImprove(answers) {
   const card = document.getElementById('proposal-card');
+  document.getElementById('questionnaire').hidden = true;
+  document.getElementById('improve-panel').hidden = true;
+  hideCompare();
   setAdvisorEnabled(false);
   card.hidden = false;
-  card.innerHTML = '<span class="spinner"></span>Testing the proposal in the simulation…';
+  card.innerHTML = '<span class="spinner"></span>Asking the advisor, then testing the proposal in the simulation…';
   try {
-    renderProposal(card, await callAdvisor('/api/advisor/improve'));
+    renderProposal(card, await callAdvisorJson('/api/advisor/improve', { answers }));
   } catch (e) {
     card.innerHTML = `<span class="advisor-error">${esc(e.message)}</span>`;
   }
   setAdvisorEnabled(true);
+}
+
+// ── Improve panel: pick countermeasures yourself (any combination), or ask the advisor ──
+
+let cmCatalogue = [];
+const cmPick = {};           // id -> { selected, value } kept while the panel is reopened
+
+const stepsOf = (def) => {
+  const out = [];
+  for (let v = def.min; v <= def.max + 1e-9; v += def.step || 1) out.push(v);
+  return out;
+};
+
+function renderImprovePanel() {
+  const panel = document.getElementById('improve-panel');
+  const cards = cmCatalogue.map(cm => {
+    const [pname, def] = Object.entries(cm.params)[0];
+    const pick = (cmPick[cm.id] ??= { selected: false, value: def.default });
+    const opts = stepsOf(def).map(v => `<option value="${v}"${v === pick.value ? ' selected' : ''}>${v}</option>`).join('');
+    return `<div class="cm-card${pick.selected ? ' selected' : ''}" data-id="${esc(cm.id)}">
+      <label class="cm-card-head"><input type="checkbox" ${pick.selected ? 'checked' : ''} /> ${esc(cm.label)}</label>
+      <div class="cm-card-desc">${esc(cm.description)}</div>
+      <div class="cm-card-cost">${esc(cm.cost)}</div>
+      <label class="cm-card-param">${esc(def.label)}: <select data-param="${esc(pname)}">${opts}</select></label>
+    </div>`;
+  }).join('');
+  const rows = cmCatalogue.map(cm => `<tr><td>${esc(cm.label)}</td>${'<td>—</td>'.repeat(7)}</tr>`).join('');
+  panel.innerHTML = `
+    <div class="imp-title">Choose countermeasures</div>
+    <div class="imp-sub">Select one or any combination, set the values, and test it in the simulation. Not sure? Ask the advisor.</div>
+    <div class="cm-cards">${cards}</div>
+    <div class="imp-actions">
+      <button id="imp-test" class="primary-btn" type="button">Test my selection</button>
+      <button id="imp-ask" class="advisor-btn" type="button">Ask the Intelligent Shift Advisor</button>
+    </div>
+    <div class="imp-table-wrap">
+      <table class="imp-table">
+        <caption>Placeholder – these figures will be filled from the simulation in a later step.</caption>
+        <thead><tr><th>Compare the countermeasures</th><th>On time</th><th>Profit change</th><th>One-time investment</th><th>Running cost</th><th>Overtime hours</th><th>Extra unsold stock</th><th>Verdict</th></tr></thead>
+        <tbody data-placeholder="true">${rows}</tbody>
+      </table>
+    </div>`;
+
+  const refresh = () => { document.getElementById('imp-test').disabled = !cmCatalogue.some(c => cmPick[c.id].selected); };
+  for (const cardEl of panel.querySelectorAll('.cm-card')) {
+    const id = cardEl.dataset.id;
+    cardEl.querySelector('input').addEventListener('change', (e) => {
+      cmPick[id].selected = e.target.checked;
+      cardEl.classList.toggle('selected', e.target.checked);
+      refresh();
+    });
+    cardEl.querySelector('select').addEventListener('change', (e) => { cmPick[id].value = Number(e.target.value); });
+  }
+  refresh();
+  document.getElementById('imp-test').addEventListener('click', testSelection);
+  document.getElementById('imp-ask').addEventListener('click', openQuestionnaire);
+}
+
+async function openImprovePanel() {
+  hideCompare();
+  document.getElementById('proposal-card').hidden = true;
+  document.getElementById('questionnaire').hidden = true;
+  try { cmCatalogue = await (await fetch('/api/countermeasures')).json(); } catch { cmCatalogue = []; }
+  if (!cmCatalogue.length) { submitImprove(null); return; }       // no catalogue: the plain "no options" answer
+  renderImprovePanel();
+  document.getElementById('improve-panel').hidden = false;
+  document.getElementById('improve-panel').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+async function testSelection() {
+  const selection = cmCatalogue.filter(c => cmPick[c.id].selected).map(c => {
+    const pname = Object.keys(c.params)[0];
+    return { id: c.id, params: { [pname]: cmPick[c.id].value } };
+  });
+  const card = document.getElementById('proposal-card');
+  document.getElementById('improve-panel').hidden = true;
+  hideCompare();
+  setAdvisorEnabled(false);
+  card.hidden = false;
+  card.innerHTML = '<span class="spinner"></span>Testing your selection in the simulation…';
+  try {
+    renderProposal(card, await callAdvisorJson('/api/countermeasures/test', { selection }));
+  } catch (e) {
+    card.innerHTML = `<span class="advisor-error">${esc(e.message)}</span>`;
+  }
+  setAdvisorEnabled(true);
+}
+
+document.getElementById('btn-improve').addEventListener('click', () => {
+  // Only Demand Swing has countermeasures: the other scenarios get the "no options" answer, no cards
+  if (lastSummary?.scenario.id === 'demand-swing') openImprovePanel();
+  else submitImprove(null);
+});
+document.getElementById('q-back').addEventListener('click', openImprovePanel);
+
+// ── Side-by-side comparison: two PipelineView instances fed by the SSE stream ─
+
+const cmpShifts = () => lastSummary?.shifts ?? RUN_SHIFTS;
+let cmpViewA = null, cmpViewB = null, cmpCm = null, cmpStatus = 'idle';
+
+function hideCompare() {
+  document.getElementById('compare').hidden = true;
+  fetch('/api/compare/stop', { method: 'POST' }).catch(() => {});
+  cmpStatus = 'idle';
+}
+
+function openCompare(cm) {
+  cmpCm = cm;
+  const sec = document.getElementById('compare');
+  sec.hidden = false;
+  document.getElementById('cmp-title').innerHTML = `Side-by-side: as is vs. with <em>${esc(cm.label)} – ${esc(paramText(cm))}</em>`;
+  document.getElementById('cmp-b-tag').textContent = cm.label;
+  document.getElementById('cmp-results').hidden = true;
+  document.getElementById('cmp-status').textContent = 'Press “Run comparison”.';
+  cmpViewA ??= new PipelineView(document.getElementById('cmp-svg-a'), { idPrefix: 'cmpA-' });
+  cmpViewB ??= new PipelineView(document.getElementById('cmp-svg-b'), { idPrefix: 'cmpB-' });
+  for (const id of ['cmp-strip-a', 'cmp-strip-b']) document.getElementById(id).innerHTML = '';
+  sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function stripHtml(side, showOvertime) {
+  const o = side.state.orders ?? { ordered: 0, shippedOnTime: 0, backlog: 0, stock: 0 };
+  const sl = o.ordered > 0 ? (o.shippedOnTime / o.ordered) * 100 : 100;
+  const shift = Math.min(cmpShifts(), Math.max(1, Math.ceil(side.state.plantTick / 480)));
+  return `<span>Shift <strong>${shift}</strong></span><span>On time <strong>${fmt1(sl)}%</strong></span>`
+    + `<span>Backlog <strong>${o.backlog}</strong></span><span>Finished stock <strong>${o.stock}</strong></span>`
+    + (showOvertime ? `<span>Overtime <strong>${side.overtimeMin} min</strong></span>` : '');
+}
+
+function cmpOnData(c) {
+  if (document.getElementById('compare').hidden || !cmpViewA) return;
+  cmpViewA.update(c.a.state, c.a.metrics);
+  cmpViewB.update(c.b.state, c.b.metrics);
+  document.getElementById('cmp-strip-a').innerHTML = stripHtml(c.a, false);
+  document.getElementById('cmp-strip-b').innerHTML = stripHtml(c.b, (cmpCm?.id ?? '').split('+').includes('overtime') || c.b.overtimeMin > 0);
+  document.getElementById('cmp-ot').hidden = !c.b.state.overtimeActive;
+  document.getElementById('cmp-wait').hidden = !c.waitingA;
+
+  const prev = cmpStatus;
+  cmpStatus = c.status;
+  const st = document.getElementById('cmp-status');
+  if (c.status === 'running') {
+    const shift = Math.min(cmpShifts(), Math.max(1, Math.ceil(c.b.state.plantTick / 480)));
+    st.textContent = `Shift ${shift} of ${cmpShifts()}`;
+    setAdvisorEnabled(false);
+  } else if (c.status === 'done') {
+    st.textContent = `Finished – ${cmpShifts()} shifts`;
+    if (prev !== 'done') { setAdvisorEnabled(true); loadCompareResults(); }
+  }
+}
+
+const arrowTile = (title, a, b, fmt, higherIsBetter) => {
+  const better = higherIsBetter ? b > a : b < a;
+  const cls = Math.abs(b - a) < 1e-9 ? 'arrow-same' : better ? 'arrow-good' : 'arrow-bad';
+  return `<div class="tile"><div class="tile-title">${esc(title)}</div>`
+    + `<div class="tile-value small">${esc(fmt(a))} <span class="${cls}">→ ${esc(fmt(b))}</span></div></div>`;
+};
+
+async function loadCompareResults() {
+  let r;
+  try { r = await (await fetch('/api/compare/results')).json(); } catch { return; }
+  if (r.status !== 'done') return;
+  const { a, b } = r;
+  const tiles = [
+    arrowTile('Orders on time', a.orders.serviceLevel * 100, b.orders.serviceLevel * 100, v => `${fmt1(v)}%`, true),
+    arrowTile('Late sets', a.orders.late, b.orders.late, v => String(Math.round(v)), false),
+    arrowTile('Sets produced', a.production.goodParts, b.production.goodParts, v => fmt0(v), true),
+    arrowTile('Profit', a.money.profit, b.money.profit, v => eurText(v), true),
+  ];
+  if (a.production.overtimeHours > 0 || b.production.overtimeHours > 0) {
+    tiles.push(arrowTile('Overtime hours', a.production.overtimeHours, b.production.overtimeHours, v => fmt1(v), false));
+  }
+  const extra = b.production.goodParts - a.production.goodParts;
+  if (extra > 0) tiles.push(arrowTile('Extra unsold stock', 0, extra, v => `${fmt0(v)} sets`, false));
+  document.getElementById('cmp-tiles').innerHTML = tiles.join('');
+  document.getElementById('cmp-results').hidden = false;
+}
+
+async function startCompare(instant) {
+  document.getElementById('cmp-results').hidden = true;
+  document.getElementById('cmp-status').textContent = 'Starting…';
+  setAdvisorEnabled(false);
+  try {
+    const res = await fetch('/api/compare/start', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ speed: Number(document.getElementById('cmp-speed').value), instant }),
+    });
+    if (!res.ok) throw new Error('rejected');
+    cmpStatus = instant ? 'done' : 'running';
+    if (instant) { setAdvisorEnabled(true); loadCompareResults(); }
+  } catch {
+    document.getElementById('cmp-status').textContent = 'Could not start the comparison';
+    setAdvisorEnabled(true);
+  }
+}
+
+document.getElementById('cmp-run').addEventListener('click', () => startCompare(false));
+document.getElementById('cmp-instant').addEventListener('click', () => startCompare(true));
+document.getElementById('cmp-speed').addEventListener('change', (e) => {
+  fetch('/api/compare/speed', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ speed: Number(e.target.value) }) }).catch(() => {});
 });
 
 // Pick up a run that is already in progress or finished (page reload)
 pollResults();
+
+// ── Current Situation bar (demo values from GET /api/current-situation; visual only) ──
+
+function daysAgoText(isoDate) {
+  const d = new Date(isoDate + 'T00:00:00');
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const days = Math.round((today - d) / 86400000);
+  return days <= 0 ? 'today' : days === 1 ? '1 day ago' : `${days} days ago`;
+}
+const niceDate = (iso) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+async function loadCurrentSituation() {
+  const tiles = document.getElementById('cs-tiles');
+  const meta = document.getElementById('cs-meta');
+  let d;
+  try { d = await (await fetch('/api/current-situation')).json(); } catch { d = { source: 'unavailable' }; }
+  if (d.source === 'unavailable') {
+    tiles.innerHTML = '<div class="cs-tile"><div class="cs-sub">No data</div></div>';
+    meta.textContent = '';
+    return;
+  }
+  const latest = [...d.maintenance].sort((a, b) => b.lastCompleted.localeCompare(a.lastCompleted))[0];
+  tiles.innerHTML = `
+    <div class="cs-tile"><div class="cs-label">Finished-goods stock</div><div class="cs-value">${esc(d.finishedGoods.value)} ${esc(d.finishedGoods.unit)}</div></div>
+    <div class="cs-tile"><div class="cs-label">Raw-material stock</div><div class="cs-value">${esc(d.rawMaterial.value)} ${esc(d.rawMaterial.unit)}</div></div>
+    <div class="cs-tile"><div class="cs-label">Last maintenance</div>
+      <div class="cs-value">${esc(latest.machine)} ${esc(latest.name)}</div>
+      <div class="cs-sub">${esc(niceDate(latest.lastCompleted))} (${esc(daysAgoText(latest.lastCompleted))}) · ${esc(latest.type)}</div>
+      <button id="cs-all" class="link-btn" type="button">all machines</button>
+      <ul id="cs-list" class="cs-list" hidden>${d.maintenance.map(m =>
+        `<li>${esc(m.machine)} ${esc(m.name)} – ${esc(niceDate(m.lastCompleted))} (${esc(daysAgoText(m.lastCompleted))}) · ${esc(m.type)}</li>`).join('')}</ul>
+    </div>`;
+  const asOf = new Date(d.asOf);
+  meta.textContent = `${d.source === 'demo' ? 'Demo data – not connected' : 'Data'} · as of ${asOf.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}, ${asOf.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`;
+  document.getElementById('cs-all').addEventListener('click', () => {
+    const list = document.getElementById('cs-list');
+    list.hidden = !list.hidden;
+    document.getElementById('cs-all').textContent = list.hidden ? 'all machines' : 'hide';
+  });
+}
+
+// ── Collapsible sections and sub-blocks (state remembered in localStorage) ────
+
+function storedCollapsed(id, dflt) {
+  try {
+    const v = localStorage.getItem(`ui.collapsed.${id}`);
+    if (v === '1') return true;
+    if (v === '0') return false;
+  } catch { /* no storage: use the default */ }
+  return dflt;
+}
+function storeCollapsed(id, collapsed) {
+  try { localStorage.setItem(`ui.collapsed.${id}`, collapsed ? '1' : '0'); } catch { /* ignore */ }
+}
+
+// mode 'section': a header row (title + chevron) above the body, which is wrapped and hidden when collapsed.
+// mode 'row': the chevron goes into the row's label; every other child of the row is hidden when collapsed.
+function makeCollapsible(el, { id, title, defaultCollapsed = false, mode = 'section' }) {
+  if (!el) return;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'sec-toggle';
+  btn.innerHTML = '<span class="chev" aria-hidden="true">▾</span>';
+  btn.title = 'Collapse / expand';
+
+  if (mode === 'section') {
+    const h = [...el.children].find(c => c.tagName === 'H2' && !c.id);
+    const name = title ?? h?.textContent ?? id;
+    h?.remove();
+    const head = document.createElement('div');
+    head.className = 'sec-head';
+    const t = document.createElement('span');
+    t.className = 'sec-title';
+    t.textContent = name;
+    head.append(t, btn);
+    const body = document.createElement('div');
+    body.className = 'sec-body';
+    body.id = `${id}-body`;
+    while (el.firstChild) body.appendChild(el.firstChild);
+    el.append(head, body);
+    btn.setAttribute('aria-controls', body.id);
+    btn.setAttribute('aria-label', `Collapse or expand ${name}`);
+  } else {
+    el.classList.add('row-mode');
+    const label = el.querySelector('.section-label') ?? el.querySelector('label');
+    label.classList.add('sec-keep');
+    label.prepend(btn);
+    if (!el.id) el.id = `${id}-row`;
+    btn.setAttribute('aria-controls', el.id);
+    btn.setAttribute('aria-label', `Collapse or expand ${title ?? id}`);
+  }
+
+  const apply = (collapsed) => {
+    el.classList.toggle('is-collapsed', collapsed);
+    btn.setAttribute('aria-expanded', String(!collapsed));
+  };
+  apply(storedCollapsed(id, defaultCollapsed));
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+    const next = !el.classList.contains('is-collapsed');
+    apply(next);
+    storeCollapsed(id, next);
+  });
+}
+
+function setupCollapsibles() {
+  const sec = (elId, title, dflt = false) => makeCollapsible(document.getElementById(elId), { id: elId, title, defaultCollapsed: dflt });
+  sec('current-situation', 'Current Situation');
+  makeCollapsible(document.getElementById('scenario-bar'), { id: 'scenario-bar', title: 'Scenario', mode: 'row' });
+  sec('pipeline-container', 'Production line');
+  sec('results', 'Results');
+  sec('advisor', 'AI shift advisor');
+  sec('compare', 'Side-by-side comparison');
+  sec('controls', 'Advanced controls', true);
+  sec('metrics', 'Advanced metrics', true);
+
+  // Sub-blocks of Advanced controls
+  const rows = [
+    ['ctl-playback', 'Simulation Control', document.querySelector('#controls .controls-row')],
+    ['ctl-presets', 'Scenarios', document.getElementById('preset-row')],
+    ['ctl-plant', 'Plant default', document.getElementById('plant-row')],
+    ['ctl-realism', 'Realism', document.getElementById('realism-row')],
+    ['ctl-speed', 'Speed', document.querySelector('#controls .controls-row:has(.speed-btn)')],
+    ['ctl-source', 'Source', document.querySelector('#controls .controls-row:has(#src-interval)')],
+    ['ctl-cycle', 'Machine cycle times', document.getElementById('machine-sliders')],
+    ['ctl-buffers', 'Buffer capacities', document.getElementById('buffer-sliders')],
+  ];
+  for (const [id, title, el] of rows) makeCollapsible(el, { id, title, mode: 'row' });
+
+  // Blocks of Advanced metrics: each gets its own header row
+  const block = (id, title, el) => {
+    if (!el) return;
+    const wrap = document.createElement('div');
+    wrap.id = id;
+    el.replaceWith(wrap);
+    wrap.appendChild(el);
+    makeCollapsible(wrap, { id, title });
+  };
+  block('mx-cards', 'Summary cards', document.querySelector('#metrics > .sec-body > .metric-cards'));
+  block('mx-orders', 'Orders & economics', document.getElementById('kpi-panel'));
+  block('mx-spark', 'Throughput', document.querySelector('#metrics .sparkline-wrap'));
+  block('mx-machines', 'Machines', document.querySelector('#metrics .machine-table-wrap'));
+}
+
+setupCollapsibles();
+loadCurrentSituation();
+refreshRunButtons();
+setInterval(pollResults, 2000);          // notices a run that was reset with the advanced controls

@@ -40,11 +40,17 @@ import { calculateMetrics } from './metrics/collector.js';
 import * as controls from './controls.js';
 import { liveResult, shiftRowsFromEngine } from './simulation/summary.js';
 import { computeEconomics } from './economics/costs.js';
-import { loadRateCard, loadDemand } from './data/loaders.js';
+import { loadRateCard, loadDemand, loadCurrentSituation } from './data/loaders.js';
 import { REFERENCE_OUTAGE } from './scenarios/scenarios.js';
-import { buildUiScenario, UI_SCENARIO_IDS, RUN_SHIFTS } from './ui/scenarios.js';
+import { buildUiScenario, normaliseShifts, UI_SCENARIO_IDS, RUN_SHIFTS } from './ui/scenarios.js';
+import { reconfiguresEngine } from './ui/session-rules.js';
+import { catalogueFor, resolveSelection } from './countermeasures/catalog.js';
+import { evaluateSelection } from './countermeasures/evaluate.js';
+import { range } from './scenarios/scenarios.js';
 import { buildRunSummary } from './ui/run-summary.js';
 import { createAdvisor } from './advisor/advisor.js';
+import { validateAnswers } from './advisor/constraints.js';
+import { CompareRunner } from './ui/compare-runner.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PORT      = parseInt(process.env.PORT ?? '3000', 10);
@@ -57,6 +63,7 @@ const SESSION_TTL_MS = 30_000;
 const RATE_CARD = loadRateCard();
 const DEMAND_PROFILE = loadDemand();
 const FLAT_DEMAND = 34;
+const UI_SPEEDS = [1, 2, 10];       // speed selector of the CEO interface
 const SCENARIO_KEYS = ['seed', 'outage', 'failures', 'supply', 'demand', 'initialFinishedGoods'];
 
 // Translate the friendly API values into engine.configureScenario() options.
@@ -121,7 +128,7 @@ function getSession(sid) {
     // kicks off the run with Play (or the start banner). Avoids the line racing
     // ahead before the page has even rendered.
     const engine = new SimulationEngine(DEFAULT_CONFIG);
-    s = { engine, sseClients: new Set(), cleanupTimer: null, scenario: null, advice: null };
+    s = { engine, sseClients: new Set(), cleanupTimer: null, scenario: null, runShifts: RUN_SHIFTS, advice: null, compare: null };
     sessions.set(sid, s);
   }
   if (s.cleanupTimer) {
@@ -136,6 +143,7 @@ function scheduleCleanup(sid) {
   if (!s || s.sseClients.size > 0 || s.cleanupTimer) return;
   s.cleanupTimer = setTimeout(() => {
     s.engine.pause();
+    s.compare?.stop();
     sessions.delete(sid);
   }, SESSION_TTL_MS);
 }
@@ -179,12 +187,35 @@ setInterval(() => {
     if (s.sseClients.size === 0) continue;
     const state   = s.engine.getState();
     const metrics = calculateMetrics(state);
-    const line    = `data: ${JSON.stringify({ state, metrics })}\n\n`;
+    const payload = { state, metrics };
+    if (s.compare) payload.compare = comparePayload(s.compare);
+    const line    = `data: ${JSON.stringify(payload)}\n\n`;
     for (const res of s.sseClients) {
       try { res.raw.write(line); } catch (_) { s.sseClients.delete(res); }
     }
   }
 }, 250);
+
+// Live data of the side-by-side comparison (A = as is, B = with the countermeasure)
+function comparePayload(c) {
+  const view = (e) => {
+    const state = e.getState();
+    const overtimeMin = e.orders.rows.reduce((a, r) => a + (r.overtimeMin ?? 0), 0) + (e._otShiftMin ?? 0);
+    return { state, metrics: calculateMetrics(state), overtimeMin };
+  };
+  return {
+    status: c.done ? 'done' : c.running ? 'running' : 'stopped',
+    shiftsDone: { a: c.a.orders.rows.length, b: c.b.orders.rows.length },
+    waitingA: c.waitingA,
+    a: view(c.a), b: view(c.b),
+    countermeasure: c.countermeasure,
+  };
+}
+
+function dropCompare(session) {
+  session.compare?.stop();
+  session.compare = null;
+}
 
 // ── Routes ─────────────────────────────────────────────────────────────────
 
@@ -231,6 +262,13 @@ app.post('/api/control', async (req, reply) => {
   const { action } = req.body ?? {};
   let params = req.body?.params ?? {};
 
+  // The advanced controls share the engine: reconfiguring it makes the CEO run stale
+  if (reconfiguresEngine(action, params)) {
+    session.scenario = null;
+    session.advice = null;
+    dropCompare(session);
+  }
+
   switch (action) {
     case 'play':            controls.play(engine);    break;
     case 'pause':           controls.pause(engine);   break;
@@ -246,14 +284,25 @@ app.post('/api/control', async (req, reply) => {
         reply.code(400);
         return { ok: false, error: `unknown scenario (allowed: ${UI_SCENARIO_IDS.join(', ')})` };
       }
-      const sc = buildUiScenario(id);
+      let shifts;
+      try { shifts = normaliseShifts(params.shifts === undefined ? undefined : Number(params.shifts)); }
+      catch (err) { reply.code(400); return { ok: false, error: err.message }; }
+      const sc = buildUiScenario(id, shifts);
       const cfg = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
       cfg.source.materialStock = -1;
       engine.loadConfig(cfg);
-      engine.configureScenario({ ...sc.configureOptions, runShifts: RUN_SHIFTS });
+      engine.configureScenario({ ...sc.configureOptions, runShifts: shifts });
       session.scenario = id;
+      session.runShifts = shifts;
       session.advice = null;
-      controls.setSpeed(engine, 10);
+      dropCompare(session);
+      if (params.instant) {
+        // run all shifts at once (about a second); the diagram jumps to the final state
+        while ((engine.orders?.rows.length ?? 0) < shifts) engine._tick();
+        return { ok: true, tick: engine.tick };
+      }
+      const speed = Number(params.speed);
+      controls.setSpeed(engine, UI_SPEEDS.includes(speed) ? speed : 10);
       controls.play(engine);
       return { ok: true, tick: engine.tick };
     }
@@ -305,12 +354,12 @@ app.get('/api/kpis', async (req) => kpisFor(getSession(req.sid).engine));
 // CEO interface: where the scenario run is, and its summary once all shifts are closed
 function resultsFor(session) {
   const { engine } = session;
-  if (!session.scenario) return { status: 'idle', scenario: null, shiftsDone: 0, shiftsTotal: RUN_SHIFTS, summary: null };
+  if (!session.scenario) return { status: 'idle', scenario: null, shiftsDone: 0, shiftsTotal: session.runShifts, summary: null };
   const shiftsDone = engine.orders?.rows.length ?? 0;
-  const done = shiftsDone >= RUN_SHIFTS;
+  const done = shiftsDone >= session.runShifts;
   return {
-    status: done ? 'done' : 'running', scenario: session.scenario, shiftsDone, shiftsTotal: RUN_SHIFTS,
-    summary: done ? buildRunSummary(engine, buildUiScenario(session.scenario), RATE_CARD) : null,
+    status: done ? 'done' : 'running', scenario: session.scenario, shiftsDone, shiftsTotal: session.runShifts,
+    summary: done ? buildRunSummary(engine, buildUiScenario(session.scenario, session.runShifts), RATE_CARD) : null,
   };
 }
 
@@ -327,7 +376,7 @@ async function advise(req, reply, run) {
     return { error: 'Run a scenario to the end first' };
   }
   try {
-    return await run(r.summary, buildUiScenario(session.scenario));
+    return await run(r.summary, buildUiScenario(session.scenario, session.runShifts));
   } catch (err) {
     reply.code(502);
     return { error: err.message };
@@ -335,7 +384,103 @@ async function advise(req, reply, run) {
 }
 
 app.post('/api/advisor/explain', (req, reply) => advise(req, reply, (summary) => advisor.explain(summary)));
-app.post('/api/advisor/improve', (req, reply) => advise(req, reply, (summary, sc) => advisor.improve(summary, sc)));
+app.post('/api/advisor/improve', async (req, reply) => {
+  let answers;
+  try { answers = validateAnswers(req.body?.answers ?? null); }
+  catch (err) { reply.code(400); return { error: err.message }; }
+  const session = getSession(req.sid);
+  if (session.compare?.running) {
+    reply.code(409);
+    return { error: 'Stop the comparison first' };
+  }
+  return advise(req, reply, async (summary, sc) => {
+    const r = await advisor.improve(summary, sc, answers, { shifts: session.runShifts });
+    if (r.status === 'proposed') {
+      dropCompare(session);                    // a new proposal replaces the old comparison
+      session.advice = {
+        scenarioId: sc.id, selection: [{ id: r.countermeasure.id, params: r.countermeasure.params }],
+        label: r.countermeasure.label, source: 'advisor', shifts: session.runShifts,
+      };
+    }
+    return r;
+  });
+});
+
+// The countermeasures the CEO can pick from for the current run (one source: the catalogue)
+app.get('/api/countermeasures', async (req) => {
+  const session = getSession(req.sid);
+  if (!session.scenario) return [];
+  const d = buildUiScenario(session.scenario, session.runShifts).disruptionId;
+  return d ? catalogueFor(d) : [];
+});
+
+// Manual selection (one or several countermeasures): the simulation checks it, no LLM involved
+app.post('/api/countermeasures/test', async (req, reply) => {
+  const session = getSession(req.sid);
+  const r = resultsFor(session);
+  if (r.status !== 'done') { reply.code(409); return { error: 'Run a scenario to the end first' }; }
+  if (session.compare?.running) { reply.code(409); return { error: 'Stop the comparison first' }; }
+  const sc = buildUiScenario(session.scenario, session.runShifts);
+  if (!sc.disruptionId) { reply.code(409); return { error: 'No countermeasures are available for this scenario' }; }
+  const selection = req.body?.selection;
+  let resolved;
+  try { resolved = resolveSelection(selection, sc.disruptionId); }
+  catch (err) { reply.code(400); return { error: err.message }; }
+  try {
+    const check = await evaluateSelection(sc.disruptionId, selection, { seeds: range(1, 10), shifts: session.runShifts });
+    dropCompare(session);
+    session.advice = {
+      scenarioId: sc.id, selection: resolved.items.map(i => ({ id: i.cm.id, params: i.params })),
+      label: resolved.label, source: 'manual', shifts: session.runShifts,
+    };
+    return {
+      status: 'proposed', source: 'manual', countermeasure: check.countermeasure, constraintsApplied: [], answers: null,
+      check: { runs: check.runs, without: check.without, with: check.with, change: check.change, verdict: check.verdict },
+    };
+  } catch (err) {
+    reply.code(502);
+    return { error: err.message };
+  }
+});
+
+// Demo values for the Current Situation bar (visual only; the simulation does not read them)
+app.get('/api/current-situation', async () => loadCurrentSituation());
+
+// Side-by-side comparison: as is vs. with the proposed countermeasure
+app.post('/api/compare/start', async (req, reply) => {
+  const session = getSession(req.sid);
+  if (!session.advice || session.advice.scenarioId !== session.scenario) {
+    reply.code(409);
+    return { error: 'Ask for an improvement first' };
+  }
+  const speed = Number(req.body?.speed);
+  if (!session.compare) session.compare = new CompareRunner(session.advice);
+  session.compare.start({ speed: UI_SPEEDS.includes(speed) ? speed : 1, instant: !!req.body?.instant });
+  return { ok: true };
+});
+
+app.post('/api/compare/speed', async (req, reply) => {
+  const speed = Number(req.body?.speed);
+  if (!UI_SPEEDS.includes(speed)) { reply.code(400); return { error: 'speed must be 1, 2 or 10' }; }
+  getSession(req.sid).compare?.setSpeed(speed);
+  return { ok: true };
+});
+
+app.post('/api/compare/stop', async (req) => {
+  getSession(req.sid).compare?.stop();
+  return { ok: true };
+});
+
+app.get('/api/compare/results', async (req) => {
+  const c = getSession(req.sid).compare;
+  if (!c || !c.done) return { status: c ? (c.running ? 'running' : 'stopped') : 'idle' };
+  return {
+    status: 'done',
+    countermeasure: c.countermeasure,
+    a: buildRunSummary(c.a, c.scenario, RATE_CARD),
+    b: buildRunSummary(c.b, c.scenario, RATE_CARD),
+  };
+});
 
 // Per-tick history export — CSV or JSON download of every simulation step
 // recorded since the last reset. Format defaults to JSON.

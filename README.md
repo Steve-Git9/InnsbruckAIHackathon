@@ -39,6 +39,13 @@ The page is built for a plant CEO (the older engineering controls are hidden, no
 4. **Explain me these results**: the AI shift advisor explains the run in plain words.
 5. **How to improve the results?**: the advisor proposes one countermeasure from the catalogue (only Demand Swing has countermeasures for now); the simulation then tests it in 10 runs and shows a verdict.
 
+6. For Demand Swing, step 5 first asks a short **questionnaire** (what matters most, how much you can invest, whether overtime is allowed, preferred kind of fix, free text) or **Give me the best** to skip it. Budget and overtime answers are hard limits enforced in code. After the proposal, **Compare side by side** shows two animated lines at the same time: the scenario as it is, and the same scenario with the countermeasure (speed x1, x2, x10, or Instant), with before/after tiles when both finish.
+
+7. **Shifts**: the run length is chosen next to Simulate (1 to 60, default 20). It applies to the run, the Results, the 10-run check and the comparison. The reference values of the data package refer to 20 shifts.
+8. For Demand Swing, **How to improve the results?** shows the three countermeasures as cards. Tick one or any combination, set the values and click **Test my selection**, or click **Ask the Intelligent Shift Advisor** for the questionnaire and AI flow above.
+9. The **Current Situation** bar at the top shows demo values (finished-goods stock, raw-material stock, last maintenance) from `src/data/current_situation.json`. They are not connected to the simulation.
+10. The old controls and metrics are back as **Advanced controls** and **Advanced metrics** (collapsed by default). Every section and sub-block can be collapsed, and the choice is remembered in the browser. Using an advanced control that resets or reconfigures the engine clears the CEO Results.
+
 The AI is called only from the server. It needs a `.env` file in the repo root with `CLIENT_ID` and `CLIENT_SECRET` (git-ignored; `docker compose` passes it to the container). The AI never produces numbers: every figure comes from the simulation. Related endpoints: `GET /api/results`, `POST /api/advisor/explain`, `POST /api/advisor/improve`.
 
 ## Realism layer (all of it is OFF by default)

@@ -106,3 +106,52 @@ export function catalogueFor(disruptionId) {
     .filter(c => c.appliesTo.includes(disruptionId))
     .map(({ id, label, description, params, cost }) => ({ id, label, description, params, cost }));
 }
+
+/**
+ * resolveSelection(selection, disruptionId): one or several countermeasures at once.
+ * selection = [{ id, params }], 1..3 entries, unique ids, all offered for the disruption.
+ * -> { items: [{ cm, params }], label, override: { config, initialFinishedGoods? } }
+ *
+ * Merge rules: machines are built in the order faster-m3 -> second-m3 (so M3b is a copy of the
+ * already faster M3); the source interval is the smallest of the selected items; overtime as is.
+ */
+export function resolveSelection(selection, disruptionId = null) {
+  if (!Array.isArray(selection)) throw new Error('selection must be a list');
+  if (selection.length === 0) throw new Error('select at least one countermeasure');
+  if (selection.length > 3) throw new Error('select at most 3 countermeasures');
+  const seen = new Set();
+  const resolved = [];
+  for (const s of selection) {
+    if (!s || typeof s !== 'object') throw new Error('each selection entry needs an id');
+    if (seen.has(s.id)) throw new Error(`countermeasure "${s.id}" is selected twice`);
+    seen.add(s.id);
+    const r = resolveCountermeasure(s.id, s.params ?? {}, disruptionId);
+    resolved.push(r);
+  }
+  const order = Object.keys(COUNTERMEASURES);
+  resolved.sort((a, b) => order.indexOf(a.cm.id) - order.indexOf(b.cm.id));
+  const by = Object.fromEntries(resolved.map(r => [r.cm.id, r]));
+
+  const config = {};
+  if (by['faster-m3'] || by['second-m3']) {
+    const machines = baseMachines();
+    if (by['faster-m3']) {
+      const m3 = machines.find(m => m.id === 'M3');
+      m3.cycleTime -= by['faster-m3'].params.minutesSaved;
+    }
+    if (by['second-m3']) machines.push({ ...machines.find(m => m.id === 'M3'), id: 'M3b' });
+    config.machines = machines;
+    const intervals = resolved.map(r => r.override.config?.source?.interval).filter(v => v != null);
+    config.source = sourceWith(Math.min(...intervals));
+  }
+  if (by.overtime) config.overtime = by.overtime.override.config.overtime;
+  const override = { config };
+  const fg = resolved.map(r => r.override.initialFinishedGoods).find(v => v != null);
+  if (fg != null) override.initialFinishedGoods = fg;
+
+  return {
+    items: resolved.map(r => ({ cm: r.cm, params: r.params })),
+    label: resolved.map(r => r.cm.label).join(' + '),
+    override,
+  };
+}

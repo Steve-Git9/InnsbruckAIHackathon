@@ -21,7 +21,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { runVariant, range } from '../scenarios/scenarios.js';
 import { compare } from '../scenarios/sweep.js';
 import { loadRateCard, loadDemand } from '../data/loaders.js';
-import { DISRUPTIONS, COUNTERMEASURES, resolveCountermeasure } from './catalog.js';
+import { DISRUPTIONS, COUNTERMEASURES, resolveSelection } from './catalog.js';
 
 const baseCache = new Map();   // "disruption|seeds|shifts" -> baseline variant (the "without" run)
 
@@ -36,12 +36,13 @@ function verdictOf(c) {
   return { code: 'no-effect', text: 'No clear effect: do not apply.' };
 }
 
-export async function evaluateCountermeasure(disruptionId, countermeasureId, params = {}, {
+// One countermeasure or any combination: selection = [{ id, params }]
+export async function evaluateSelection(disruptionId, selection, {
   seeds = range(1, 30), shifts = 20, rate = loadRateCard(), profile = loadDemand(),
 } = {}) {
   const d = DISRUPTIONS[disruptionId];
   if (!d) throw new Error(`unknown disruption "${disruptionId}" (allowed: ${Object.keys(DISRUPTIONS).join(', ')})`);
-  const { cm, params: p, override } = resolveCountermeasure(countermeasureId, params, disruptionId);
+  const { items, label, override } = resolveSelection(selection, disruptionId);
   const ctx = { seeds, shifts, rate, profile };
 
   const key = `${disruptionId}|${seeds.join(',')}|${shifts}`;
@@ -56,10 +57,16 @@ export async function evaluateCountermeasure(disruptionId, countermeasureId, par
   }, ctx);
   const c = compare(base, variant);
   const mean = (a) => a.reduce((x, y) => x + y, 0) / a.length;
+  const first = items[0];
 
   return {
     disruption: { id: d.id, label: d.label },
-    countermeasure: { id: cm.id, label: cm.label, params: p, cost: cm.cost },
+    countermeasure: {
+      id: items.map(i => i.cm.id).join('+'), label,
+      params: items.length === 1 ? first.params : Object.fromEntries(items.map(i => [i.cm.id, i.params])),
+      cost: items.map(i => i.cm.cost).join(' | '),
+      items: items.map(i => ({ id: i.cm.id, label: i.cm.label, params: i.params, cost: i.cm.cost })),
+    },
     runs: seeds.length, shifts,
     without: {
       serviceLevel: base.serviceLevel.mean, profit: base.profit.mean,
@@ -74,6 +81,11 @@ export async function evaluateCountermeasure(disruptionId, countermeasureId, par
     change: { serviceLevel: c.dSL, profitOfficial: c.dProfit, profitConservative: c.dProfitCons },
     verdict: verdictOf(c),
   };
+}
+
+// One countermeasure (same output shape as before)
+export function evaluateCountermeasure(disruptionId, countermeasureId, params = {}, opts = {}) {
+  return evaluateSelection(disruptionId, [{ id: countermeasureId, params }], opts);
 }
 
 // ── CLI ─────────────────────────────────────────────────────────────────────

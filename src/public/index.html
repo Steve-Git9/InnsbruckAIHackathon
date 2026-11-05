@@ -24,6 +24,13 @@
   </header>
   <div id="toast" class="toast" hidden></div>
 
+  <!-- ── Current Situation (visual only, demo data) ───────────────────────── -->
+  <section id="current-situation">
+    <div id="cs-tiles" class="cs-tiles"></div>
+    <div id="cs-meta" class="cs-meta"></div>
+    <div class="cs-note">The simulation starts from the reference setting (empty warehouse); these values are not used in it yet.</div>
+  </section>
+
   <!-- ── Scenario bar (CEO interface) ────────────────────────────────────── -->
   <div id="scenario-bar">
     <label for="scenario-select">Scenario</label>
@@ -33,13 +40,24 @@
       <option value="supplier-outage">Supplier Outage</option>
       <option value="machinery-breakdown">Machinery Breakdown</option>
     </select>
+    <label for="shift-limit">Shifts</label>
+    <input type="number" id="shift-limit" min="1" max="60" step="1" value="20" />
+    <span id="shift-hint" class="shift-hint" hidden>Enter a whole number from 1 to 60.</span>
+    <label for="speed-select">Speed</label>
+    <select id="speed-select">
+      <option value="1">×1</option>
+      <option value="2">×2</option>
+      <option value="10" selected>×10</option>
+    </select>
     <button id="btn-simulate" type="button">Simulate</button>
+    <button id="btn-instant" type="button" title="Run all shifts at once, without the animation">Instant Simulation</button>
     <span id="run-status"></span>
+    <span id="shift-note" class="shift-hint" hidden>The supplier outage happens in shifts 11–12; choose at least 12 shifts to see all of it.</span>
   </div>
 
   <!-- ── Pipeline visualisation ──────────────────────────────────────────── -->
   <div id="pipeline-container">
-    <div id="suggestion-banner" class="legacy-hidden" hidden></div>
+    <div id="suggestion-banner" hidden></div>
     <svg id="pipeline-svg" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid meet"></svg>
 
     <!-- Machine detail panel (overlay, opened by clicking a machine) -->
@@ -120,24 +138,52 @@
     <h2>Results</h2>
     <div id="results-empty">Choose a scenario and click Simulate.</div>
     <div id="result-tiles" class="tiles"></div>
+    <div id="results-note" class="cm-note" hidden>Reference values of the data package refer to 20 shifts.</div>
   </section>
 
-  <!-- ── AI shift advisor ────────────────────────────────────────────────── -->
-  <section id="advisor">
-    <h2>AI shift advisor</h2>
-    <div class="advisor-buttons">
-      <button id="btn-explain" class="advisor-btn" type="button" disabled>Explain me these results</button>
-      <button id="btn-improve" class="advisor-btn" type="button" disabled>How to improve the results?</button>
+  <!-- ── Side-by-side comparison ─────────────────────────────────────────── -->
+  <section id="compare" hidden>
+    <div class="cmp-head">
+      <h2 id="cmp-title">Side-by-side</h2>
+      <div class="cmp-controls">
+        <label for="cmp-speed">Speed</label>
+        <select id="cmp-speed">
+          <option value="1">×1</option>
+          <option value="2">×2</option>
+          <option value="10" selected>×10</option>
+        </select>
+        <button id="cmp-run" class="primary-btn" type="button">Run comparison</button>
+        <button id="cmp-instant" class="advisor-btn" type="button">Instant</button>
+        <span id="cmp-status" class="cmp-status"></span>
+      </div>
     </div>
-    <div id="advisor-output" class="advisor-card" hidden>
-      <div class="advisor-label">AI explanation – based only on the simulation numbers above</div>
-      <div id="advisor-text" class="advisor-text"></div>
+    <div class="cmp-grid">
+      <div class="cmp-card" id="cmp-card-a">
+        <div class="cmp-card-head">
+          <span class="cmp-title">As is</span><span class="tag tag-grey">scenario</span>
+          <span class="tag tag-wait" id="cmp-wait" hidden>Shift closed – waiting</span>
+        </div>
+        <svg id="cmp-svg-a" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="cmp-strip" id="cmp-strip-a"></div>
+      </div>
+      <div class="cmp-card" id="cmp-card-b">
+        <div class="cmp-card-head">
+          <span class="cmp-title">With countermeasure</span><span class="tag tag-green" id="cmp-b-tag">fix</span>
+          <span class="tag tag-amber" id="cmp-ot" hidden>OVERTIME</span>
+        </div>
+        <svg id="cmp-svg-b" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="cmp-strip" id="cmp-strip-b"></div>
+      </div>
     </div>
-    <div id="proposal-card" class="advisor-card" hidden></div>
+    <div id="cmp-results" hidden>
+      <h3>Before → after</h3>
+      <div id="cmp-tiles" class="tiles"></div>
+      <div class="cm-note">One run each (same random draws); the check above averages 10 runs, so numbers differ slightly.</div>
+    </div>
   </section>
 
   <!-- ── Controls ────────────────────────────────────────────────────────── -->
-  <section id="controls" class="legacy-hidden">
+  <section id="controls">
     <!-- Start prompt: shown on initial load (sim paused, not yet started) -->
     <div id="start-banner" hidden>
       <span class="start-banner-text">&#9654; Simulation ready &ndash; not started yet.</span>
@@ -232,7 +278,7 @@
   </section>
 
   <!-- ── Metrics dashboard ────────────────────────────────────────────────── -->
-  <section id="metrics" class="legacy-hidden">
+  <section id="metrics">
     <div class="metric-cards">
       <div class="metric-card">
         <div class="label">Throughput <span class="info-icon" data-tip="Number of finished parts per 100 simulation ticks.">i</span></div>
@@ -316,6 +362,38 @@
         <tbody id="machine-table-body"></tbody>
       </table>
     </div>
+  </section>
+
+  <!-- ── AI shift advisor ────────────────────────────────────────────────── -->
+  <section id="advisor">
+    <h2>AI shift advisor</h2>
+    <div class="advisor-buttons">
+      <button id="btn-explain" class="advisor-btn" type="button" disabled>Explain me these results</button>
+      <button id="btn-improve" class="advisor-btn" type="button" disabled>How to improve the results?</button>
+    </div>
+    <div id="advisor-output" class="advisor-card" hidden>
+      <div class="advisor-label">AI explanation – based only on the simulation numbers above</div>
+      <div id="advisor-text" class="advisor-text"></div>
+    </div>
+    <div id="improve-panel" class="advisor-card" hidden></div>
+    <div id="questionnaire" class="advisor-card" hidden>
+      <div class="q-title">Help the AI choose</div>
+      <div class="q-sub">Answer what matters to you, or let the AI decide.</div>
+      <div id="q-rows"></div>
+      <div class="q-row">
+        <div class="q-label">Anything else we should know?</div>
+        <div class="q-notes">
+          <textarea id="q-notes" maxlength="500" rows="3" placeholder="e.g. constraints, worries, deadlines"></textarea>
+          <div class="q-counter"><span id="q-count">0</span> / 500</div>
+        </div>
+      </div>
+      <div class="q-actions">
+        <button id="q-find" class="primary-btn" type="button">Find my countermeasure</button>
+        <button id="q-best" class="link-btn" type="button">Give me the best</button>
+        <button id="q-back" class="link-btn" type="button">← Choose manually instead</button>
+      </div>
+    </div>
+    <div id="proposal-card" class="advisor-card" hidden></div>
   </section>
 
 </div><!-- #app -->

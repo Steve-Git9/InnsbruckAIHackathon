@@ -254,7 +254,7 @@ For comparison, the Phase 2 winner, a finished-goods buffer of 50 sets, reaches 
 
 ---
 
-## 7. Next step: the AI shift advisor (not started)
+## 7. AI shift advisor: agreed product design (built in section 8)
 
 Agreed product (2026-11-04):
 - **User:** the CEO / C-level manager, who wants to understand how to face a disruption.
@@ -287,7 +287,7 @@ Agreed product (2026-11-04):
 | LLM client | `src/advisor/llm.js` | Server-side call of the hackathon proxy (as `api.py`); reads `CLIENT_ID` / `CLIENT_SECRET` from the environment or `.env`; 30 s timeout; errors never contain the secret |
 | Advisor | `src/advisor/advisor.js` | `explain` words the facts; `improve` asks for one catalogue pick (id + parameters), validates it with `resolveCountermeasure` (one retry), then has `evaluateCountermeasure` simulate it (10 runs) |
 | Server | `src/server.js` | Action `runScenario`, `GET /api/results`, `POST /api/advisor/explain`, `POST /api/advisor/improve` |
-| Tests | `test/ui-scenarios.test.js`, `run-summary.test.js`, `advisor.test.js` | 15 new tests; the LLM and the evaluator are mocked, no test uses the network |
+| Tests | `test/ui-scenarios.test.js`, `run-summary.test.js`, `advisor.test.js` | 16 new tests; the LLM and the evaluator are mocked, no test uses the network |
 
 **Why.** The audience is a CEO, not an engineer. The LLM is kept to wording: it never produces a number, and it can only choose from the priced catalogue. A proposal is called "works" only after the simulation has run it.
 
@@ -298,7 +298,83 @@ Agreed product (2026-11-04):
 - The tiles show one run (seed 1); the simulation check shows the average of 10 runs, so the numbers differ slightly (the UI says so).
 - The check takes roughly 10–20 s and runs on the server's single thread, so the page's animation of other sessions can stutter meanwhile.
 
+**Speed and Instant Simulation (added afterwards).** Next to **Simulate**, a speed selector (×1, ×2, ×10) sets how fast the animation runs. **Instant Simulation** runs all 20 shifts at once on the server (about 0.4 s) without the animation, so the CEO goes straight to the Results.
+
+**Review (2026-11-04).** We checked the build against the handover instructions (`INSTRUCTIONS_UI_AND_ADVISOR.md`):
+- `npm test`: **125 / 125** pass, and `run.check.mjs` prints **ALL PASSED**, so the simulation is unchanged.
+- The LLM is called only from the server (`src/advisor/llm.js`), and the secret is not in any response or error.
+- The proxy accepts only "user" and "assistant" messages, so the system prompt is folded into the first user message (`foldSystem`).
+- AI proposals are validated against the catalogue, with one retry, before the simulation checks them.
+- Outside Demand Swing, "How to improve" answers without calling the LLM.
+
 **How to run it.** `npm install`, create `.env` with `CLIENT_ID` and `CLIENT_SECRET`, `npm run dev`, open http://localhost:3000. With Docker: `docker compose up --build` (the compose file passes `.env` to the container).
+
+---
+
+## 9. CEO questionnaire and side-by-side comparison
+
+**What was built (2026-11-04).** "How to improve the results?" no longer goes straight to the LLM. For Demand Swing it opens a short questionnaire; the answers narrow the catalogue in code, the LLM picks from what is left, the simulation checks the pick (10 runs), and a **Compare side by side** button shows two animated lines running at the same time.
+
+| Piece | File | Role |
+|---|---|---|
+| Questionnaire | `src/public/index.html`, `app.js` | 5 questions (goal, investment, overtime, kind of fix, free text up to 500 characters); **Find my countermeasure**, **Give me the best**, **Change my answers** |
+| Hard limits | `src/advisor/constraints.js` | `validateAnswers`, `applyConstraints`, `checkProposal`. Investment comes from `rate_card.csv` (faster M3: 30,000 per minute; second M3: 95,000). Budget and overtime answers remove options or lower the overtime maximum; goal, fix type and the free text only go to the prompt |
+| Advisor | `src/advisor/advisor.js` | `improve(summary, scenario, answers)`: sends the narrowed catalogue plus `CEO_ANSWERS` / `CEO_NOTES`, validates the pick against the narrowed catalogue (one retry), returns `constraintsApplied` and `answers`. If nothing is allowed it answers "no options" without calling the LLM |
+| Comparison runner | `src/ui/compare-runner.js` | Two engines, same seed 1: A = as is, B = with the countermeasure. One driver loop advances them by the plant clock, so A waits (shift closed) while B works overtime and both end at plant tick 9,600 |
+| Server | `src/server.js` | `POST /api/advisor/improve` takes `{ answers }` (400 if invalid); `POST /api/compare/start`, `/speed`, `/stop`; `GET /api/compare/results`; a `compare` field in the SSE stream |
+| Reusable diagram | `src/public/pipeline-view.js` | `PipelineView` class: the line drawing with id prefixes and per-instance state. The main diagram in `app.js` is unchanged; `PipelineView` should replace it later |
+| Tests | `test/constraints.test.js`, `compare-runner.test.js`, `advisor.test.js` | 24 new tests; no test uses the network |
+
+**Why.** The CEO has real limits (money, overtime) that a prompt can only ask the model to respect. Enforcing them in code means the model can never propose what the CEO ruled out. Two lines running side by side let the CEO see the effect instead of reading a number.
+
+**How it was validated.** 149 / 149 tests pass; `run.check.mjs` prints ALL PASSED. The runner tests check that engine A equals a solo run of the same scenario and that engine B equals `runHeadless` with the same countermeasure config. A live test with the LLM confirmed that "no investment + up to 1 h overtime" yields an overtime maximum of 60 minutes, and "no investment + no overtime" returns "no options" without an LLM call.
+
+**Known limits.**
+- Only Demand Swing has questions and countermeasures.
+- The comparison shows one run each (seed 1). The check above it averages 10 runs, so the numbers differ slightly (the UI says so).
+- The 10-run check blocks the server for 10–20 s. The advisor buttons are disabled while a comparison runs.
+- Instant mode runs the comparison to the end without animation.
+
+**How to use it.** Run Demand Swing, click **How to improve the results?**, answer the questions (or **Give me the best**), then **Compare side by side** and **Run comparison** (speed ×1, ×2, ×10) or **Instant**. Below 1,100 px of window width the two diagrams stack.
+
+---
+
+## 10. Full interface, manual selection, Current Situation, shift limit
+
+**What was built (2026-11-05).** Five changes on top of sections 8 and 9.
+
+1. **Full interface back, with collapse toggles.** The old controls and metrics are visible again as **Advanced controls** and **Advanced metrics** (collapsed by default). Every section has a header row with a chevron button (`aria-expanded`, `aria-controls`), and so does every sub-block: Simulation Control, Scenarios, Plant default, Realism, Speed, Source, Machine cycle times and Buffer capacities in the controls; summary cards, Orders & economics, Throughput and the machines table in the metrics. One helper, `makeCollapsible`, does all of it; the state is kept in `localStorage` (`ui.collapsed.<id>`, every access in `try/catch`). The advanced controls share the engine with the CEO run, so an action that resets or reconfigures it (`src/ui/session-rules.js`) makes the server forget the run, and the Results show "The run was changed with the advanced controls – click Simulate to start a new run." `play`, `pause` and speed keep the run.
+2. **Manual selection of countermeasures.** For Demand Swing, **How to improve the results?** shows one card per countermeasure (select box, description, cost note, parameter select built from the catalogue bounds). Any combination of 1–3 can be tested with **Test my selection**. **Ask the Intelligent Shift Advisor** opens the questionnaire and LLM flow from section 9, unchanged. Both paths end in the same proposal card, titled "Your selection" or "The advisor's choice", followed by **Compare side by side**.
+3. **Placeholder comparison table** of the three countermeasures (rows built from the catalogue, every value "—", `data-placeholder="true"` on the body), to be filled from the simulation later.
+4. **Current Situation bar** (finished-goods stock, raw-material stock, last maintenance with an "all machines" list), from the demo file `src/data/current_situation.json` through `GET /api/current-situation`. It is labelled as demo data and is **not read by the simulation**.
+5. **Shift limit** (1–60, default 20) next to Simulate and Instant Simulation. It drives the run, the Results, the 10-run check and the comparison.
+
+| Piece | File |
+|---|---|
+| Combination of countermeasures | `src/countermeasures/catalog.js` (`resolveSelection`) |
+| Check of a selection | `src/countermeasures/evaluate.js` (`evaluateSelection`; `evaluateCountermeasure` is a wrapper) |
+| Advice in the session | `session.advice = { scenarioId, selection, label, source: 'manual' \| 'advisor', shifts }` |
+| Comparison with a selection and a shift count | `src/ui/compare-runner.js` |
+| Shift count in scenarios | `src/ui/scenarios.js` (`buildUiScenario(id, shifts)`, `normaliseShifts`) |
+| Endpoints | `GET /api/countermeasures`, `POST /api/countermeasures/test`, `GET /api/current-situation`; `runScenario` takes `shifts` |
+| Tests | `test/selection.test.js`, `current-situation.test.js`, extended `compare-runner.test.js` |
+
+**Merge rules for a combination.** Machines are built in the order faster M3, then second M3 (so M3b is a copy of the already faster M3); the release interval is the smallest of the selected items; overtime is added as it is. A one-item selection gives exactly the override the single countermeasure gave before (a test checks this).
+
+**Investment of a faster second machine (`src/economics/costs.js`).** A spawned machine such as M3b is now compared with the baseline machine of its station, so a faster M3b is charged for its cycle-time reduction too ("per tick per machine" in the rate card). Faster M3 (2 min) plus Second M3 costs 2 × 2 × 30,000 + 95,000. Nothing changes for existing runs, where spawned machines have the baseline cycle.
+
+**Why.** The CEO wants to try ideas without waiting for the AI, and to see more than the fixed 20 shifts. The old controls stay available for engineers, but the CEO view stays clean because they are collapsed.
+
+**How it was validated.** 163 / 163 tests pass (14 new) and `run.check.mjs` prints ALL PASSED; the four reference scenarios are unchanged at 20 shifts. The page was also driven in a real headless browser (no JavaScript errors): collapse toggles and their persistence, the Current Situation bar, shift validation and the outage hint, an 8-shift Demand Swing run, the cards, a combined selection (Overtime + Faster M3: 17.4% → 86.7% on time in the check), and the comparison with its before → after tiles.
+
+**Known limits.**
+- Reference values of the data package hold only at 20 shifts; with another count the Results say so.
+- The shift limit applies to every scenario; the supplier outage sits in shifts 11–12, so the UI hints at least 12 shifts for it.
+- The Current Situation values are demo data and are not connected to the simulation.
+- The placeholder table has no values yet.
+- The Machines sub-block of the Advanced controls was not created because that block does not exist as a separate row; the per-machine table is under Advanced metrics.
+
+**How to use it.** Choose a scenario and a number of shifts, **Simulate** or **Instant Simulation**, read the Results. For Demand Swing, click **How to improve the results?**, tick one or more countermeasures and **Test my selection** (or **Ask the Intelligent Shift Advisor**), then **Compare side by side**. Open **Advanced controls** or **Advanced metrics** for the engineering view; using an advanced control that changes the engine clears the Results.
 
 ---
 
@@ -310,4 +386,7 @@ Agreed product (2026-11-04):
 | 2026-11-04 | Review fixes: material limit, shift clock and badges, per-shift table, banner notes, regression tests (section 2.10) |
 | 2026-11-04 | Phase 2: countermeasure sweep, conservative profit, out-of-sample check, recommendations attached to the reference scenarios (section 5) |
 | 2026-11-04 | Demand swing countermeasures for the AI advisor: overtime engine feature + cost, catalogue with guardrails, evaluator with verdicts (section 6). Tests: 109 / 109 pass; reference check ALL PASSED |
-| 2026-11-04 | CEO interface and AI shift advisor: light theme, scenario bar, Results tiles, explain / improve endpoints, engine `runShifts` auto-stop (section 8). Tests: 124 / 124 pass; reference check ALL PASSED |
+| 2026-11-04 | CEO interface and AI shift advisor: light theme, scenario bar, Results tiles, explain / improve endpoints, engine `runShifts` auto-stop (section 8). Tests: 125 / 125 pass; reference check ALL PASSED |
+| 2026-11-04 | CEO interface: speed selector (×1, ×2, ×10) and an Instant Simulation button (runs all 20 shifts at once, about 0.4 s, no animation) |
+| 2026-11-04 | CEO questionnaire (code-enforced budget and overtime limits) and side-by-side comparison of two animated lines (section 9). Tests: 149 / 149 pass; reference check ALL PASSED |
+| 2026-11-05 | Full interface with per-section collapse toggles, manual selection of countermeasures (any combination) with a placeholder comparison table, Current Situation bar (demo data), manual shift limit 1–60 that applies everywhere; faster second machine is charged its cycle-time investment (section 10). Tests: 163 / 163 pass; reference check ALL PASSED |
