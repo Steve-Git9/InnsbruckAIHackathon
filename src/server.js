@@ -47,7 +47,8 @@ import { reconfiguresEngine } from './ui/session-rules.js';
 import { catalogueFor, resolveSelection } from './countermeasures/catalog.js';
 import { evaluateSelection } from './countermeasures/evaluate.js';
 import { range } from './scenarios/scenarios.js';
-import { buildRunSummary } from './ui/run-summary.js';
+import { buildRunSummary, engineRecord } from './ui/run-summary.js';
+import { costBreakdown } from './economics/breakdown.js';
 import { createAdvisor } from './advisor/advisor.js';
 import { validateAnswers } from './advisor/constraints.js';
 import { CompareRunner } from './ui/compare-runner.js';
@@ -434,7 +435,7 @@ app.post('/api/countermeasures/test', async (req, reply) => {
       label: resolved.label, source: 'manual', shifts: session.runShifts,
     };
     return {
-      status: 'proposed', source: 'manual', countermeasure: check.countermeasure, constraintsApplied: [], answers: null,
+      status: 'proposed', source: 'manual', countermeasure: check.countermeasure, constraintsApplied: [], answers: null, costs: check.costs,
       check: { runs: check.runs, without: check.without, with: check.with, change: check.change, verdict: check.verdict },
     };
   } catch (err) {
@@ -479,6 +480,8 @@ app.get('/api/compare/results', async (req) => {
     countermeasure: c.countermeasure,
     a: buildRunSummary(c.a, c.scenario, RATE_CARD),
     b: buildRunSummary(c.b, c.scenario, RATE_CARD),
+    // this one run (same random draws): the same cost lines as in the proposal card
+    costs: costBreakdown({ without: [engineRecord(c.a, RATE_CARD)], with: [engineRecord(c.b, RATE_CARD)], rate: RATE_CARD, shifts: c.shifts, label: c.countermeasure.label }),
   };
 });
 

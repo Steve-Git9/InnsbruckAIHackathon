@@ -46,6 +46,8 @@ The page is built for a plant CEO (the older engineering controls are hidden, no
 9. The **Current Situation** bar at the top shows demo values (finished-goods stock, raw-material stock, last maintenance) from `src/data/current_situation.json`. They are not connected to the simulation.
 10. The old controls and metrics are back as **Advanced controls** and **Advanced metrics** (collapsed by default). Every section and sub-block can be collapsed, and the choice is remembered in the browser. Using an advanced control that resets or reconfigures the engine clears the CEO Results.
 
+11. After a countermeasure is checked, the proposal card (and the side-by-side results) show **Cost of the improvement**: a headline, the tables "What you pay" and "What you get" with the formula and rate-card price of every line, the upfront investment, cost per rescued order against the EUR 90 penalty, the payback, and a profit bridge chart from the "As is" profit to the "With countermeasure" profit. The lines add up exactly to the profit change. All of it is computed by code, not by the AI.
+
 The AI is called only from the server. It needs a `.env` file in the repo root with `CLIENT_ID` and `CLIENT_SECRET` (git-ignored; `docker compose` passes it to the container). The AI never produces numbers: every figure comes from the simulation. Related endpoints: `GET /api/results`, `POST /api/advisor/explain`, `POST /api/advisor/improve`.
 
 ## Realism layer (all of it is OFF by default)

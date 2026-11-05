@@ -108,7 +108,7 @@ export function createAdvisor({ chat = defaultChat, evaluate = evaluateCounterme
       status: 'proposed', source: 'advisor',
       countermeasure: check.countermeasure,
       reason: proposal.reason,
-      constraintsApplied: applied, answers,
+      constraintsApplied: applied, answers, costs: check.costs,
       check: { runs: check.runs, without: check.without, with: check.with, change: check.change, verdict: check.verdict },
     };
   }

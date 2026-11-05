@@ -311,9 +311,9 @@ function drawSource(p) {
   const g = el('g', { id: 'elem-SOURCE' });
 
   g.appendChild(el('rect', { x, y, width: SRC_W, height: SRC_H, rx: 6,
-    fill: '#ffffff', stroke: '#4f46e5', 'stroke-width': 1.5 }));
+    fill: '#f6f3ec', stroke: '#4f46e5', 'stroke-width': 1.5 }));
   g.appendChild(el('rect', { id: 'src-stock-bg', x: x + 8, y: y + SRC_H - 20, width: SRC_W - 16, height: 10,
-    rx: 3, fill: '#e5e8ef' }));
+    rx: 3, fill: '#d9d3c5' }));
   g.appendChild(el('rect', { id: 'src-stock-fill', x: x + 8, y: y + SRC_H - 20, width: SRC_W - 16, height: 10,
     rx: 3, fill: '#6366f1' }));
   g.appendChild(txt('SOURCE', { x: x + SRC_W / 2, y: y + 18, 'text-anchor': 'middle', 'font-size': '10', fill: '#4f46e5' }));
@@ -327,7 +327,7 @@ function drawBuffer(buf, p) {
   const g = el('g', { id: `elem-${id}` });
 
   g.appendChild(el('rect', { x, y, width: BUF_W, height: BUF_H, rx: 5,
-    fill: '#ffffff', stroke: '#cbd2de', 'stroke-width': 1.2 }));
+    fill: '#f6f3ec', stroke: '#b3ab98', 'stroke-width': 1.2 }));
   g.appendChild(txt(id, { x: x + BUF_W / 2, y: y + 13, 'text-anchor': 'middle', 'font-size': '9', fill: '#64748b' }));
   g.appendChild(txt('0/0', { id: `buf-load-${id}`, x: x + BUF_W / 2, y: y + BUF_H - 5, 'text-anchor': 'middle', 'font-size': '10' }));
   g.appendChild(el('g', { id: `buf-slots-${id}` }));
@@ -342,7 +342,7 @@ function drawMachine(m, p) {
   g.addEventListener('click', () => openMachineDetail(id));
 
   g.appendChild(el('rect', { id: `mach-rect-${id}`, x, y, width: MACH_W, height: MACH_H,
-    rx: 8, class: 'machine-rect IDLE', fill: '#ffffff', stroke: '#cbd2de', 'stroke-width': 1.5 }));
+    rx: 8, class: 'machine-rect IDLE', fill: '#f6f3ec', stroke: '#b3ab98', 'stroke-width': 1.5 }));
 
   const shortName = name.length > 17 ? name.slice(0, 16) + '…' : name;
   g.appendChild(txt(shortName, { x: x + MACH_W / 2, y: y + 11, 'text-anchor': 'middle',
@@ -357,7 +357,7 @@ function drawMachine(m, p) {
   const circ = 2 * Math.PI * r;
 
   // Background circle
-  g.appendChild(el('circle', { cx, cy, r, fill: 'none', stroke: '#e5e8ef', 'stroke-width': 4 }));
+  g.appendChild(el('circle', { cx, cy, r, fill: 'none', stroke: '#d9d3c5', 'stroke-width': 4 }));
 
   // Progress arc — dasharray trick: stroke-dashoffset controls how much is shown
   const arc = el('circle', {
@@ -375,7 +375,7 @@ function drawMachine(m, p) {
 
   // State badge (bottom-left of machine rect)
   g.appendChild(el('rect', { id: `mach-badge-bg-${id}`, x: x + 4, y: y + MACH_H - 18, width: 50, height: 14,
-    rx: 7, fill: '#eef0f4' }));
+    rx: 7, fill: '#ece8dd' }));
   g.appendChild(txt('IDLE', { id: `mach-badge-${id}`, x: x + 29, y: y + MACH_H - 7,
     'text-anchor': 'middle', 'font-size': '8', fill: '#5b6475' }));
 
@@ -412,7 +412,7 @@ function drawSink(p) {
   const x = p.x, y = MAIN_Y - SINK_H / 2;
   const g = el('g', { id: 'elem-SINK' });
   g.appendChild(el('rect', { x, y, width: SINK_W, height: SINK_H, rx: 6,
-    fill: '#ffffff', stroke: '#22c55e', 'stroke-width': 1.5 }));
+    fill: '#f6f3ec', stroke: '#22c55e', 'stroke-width': 1.5 }));
   g.appendChild(txt('SINK', { x: x + SINK_W / 2, y: y + 16, 'text-anchor': 'middle', 'font-size': '10', fill: '#166534' }));
   g.appendChild(txt('0', { id: 'sink-count', x: x + SINK_W / 2, y: y + 40, 'text-anchor': 'middle',
     'font-size': '20', fill: '#22c55e', 'font-weight': 'bold' }));
@@ -424,7 +424,7 @@ function drawScrapSink(p) {
   const x = p.x, y = p.y;
   const g = el('g', { id: 'elem-SCRAP' });
   g.appendChild(el('rect', { x, y, width: SINK_W, height: SINK_H, rx: 6,
-    fill: '#ffffff', stroke: '#ef4444', 'stroke-width': 1.5 }));
+    fill: '#f6f3ec', stroke: '#ef4444', 'stroke-width': 1.5 }));
   g.appendChild(txt('SCRAP', { x: x + SINK_W / 2, y: y + 16, 'text-anchor': 'middle', 'font-size': '10', fill: '#b91c1c' }));
   g.appendChild(txt('0', { id: 'scrap-count', x: x + SINK_W / 2, y: y + 40, 'text-anchor': 'middle',
     'font-size': '20', fill: '#ef4444', 'font-weight': 'bold' }));
@@ -581,8 +581,8 @@ function updateMachine(m, mMetrics) {
   arcEl.setAttribute('stroke-dashoffset', offset.toFixed(2));
 
   // Arc colour by state
-  const arcColours = { PROCESSING: '#22c55e', IDLE: '#cbd2de', STARVED: '#f59e0b', BLOCKED: '#ef4444', DOWN: '#a855f7' };
-  arcEl.setAttribute('stroke', arcColours[m.state] ?? '#cbd2de');
+  const arcColours = { PROCESSING: '#22c55e', IDLE: '#b3ab98', STARVED: '#f59e0b', BLOCKED: '#ef4444', DOWN: '#a855f7' };
+  arcEl.setAttribute('stroke', arcColours[m.state] ?? '#b3ab98');
 
   // State badge
   if (badgeEl) {
@@ -591,8 +591,8 @@ function updateMachine(m, mMetrics) {
     badgeEl.setAttribute('fill', textColours[m.state] ?? '#5b6475');
   }
   if (badgeBg) {
-    const bgColours = { PROCESSING: '#dcfce7', IDLE: '#eef0f4', STARVED: '#fef3c7', BLOCKED: '#fee2e2', DOWN: '#f3e8ff' };
-    badgeBg.setAttribute('fill', bgColours[m.state] ?? '#eef0f4');
+    const bgColours = { PROCESSING: '#dcfce7', IDLE: '#ece8dd', STARVED: '#fef3c7', BLOCKED: '#fee2e2', DOWN: '#f3e8ff' };
+    badgeBg.setAttribute('fill', bgColours[m.state] ?? '#ece8dd');
   }
 
   // Machine rect stroke by state + bottleneck + selection
@@ -606,8 +606,8 @@ function updateMachine(m, mMetrics) {
     if (isBottleneck) stateClass = 'machine-rect bottleneck';
     if (isSelected)   stateClass += ' selected';
     rectEl.setAttribute('class', stateClass);
-    const strokeColours = { PROCESSING: '#22c55e', IDLE: '#cbd2de', STARVED: '#f59e0b', BLOCKED: '#ef4444', DOWN: '#a855f7' };
-    const baseStroke   = isBottleneck ? '#f97316' : (strokeColours[m.state] ?? '#cbd2de');
+    const strokeColours = { PROCESSING: '#22c55e', IDLE: '#b3ab98', STARVED: '#f59e0b', BLOCKED: '#ef4444', DOWN: '#a855f7' };
+    const baseStroke   = isBottleneck ? '#f97316' : (strokeColours[m.state] ?? '#b3ab98');
     rectEl.setAttribute('stroke', isSelected ? '#4f46e5' : baseStroke);
   }
 
@@ -742,7 +742,7 @@ function setConnectorBlocked(id, blocked) {
   const el = document.getElementById(id);
   if (!el) return;
   el.setAttribute('class', blocked ? 'pipe-connector blocked' : 'pipe-connector');
-  el.setAttribute('stroke', blocked ? '#ef4444' : '#cbd2de');
+  el.setAttribute('stroke', blocked ? '#ef4444' : '#b3ab98');
 }
 
 function setTextContent(id, value) {
@@ -1744,10 +1744,12 @@ function renderProposal(card, r) {
       <div class="cm-check-row"><span class="verdict ${badge[0]}">${esc(badge[1])}</span></div>
       <div class="cm-note">The check compares averages of ${c.runs} runs; the animation above is one run.</div>
     </div>
+    <div class="cost-panel" id="cost-panel-proposal"></div>
     <div class="cm-buttons">
       <button id="cmp-open" class="primary-btn" type="button">Compare side by side</button>
       ${change}
     </div>`;
+  renderCostPanel(document.getElementById('cost-panel-proposal'), r.costs);
   document.getElementById('q-change').addEventListener('click', reopen);
   document.getElementById('cmp-open').addEventListener('click', () => openCompare(cm));
 }
@@ -1941,6 +1943,10 @@ async function loadCompareResults() {
   const extra = b.production.goodParts - a.production.goodParts;
   if (extra > 0) tiles.push(arrowTile('Extra unsold stock', 0, extra, v => `${fmt0(v)} sets`, false));
   document.getElementById('cmp-tiles').innerHTML = tiles.join('');
+  renderCostPanel(document.getElementById('cmp-cost'), r.costs, {
+    basisLabel: 'This run (one run, same random draws)',
+    note: 'The averages in the proposal card above are more reliable.',
+  });
   document.getElementById('cmp-results').hidden = false;
 }
 
@@ -1970,6 +1976,124 @@ document.getElementById('cmp-speed').addEventListener('change', (e) => {
 
 // Pick up a run that is already in progress or finished (page reload)
 pollResults();
+
+// ── Cost of the improvement panel (one render function for the proposal card and the comparison) ──
+
+const eurSym = (n) => `${n < 0 ? '−' : ''}€${Math.round(Math.abs(n)).toLocaleString('en-US')}`;
+// **bold** markers of the server's headline -> <strong>, everything else escaped
+const boldHtml = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+function costRows(lines, isCost) {
+  return lines.map(l => {
+    const good = isCost ? l.amount < 0 : l.amount > 0;          // a saving, or a gain
+    const tag = l.assumption ? ` <span class="assume-tag" title="${esc(l.assumption)}">assumption</span>` : '';
+    return `<tr><td>${esc(l.label)}${tag}</td><td class="how">${esc(l.formula)}</td>`
+      + `<td class="amt ${good ? 'amt-good' : 'amt-bad'}">${eurSym(l.amount)}</td></tr>`;
+  }).join('');
+}
+
+// Waterfall from the "as is" profit to the "with countermeasure" profit (inline SVG)
+function bridgeSvg(c) {
+  const W = 940, H = 330, L = 78, R = 16, T = 22, B = 74;
+  const steps = [];
+  let run = c.bridge.start;
+  const bars = [{ label: 'As is', kind: 'abs', from: 0, to: run, value: run }];
+  for (const l of c.pay) {                                       // costs go down
+    bars.push({ label: l.label, kind: 'cost', from: run, to: run - l.amount, value: -l.amount });
+    run -= l.amount;
+  }
+  for (const l of c.get) {                                       // gains go up
+    bars.push({ label: l.label, kind: 'gain', from: run, to: run + l.amount, value: l.amount });
+    run += l.amount;
+  }
+  bars.push({ label: 'With countermeasure', kind: 'abs', from: 0, to: c.bridge.end, value: c.bridge.end });
+  if (c.totals.unsoldStockValue > 0) {
+    bars.push({ label: 'minus unsold stock', kind: 'dash', from: c.bridge.end, to: c.bridge.end - c.totals.unsoldStockValue, value: -c.totals.unsoldStockValue });
+  }
+  const vals = bars.flatMap(b => [b.from, b.to]).concat(0);
+  let lo = Math.min(...vals), hi = Math.max(...vals);
+  const pad = (hi - lo) * 0.08 || 1;
+  lo -= pad; hi += pad;
+  const y = (v) => T + (hi - v) / (hi - lo) * (H - T - B);
+  const step = (() => { const raw = (hi - lo) / 5, p = 10 ** Math.floor(Math.log10(raw)); return [1, 2, 5, 10].map(m => m * p).find(s => s >= raw); })();
+  const ticks = [];
+  for (let t = Math.ceil(lo / step) * step; t <= hi; t += step) ticks.push(t);
+  const bw = (W - L - R) / bars.length;
+  const colour = { abs: '#4f46e5', gain: '#16a34a', cost: '#dc2626', dash: '#dc2626' };
+  const wrap = (s) => {                                          // at most 2 short lines
+    const words = s.split(' '); const a = []; let cur = '';
+    for (const w of words) { if ((cur + ' ' + w).trim().length > 15 && cur) { a.push(cur); cur = w; } else cur = (cur + ' ' + w).trim(); }
+    a.push(cur);
+    return a.slice(0, 3);
+  };
+  let g = '';
+  for (const t of ticks) {
+    g += `<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}" stroke="${t === 0 ? '#9aa3b5' : '#d9d3c5'}" />`
+      + `<text x="${L - 8}" y="${y(t) + 4}" text-anchor="end" font-size="11" fill="#5b6475">${eurSym(t)}</text>`;
+  }
+  bars.forEach((b, i) => {
+    const x = L + i * bw + bw * 0.15, w = bw * 0.7;
+    const top = y(Math.max(b.from, b.to)), h = Math.max(1, Math.abs(y(b.from) - y(b.to)));
+    const dash = b.kind === 'dash';
+    g += `<rect x="${x.toFixed(1)}" y="${top.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="2" `
+      + (dash ? `fill="none" stroke="${colour.dash}" stroke-width="1.5" stroke-dasharray="5 3"` : `fill="${colour[b.kind]}"`) + ' />';
+    const labelAbove = b.kind === 'abs' ? b.value >= 0 : b.value >= 0;
+    const ly = labelAbove ? top - 5 : top + h + 13;
+    const txt = (b.kind === 'abs' ? '' : b.value >= 0 ? '+' : '') + eurSym(b.value);
+    g += `<text x="${(x + w / 2).toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle" font-size="11" font-weight="600" fill="#1f2430">${esc(txt)}</text>`;
+    wrap(b.label).forEach((line, k) => {
+      g += `<text x="${(x + w / 2).toFixed(1)}" y="${H - B + 18 + k * 13}" text-anchor="middle" font-size="11" fill="#5b6475">${esc(line)}</text>`;
+    });
+  });
+  const aria = 'Profit bridge: ' + bars.map(b => `${b.label} ${eurSym(b.value)}`).join('; ');
+  return `<svg class="bridge-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(aria)}"><title>${esc(aria)}</title>${g}</svg>`;
+}
+
+function renderCostPanel(container, c, { basisLabel, note } = {}) {
+  if (!container) return;
+  if (!c) { container.innerHTML = ''; return; }
+  const t = c.totals;
+  const rescuedChip = c.costPerRescuedOrder == null
+    ? '<span class="chip-ind grey">No extra orders delivered on time</span>'
+    : `<span class="chip-ind ${c.costPerRescuedOrder < c.penaltyPerLateOrder ? 'green' : 'amber'}" title="A late order costs €${c.penaltyPerLateOrder} in penalty; the sale itself is kept.">`
+      + `Cost per rescued order: <strong>${eurSym(c.costPerRescuedOrder)}</strong> vs <strong>€${c.penaltyPerLateOrder}</strong> penalty per late order</span>`;
+  const pb = c.payback;
+  const paybackText = pb == null ? 'no investment'
+    : pb.shifts == null ? 'never at these numbers'
+    : `${pb.shifts.toLocaleString('en-US')} shifts (≈ ${(Math.round(pb.years * 10) / 10)} years)`;
+  const paybackChip = `<span class="chip-ind ${pb == null ? 'grey' : pb.shifts == null ? 'amber' : pb.withinLife ? 'green' : 'amber'}">Payback: <strong>${esc(paybackText)}</strong></span>`;
+
+  const invest = c.investment.cash > 0 ? `
+    <div class="invest-box">
+      <div><strong>Upfront investment: ${eurSym(c.investment.cash)}</strong></div>
+      <ul>${c.investment.items.map(i => `<li>${esc(i.label)}: ${esc(i.formula)} = <strong>${eurSym(i.amount)}</strong>`
+        + (i.assumption ? ` <span class="assume-tag" title="${esc(i.assumption)}">organiser assumption (rate card)</span>` : '') + '</li>').join('')}</ul>
+      <div class="cm-small">Charged to this period: ${eurSym(c.investment.chargedThisPeriod)} (spread over 8 years).
+        ${pb?.shifts != null ? `Paid back after about ${pb.shifts.toLocaleString('en-US')} shifts (≈ ${Math.round(pb.years * 10) / 10} years).` : 'It does not pay back at these numbers.'}</div>
+    </div>` : '';
+
+  container.innerHTML = `
+    <div class="cost-head">Cost of the improvement</div>
+    <div class="cost-basis">${esc(basisLabel ?? `Averages of ${c.basis.runs} runs over ${c.basis.shifts} shifts.`)}</div>
+    <div class="cost-headline">${boldHtml(c.headline)}</div>
+    <div class="cost-tables">
+      <table class="cost-table">
+        <thead><tr><th colspan="3">What you pay</th></tr><tr class="sub"><th>Item</th><th>How it's calculated</th><th class="amt">Amount</th></tr></thead>
+        <tbody>${costRows(c.pay, true) || '<tr><td colspan="3" class="how">Nothing extra to pay.</td></tr>'}</tbody>
+        <tfoot><tr><td colspan="2">Total cost of the improvement</td><td class="amt ${t.costOfImprovement > 0 ? 'amt-bad' : 'amt-good'}">${eurSym(t.costOfImprovement)}</td></tr></tfoot>
+      </table>
+      <table class="cost-table">
+        <thead><tr><th colspan="3">What you get</th></tr><tr class="sub"><th>Item</th><th>How it's calculated</th><th class="amt">Amount</th></tr></thead>
+        <tbody>${costRows(c.get, false) || '<tr><td colspan="3" class="how">Nothing gained.</td></tr>'}</tbody>
+        <tfoot><tr><td colspan="2">Net effect on profit</td><td class="amt ${t.profitChangeOfficial >= 0 ? 'amt-good' : 'amt-bad'}">${eurSym(t.profitChangeOfficial)}</td></tr></tfoot>
+      </table>
+    </div>
+    ${t.unsoldStockValue > 0 ? `<div class="cm-small cost-unsold">Of which ${Math.round(t.unsoldSets * 10) / 10} sets nobody ordered, worth ${eurSym(t.unsoldStockValue)} on paper → <strong>conservative net effect ${eurSym(t.profitChangeConservative)}</strong></div>` : ''}
+    ${invest}
+    <div class="cost-chips">${rescuedChip}${paybackChip}</div>
+    <div class="bridge-wrap">${bridgeSvg(c)}</div>
+    ${note ? `<div class="cm-note">${esc(note)}</div>` : ''}`;
+}
 
 // ── Current Situation bar (demo values from GET /api/current-situation; visual only) ──
 

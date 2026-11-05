@@ -164,11 +164,21 @@ Reference values from the data package: about 100 / 76 / 57 / 48%. All four matc
 ```bash
 npm install
 npm start                          # UI at http://localhost:3000
-npm test                           # 109 unit tests
-npm run countermeasures -- demand-swing   # the 3 demand-swing countermeasures, 30 runs each (about 2 min)
+npm test                           # 173 unit tests
 node src/headless/run.check.mjs    # organisers' acceptance test → ALL PASSED
 npm run scenarios                  # scenario table (takes a few minutes)
+npm run sweep                      # Phase 2: all levers on the 4 reference scenarios (about 10 min)
+npm run countermeasures -- demand-swing   # the 3 demand-swing countermeasures, 30 runs each (about 2 min)
 ```
+
+**AI features:** the "Explain" and "Ask the Intelligent Shift Advisor" buttons need a `.env` file in the root folder with `CLIENT_ID` and `CLIENT_SECRET` (the hackathon LLM proxy, see `api.py`). Everything else works without it.
+
+**CEO interface (sections 8–11):**
+1. Choose a scenario and a number of shifts, then click **Simulate** (animated) or **Instant Simulation**.
+2. Read the **Results** tiles.
+3. Click **Explain me these results**.
+4. For Demand Swing, click **How to improve the results?**, then either tick countermeasures and click **Test my selection**, or click **Ask the Intelligent Shift Advisor**.
+5. Read the **Cost of the improvement** panel, then click **Compare side by side**.
 
 With Docker: `docker compose up --build`. **Rebuild after every code change**, because the image copies the code when it is built.
 If the UI looks old after an update, restart the server and press **Ctrl+F5** in the browser.
@@ -378,6 +388,81 @@ Agreed product (2026-11-04):
 
 ---
 
+## 11. Cost of the improvement panel
+
+**What was built (2026-11-05).** After a countermeasure is selected (manually or by the Intelligent Shift Advisor) and checked, the proposal card shows a **Cost of the improvement** panel, and the side-by-side results show the same panel for that single run. It has three layers:
+
+1. **A headline sentence**, written by code: for example "To deliver 194.3 more sets on time over 20 shifts, you pay €8,332 and avoid €17,490 in late-delivery penalties. No upfront investment is needed."
+2. **Two tables**, "What you pay" and "What you get", each line with its formula and amount (a total row each: *Total cost of the improvement* and *Net effect on profit*), an investment box when there is an upfront investment, and two indicator chips: **cost per rescued order** against the €90 penalty, and **payback**.
+3. **A profit bridge chart** (inline SVG): a waterfall from the "As is" profit to the "With countermeasure" profit, with a dashed final segment for the unsold stock.
+
+| Piece | File |
+|---|---|
+| Per-run cost lines kept by the evaluator (data only) | `src/scenarios/scenarios.js` (`runVariant`), `src/economics/breakdown.js` (`runRecord`) |
+| Pure breakdown function (reusable for a long-term view: it only needs two sets of economics) | `src/economics/breakdown.js` (`costBreakdown`) |
+| Formula helper for cycle-time cuts (no total changes) | `src/economics/costs.js` (`cycleReductions`) |
+| Evaluator result `costs` | `src/countermeasures/evaluate.js` |
+| Proposal card and advisor answer carry `costs` | `src/server.js` (`/api/countermeasures/test`), `src/advisor/advisor.js` |
+| One run (side by side): `costs` in `GET /api/compare/results` | `src/server.js`, `src/ui/run-summary.js` (`engineRecord`) |
+| Panel and chart | `src/public/app.js` (`renderCostPanel`, `bridgeSvg`), `style.css` |
+| Tests | `test/cost-breakdown.test.js` |
+
+**How to read it.** Every amount is the mean over the runs of the paired difference (with − without). *What you pay*: share of the investment (cash ÷ 1,920 shifts × shifts), overtime (hours × €405/h, an assumption: the rate card has no overtime price), machine hours of an extra machine, extra material, storage, starting stock. *What you get*: late-delivery penalties avoided (× €90), revenue from extra deliveries, and the value of finished sets left at the end (× €103). The lines add up exactly: **Σ get − Σ pay = the official profit change**. Because unsold sets are only worth something on paper, the panel also shows the **conservative** result (unsold stock worth 0), which equals the evaluator's `change.profitConservative`. Late orders are still delivered later, so the sale is kept: the gain is the avoided €90 penalty, which is why *revenue from extra deliveries* usually does not appear. **Payback** uses the operating gain per shift before the investment share (conservative) and says "never at these numbers" when that gain is not positive. The tags "assumption" and "organiser assumption (rate card)" mark prices that are not plain rate-card prices.
+
+**How it was validated.** `test/cost-breakdown.test.js` (10 tests, real evaluator with 3 seeds and 20 shifts) checks the identity and the conservative match for overtime, faster M3, second M3 and faster M3 + second M3; the investment cash (0, 60,000, 95,000 and 215,000); the overtime line (hours × 405); the machine-hours line of M3b (90 × 8 × 20); rescued orders and cost per rescued order; payback (none, never, ceil(cash ÷ gain)); the headline; and a single-run breakdown from two engines. 173 / 173 tests pass; `run.check.mjs` prints ALL PASSED; no cost total and no simulation number changed. The panel was also checked in a headless browser (tables, investment box, chips, bridge chart, and the side-by-side version).
+
+**Known limits.**
+- Short term only: the chosen number of shifts, 10 runs. The **long-term (one-year) view is planned as the next step**; `costBreakdown` is written so it can be reused for it unchanged.
+- The advisor's own wording (`reason`) does not see the panel's numbers: the LLM picks the countermeasure before the check exists, so there is no cost data to give it yet.
+- The single run in the side-by-side view is one random draw; the averages in the proposal card are more reliable.
+- The placeholder comparison table of the countermeasures is still a placeholder.
+
+---
+
+## 12. Design decisions, discussions and next steps
+
+Decisions taken with the client during the project that aren't visible in the code alone.
+
+**What the AI shift advisor actually reads.** The LLM never sees the minute-by-minute log (9,600 rows × about 40 columns) or the CSV files. It receives:
+- a compact summary computed by code (`src/ui/run-summary.js`): orders, production, money, worst shift, bottleneck, what the disruption did, and one short row per shift;
+- the countermeasure catalogue, already filtered by the CEO's budget and overtime limits;
+- the CEO's answers and notes.
+
+It judges from those facts and from the countermeasures' descriptions; it does **not** know their simulated results beforehand. The client chose this order on purpose: **the AI proposes, then the simulation checks.** Sending the full log was rejected: it's costly, and LLMs add up large tables unreliably, while the code already computes those totals exactly.
+
+**JEV (TypeSafe's decision model) was considered and not adopted.** It returns typed choices with probabilities, which would guarantee a valid pick and add a confidence score. But it writes no explanations, so gpt-4o would still be needed. It's an extra paid provider outside the hackathon credits, and it wouldn't make the pick better informed. Our code checks already guarantee valid picks.
+
+**Explainability and finance: options discussed, partly built.**
+- **Built:** the cost panel (section 11): what you pay vs what you get, cost per rescued order against the €90 penalty, payback, and the profit bridge.
+- **Still open:**
+  - a per-shift chart of orders vs production vs backlog (As is vs With countermeasure);
+  - "rescued orders" per shift;
+  - curves showing results across countermeasure settings;
+  - a "why not the others" sentence for each recommendation;
+  - an assumptions panel with sliders for the overtime rate, the penalty and the investment prices;
+  - an automatic check that every number in the AI's text appears in the facts.
+
+**Next step agreed: the long-term view.** Next to the short-term result (the chosen shifts, 10 runs), a one-year view (240 shifts, about 5 runs). It shows the "insurance" logic: overtime is paid only in busy weeks, a second machine costs every shift. Planned design:
+- repeat the real 60-shift demand profile 4 times;
+- run in a background worker (Node `worker_threads`) with a progress bar;
+- turn off the minute-by-minute history for these runs (the engine would otherwise hit its 100,000-row cap);
+- precompute the three countermeasures at default settings when the server starts;
+- reuse `costBreakdown` unchanged.
+
+**Handover documents** (in the root folder; each was carried out by an implementing agent and reviewed):
+
+| Document | Built in section |
+|---|---|
+| `INSTRUCTIONS_UI_AND_ADVISOR.md` | 8 |
+| `INSTRUCTIONS_IMPROVE_AND_COMPARE.md` | 9 |
+| `INSTRUCTIONS_FULL_UI_AND_SELECTION.md` | 10 |
+| `INSTRUCTIONS_COST_PANEL.md` | 11 |
+| `INSTRUCTIONS_COUNTERMEASURE_POOL.md` | not built yet (planned section 13: one pool of 6 countermeasures, Strategic / Operational labels, comparison cards, overtime removed from the pool) |
+
+**Review of sections 10 and 11 (2026-11-05):** 173 / 173 tests pass and `run.check.mjs` prints ALL PASSED; the four reference scenarios are unchanged.
+
+---
+
 ## Change log
 
 | Date | Change |
@@ -390,3 +475,6 @@ Agreed product (2026-11-04):
 | 2026-11-04 | CEO interface: speed selector (×1, ×2, ×10) and an Instant Simulation button (runs all 20 shifts at once, about 0.4 s, no animation) |
 | 2026-11-04 | CEO questionnaire (code-enforced budget and overtime limits) and side-by-side comparison of two animated lines (section 9). Tests: 149 / 149 pass; reference check ALL PASSED |
 | 2026-11-05 | Full interface with per-section collapse toggles, manual selection of countermeasures (any combination) with a placeholder comparison table, Current Situation bar (demo data), manual shift limit 1–60 that applies everywhere; faster second machine is charged its cycle-time investment (section 10). Tests: 163 / 163 pass; reference check ALL PASSED |
+| 2026-11-05 | "Cost of the improvement" panel: headline, What you pay / What you get tables with formulas, investment box, cost per rescued order and payback, profit bridge chart; for the 10-run check and for the side-by-side run (section 11). Tests: 173 / 173 pass; reference check ALL PASSED. Long-term view planned next |
+| 2026-11-05 | Documentation: "How to run it" updated (test count, AI `.env`, CEO flow); new section 12 with design decisions (what the AI reads, JEV not adopted), open explainability/finance options, the long-term plan and the list of handover documents |
+| 2026-11-05 | Handover written: `INSTRUCTIONS_COUNTERMEASURE_POOL.md`. One pool of 6 countermeasures for all 4 scenarios (improve a machine and new assembly line = Strategic; additional supplier, outsourcing, raw-material stock, finished-goods stock = Operational); overtime leaves the pool (engine kept); comparison cards with on-time %, profit change, investment, cost per good set; the advisor picks exactly one (or none). Not implemented yet |

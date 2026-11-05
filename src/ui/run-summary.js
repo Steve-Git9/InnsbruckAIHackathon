@@ -5,6 +5,7 @@
  */
 import { liveResult, shiftRowsFromEngine, machineKpis } from '../simulation/summary.js';
 import { computeEconomics } from '../economics/costs.js';
+import { runRecord } from '../economics/breakdown.js';
 import { bottleneckLoss } from '../analysis/analysis.js';
 import { DEFAULT_CONFIG } from '../simulation/config.js';
 
@@ -84,4 +85,16 @@ function disruptionOf(scenario, engine, cfg, loss, perShift, mk) {
     return { peakShift: peak.shift, peakOrders: peak.orders, minOrders: Math.min(...perShift.map(r => r.orders)) };
   }
   return null;
+}
+
+// The cost record of one finished engine run (for the cost panel of the side-by-side comparison)
+export function engineRecord(engine, rate) {
+  const cfg = engine.getConfig();
+  const result = liveResult(engine);
+  const o = engine.orders.summary();
+  const econ = computeEconomics(result, cfg, DEFAULT_CONFIG, rate);
+  return runRecord({
+    econ, perShift: result.perShift, config: cfg, rate, fgStart: cfg.initialFinishedGoods ?? 0, fgEnd: o.stock,
+    ordered: o.ordered, released: result.kpis.released, goodParts: result.kpis.goodParts,
+  });
 }

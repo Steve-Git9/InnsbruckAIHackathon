@@ -20,6 +20,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { runVariant, range } from '../scenarios/scenarios.js';
 import { compare } from '../scenarios/sweep.js';
+import { costBreakdown } from '../economics/breakdown.js';
 import { loadRateCard, loadDemand } from '../data/loaders.js';
 import { DISRUPTIONS, COUNTERMEASURES, resolveSelection } from './catalog.js';
 
@@ -80,6 +81,7 @@ export async function evaluateSelection(disruptionId, selection, {
     },
     change: { serviceLevel: c.dSL, profitOfficial: c.dProfit, profitConservative: c.dProfitCons },
     verdict: verdictOf(c),
+    costs: costBreakdown({ without: base.rows, with: variant.rows, rate, shifts, label }),
   };
 }
 

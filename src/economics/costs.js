@@ -126,3 +126,20 @@ export function computeEconomics(result, config, baselineConfig, rate, opts = {}
 }
 
 export { TICKS_PER_SHIFT };
+
+// Which machines got a shorter cycle (spawned copies are compared with their station's baseline
+// machine, as in oneTimeCosts), and by how many points the reject rate was lowered.
+// For the cost panel's formula text; changes no total.
+export function cycleReductions(config, baselineConfig) {
+  const baseMachines = new Map(baselineConfig.machines.map(m => [m.id, m]));
+  const cycle = [];
+  let rejectPoints = 0;
+  for (const m of config.machines) {
+    const bm = baseMachines.get(m.id) ?? baseMachines.get(baseId(m.id));
+    if (!bm) continue;
+    const minutes = Math.max(0, bm.cycleTime - m.cycleTime);
+    if (minutes > 0) cycle.push({ machine: m.id, minutes });
+    rejectPoints += Math.max(0, ((bm.rejectRate ?? 0) - (m.rejectRate ?? 0)) * 100);
+  }
+  return { cycle, rejectPoints };
+}

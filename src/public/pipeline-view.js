@@ -25,9 +25,9 @@ const PARTICLE_RADIUS = 3.5;
 const POOL_MAX_SIZE = 96;
 
 const NS = 'http://www.w3.org/2000/svg';
-const ARC = { PROCESSING: '#22c55e', IDLE: '#cbd2de', STARVED: '#f59e0b', BLOCKED: '#ef4444', DOWN: '#a855f7' };
+const ARC = { PROCESSING: '#22c55e', IDLE: '#b3ab98', STARVED: '#f59e0b', BLOCKED: '#ef4444', DOWN: '#a855f7' };
 const BADGE_TEXT = { PROCESSING: '#166534', IDLE: '#5b6475', STARVED: '#92400e', BLOCKED: '#991b1b', DOWN: '#6b21a8' };
-const BADGE_BG = { PROCESSING: '#dcfce7', IDLE: '#eef0f4', STARVED: '#fef3c7', BLOCKED: '#fee2e2', DOWN: '#f3e8ff' };
+const BADGE_BG = { PROCESSING: '#dcfce7', IDLE: '#ece8dd', STARVED: '#fef3c7', BLOCKED: '#fee2e2', DOWN: '#f3e8ff' };
 
 function el(tag, attrs = {}) {
   const e = document.createElementNS(NS, tag);
@@ -215,8 +215,8 @@ export class PipelineView {
   _drawSource(p) {
     const x = p.x, y = MAIN_Y - SRC_H / 2;
     const g = el('g', { id: this.id('elem-SOURCE') });
-    g.appendChild(el('rect', { x, y, width: SRC_W, height: SRC_H, rx: 6, fill: '#ffffff', stroke: '#4f46e5', 'stroke-width': 1.5 }));
-    g.appendChild(el('rect', { x: x + 8, y: y + SRC_H - 20, width: SRC_W - 16, height: 10, rx: 3, fill: '#e5e8ef' }));
+    g.appendChild(el('rect', { x, y, width: SRC_W, height: SRC_H, rx: 6, fill: '#f6f3ec', stroke: '#4f46e5', 'stroke-width': 1.5 }));
+    g.appendChild(el('rect', { x: x + 8, y: y + SRC_H - 20, width: SRC_W - 16, height: 10, rx: 3, fill: '#d9d3c5' }));
     g.appendChild(el('rect', { id: this.id('src-stock-fill'), x: x + 8, y: y + SRC_H - 20, width: SRC_W - 16, height: 10, rx: 3, fill: '#6366f1' }));
     g.appendChild(txt('SOURCE', { x: x + SRC_W / 2, y: y + 18, 'text-anchor': 'middle', 'font-size': '10', fill: '#4f46e5' }));
     g.appendChild(txt('', { id: this.id('src-stock-text'), x: x + SRC_W / 2, y: y + 38, 'text-anchor': 'middle' }));
@@ -225,7 +225,7 @@ export class PipelineView {
 
   _drawBuffer(buf, p) {
     const g = el('g', { id: this.id(`elem-${buf.id}`) });
-    g.appendChild(el('rect', { x: p.x, y: p.y, width: BUF_W, height: BUF_H, rx: 5, fill: '#ffffff', stroke: '#cbd2de', 'stroke-width': 1.2 }));
+    g.appendChild(el('rect', { x: p.x, y: p.y, width: BUF_W, height: BUF_H, rx: 5, fill: '#f6f3ec', stroke: '#b3ab98', 'stroke-width': 1.2 }));
     g.appendChild(txt(buf.id, { x: p.x + BUF_W / 2, y: p.y + 13, 'text-anchor': 'middle', 'font-size': '9', fill: '#64748b' }));
     g.appendChild(txt('0/0', { id: this.id(`buf-load-${buf.id}`), x: p.x + BUF_W / 2, y: p.y + BUF_H - 5, 'text-anchor': 'middle', 'font-size': '10' }));
     g.appendChild(el('g', { id: this.id(`buf-slots-${buf.id}`) }));
@@ -237,16 +237,16 @@ export class PipelineView {
     const g = el('g', { id: this.id(`elem-${id}`) });
     if (this.onMachineClick) g.addEventListener('click', () => this.onMachineClick(id));
     g.appendChild(el('rect', { id: this.id(`mach-rect-${id}`), x, y, width: MACH_W, height: MACH_H, rx: 8,
-      class: 'machine-rect IDLE', fill: '#ffffff', stroke: '#cbd2de', 'stroke-width': 1.5 }));
+      class: 'machine-rect IDLE', fill: '#f6f3ec', stroke: '#b3ab98', 'stroke-width': 1.5 }));
     const name = m.name.length > 17 ? m.name.slice(0, 16) + '…' : m.name;
     g.appendChild(txt(name, { x: x + MACH_W / 2, y: y + 11, 'text-anchor': 'middle', 'font-size': '9.5', fill: '#5b6475' }));
     g.appendChild(txt(id, { x: x + MACH_W / 2, y: y + 22, 'text-anchor': 'middle', 'font-size': '9', fill: '#64748b' }));
     const cx = x + MACH_W / 2, cy = y + MACH_H / 2 + 6, r = 20, circ = 2 * Math.PI * r;
-    g.appendChild(el('circle', { cx, cy, r, fill: 'none', stroke: '#e5e8ef', 'stroke-width': 4 }));
+    g.appendChild(el('circle', { cx, cy, r, fill: 'none', stroke: '#d9d3c5', 'stroke-width': 4 }));
     g.appendChild(el('circle', { id: this.id(`mach-arc-${id}`), cx, cy, r, fill: 'none', stroke: '#22c55e', 'stroke-width': 4,
       'stroke-dasharray': circ.toFixed(2), 'stroke-dashoffset': circ.toFixed(2), transform: `rotate(-90 ${cx} ${cy})` }));
     g.appendChild(txt('0%', { id: this.id(`mach-util-${id}`), x: cx, y: cy + 4, 'text-anchor': 'middle', 'font-size': '9', fill: '#5b6475' }));
-    g.appendChild(el('rect', { id: this.id(`mach-badge-bg-${id}`), x: x + 4, y: y + MACH_H - 18, width: 50, height: 14, rx: 7, fill: '#eef0f4' }));
+    g.appendChild(el('rect', { id: this.id(`mach-badge-bg-${id}`), x: x + 4, y: y + MACH_H - 18, width: 50, height: 14, rx: 7, fill: '#ece8dd' }));
     g.appendChild(txt('IDLE', { id: this.id(`mach-badge-${id}`), x: x + 29, y: y + MACH_H - 7, 'text-anchor': 'middle', 'font-size': '8', fill: '#5b6475' }));
 
     const bn = el('g', { id: this.id(`mach-bn-${id}`), class: 'mach-bn-marker', visibility: 'hidden' });
@@ -263,7 +263,7 @@ export class PipelineView {
   _drawSink(p) {
     const x = p.x, y = MAIN_Y - SINK_H / 2;
     const g = el('g', { id: this.id('elem-SINK') });
-    g.appendChild(el('rect', { x, y, width: SINK_W, height: SINK_H, rx: 6, fill: '#ffffff', stroke: '#22c55e', 'stroke-width': 1.5 }));
+    g.appendChild(el('rect', { x, y, width: SINK_W, height: SINK_H, rx: 6, fill: '#f6f3ec', stroke: '#22c55e', 'stroke-width': 1.5 }));
     g.appendChild(txt('SINK', { x: x + SINK_W / 2, y: y + 16, 'text-anchor': 'middle', 'font-size': '10', fill: '#166534' }));
     g.appendChild(txt('0', { id: this.id('sink-count'), x: x + SINK_W / 2, y: y + 40, 'text-anchor': 'middle', 'font-size': '20', fill: '#22c55e', 'font-weight': 'bold' }));
     g.appendChild(txt('parts', { x: x + SINK_W / 2, y: y + SINK_H - 6, 'text-anchor': 'middle', 'font-size': '9', fill: '#16a34a' }));
@@ -273,7 +273,7 @@ export class PipelineView {
   _drawScrap(p) {
     const x = p.x, y = p.y;
     const g = el('g', { id: this.id('elem-SCRAP') });
-    g.appendChild(el('rect', { x, y, width: SINK_W, height: SINK_H, rx: 6, fill: '#ffffff', stroke: '#ef4444', 'stroke-width': 1.5 }));
+    g.appendChild(el('rect', { x, y, width: SINK_W, height: SINK_H, rx: 6, fill: '#f6f3ec', stroke: '#ef4444', 'stroke-width': 1.5 }));
     g.appendChild(txt('SCRAP', { x: x + SINK_W / 2, y: y + 16, 'text-anchor': 'middle', 'font-size': '10', fill: '#b91c1c' }));
     g.appendChild(txt('0', { id: this.id('scrap-count'), x: x + SINK_W / 2, y: y + 40, 'text-anchor': 'middle', 'font-size': '20', fill: '#ef4444', 'font-weight': 'bold' }));
     g.appendChild(txt('scrapped', { x: x + SINK_W / 2, y: y + SINK_H - 6, 'text-anchor': 'middle', 'font-size': '9', fill: '#991b1b' }));
@@ -310,7 +310,7 @@ export class PipelineView {
       const node = this.byId(c.id);
       if (node) {
         node.setAttribute('class', blocked ? 'pipe-connector blocked' : 'pipe-connector');
-        node.setAttribute('stroke', blocked ? '#ef4444' : '#cbd2de');
+        node.setAttribute('stroke', blocked ? '#ef4444' : '#b3ab98');
       }
     }
     const sink = this.byId('sink-count'), scrap = this.byId('scrap-count');
@@ -352,16 +352,16 @@ export class PipelineView {
     const circ = 2 * Math.PI * 20;
     const progress = m.cycleTime > 0 ? 1 - (m.ticksLeft / m.cycleTime) : 0;
     arc.setAttribute('stroke-dashoffset', (circ * (1 - Math.max(0, Math.min(1, progress)))).toFixed(2));
-    arc.setAttribute('stroke', ARC[m.state] ?? '#cbd2de');
+    arc.setAttribute('stroke', ARC[m.state] ?? '#b3ab98');
     const badge = this.byId(`mach-badge-${m.id}`), bg = this.byId(`mach-badge-bg-${m.id}`);
     if (badge) { badge.textContent = m.state; badge.setAttribute('fill', BADGE_TEXT[m.state] ?? '#5b6475'); }
-    if (bg) bg.setAttribute('fill', BADGE_BG[m.state] ?? '#eef0f4');
+    if (bg) bg.setAttribute('fill', BADGE_BG[m.state] ?? '#ece8dd');
     const isBn = mm?.bottleneck ?? false;
     this.byId(`mach-bn-${m.id}`)?.setAttribute('visibility', isBn ? 'visible' : 'hidden');
     const rect = this.byId(`mach-rect-${m.id}`);
     if (rect) {
       rect.setAttribute('class', isBn ? 'machine-rect bottleneck' : `machine-rect ${m.state}`);
-      rect.setAttribute('stroke', isBn ? '#f97316' : (ARC[m.state] ?? '#cbd2de'));
+      rect.setAttribute('stroke', isBn ? '#f97316' : (ARC[m.state] ?? '#b3ab98'));
     }
     const util = this.byId(`mach-util-${m.id}`);
     if (util && mm) util.textContent = (mm.utilization * 100).toFixed(0) + '%';

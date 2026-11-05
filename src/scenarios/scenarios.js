@@ -15,6 +15,7 @@
 import { pathToFileURL } from 'node:url';
 import { runHeadless } from '../headless/run.js';
 import { computeEconomics } from '../economics/costs.js';
+import { runRecord } from '../economics/breakdown.js';
 import { loadRateCard, loadDemand } from '../data/loaders.js';
 import { DEFAULT_CONFIG } from '../simulation/config.js';
 
@@ -80,6 +81,9 @@ export async function runVariant(spec, { config, initialFinishedGoods = 0 }, { s
       oee: Object.fromEntries(Object.entries(k.machines).map(([id, m]) => [id, m.oee.value])),
       costPerGoodUnit: e.costPerGoodUnit, costPerGoodUnitAll: e.costPerGoodUnitAll, profit: e.profit,
       fgStart: initialFinishedGoods, fgEnd: k.finishedGoodsEnd, overtimeHours: e.overtimeHours ?? 0,
+      // the cost lines of this run, for the cost panel (adds data only)
+      ...runRecord({ econ: e, perShift: r.perShift, config: cfg, rate, fgStart: initialFinishedGoods, fgEnd: k.finishedGoodsEnd,
+        ordered: k.ordered ?? 0, released: k.released, goodParts: k.goodParts }),
     });
   }
   const stat = (f) => { const v = rows.map(f); return { mean: mean(v), sd: sd(v) }; };
