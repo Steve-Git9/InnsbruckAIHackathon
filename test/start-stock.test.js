@@ -56,6 +56,26 @@ test('raw safety stock keeps the source running in the outage, then refills; unu
   assert.deepEqual(standard.rows, run('standard', undefined).rows);
 });
 
+test('raw stock goes down with every part and the truck tops it up every 2 hours, not during the outage', () => {
+  const sc = buildUiScenario('supplier-outage', 20, 1, { finished: 0, raw: 160 });
+  const cfg = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
+  cfg.source.materialStock = -1;
+  const e = new SimulationEngine(cfg);
+  e.configureScenario(sc.configureOptions);
+  const at = {};
+  while (e.orders.rows.length < 20) { e._tick(); if (e.tick % 60 === 0) at[e.tick] = e.rawOnHand; }
+  assert.ok(at[60] < 160, 'used before the first truck');
+  assert.equal(at[120], 160, 'the truck at 120 min tops it up');
+  assert.ok(at[5700] < at[4860] && at[4860] < 160, 'no trucks in the outage: the stock drains');
+  assert.equal(at[5880], 160, 'the first truck after the outage');
+  assert.ok(e.rawDeliveries > 70);
+  const st = e.getState().source;
+  assert.equal(st.supplierOut, false);
+  assert.ok(st.rawNextDeliveryIn >= 0 && st.rawNextDeliveryIn <= 120);
+  // outside the outage the stock never holds the line back: Standard with stock = Standard without
+  assert.deepEqual(run('standard', { finished: 0, raw: 5 }).rows, run('standard', undefined).rows);
+});
+
 test('finished sets at the start serve the first orders', () => {
   const r = run('demand-swing', { finished: 24, raw: 0 });
   assert.ok(r.sl > run('demand-swing', undefined).sl);

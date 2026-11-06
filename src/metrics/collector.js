@@ -276,11 +276,16 @@ export function calculateMetrics(state) {
     });
   } else if (inOutage) {
     suggestions.length = 0;
+    // with raw stock at the source (ERP start) the line keeps running from it until it is empty
+    const raw = state.source?.rawOnHand ?? 0, level = state.source?.rawSafetyLevel ?? 0;
     suggestions.push({
       type: 'supplier-outage',
-      reason: `Supplier outage (ticks ${out.startTick}–${out.endTick}): the source releases no parts, `
-            + 'so the line runs empty. Machines are starved by missing supply, not by a bottleneck; '
-            + 'output returns after the outage ends.',
+      reason: level > 0 && raw > 0
+        ? `Supplier outage (ticks ${out.startTick}–${out.endTick}): no deliveries, but the raw stock at the source `
+          + `keeps the line running (${raw} of ${level} units left). If it runs out before the outage ends, the line runs empty.`
+        : `Supplier outage (ticks ${out.startTick}–${out.endTick}): the source releases no parts, `
+          + `${level > 0 ? 'the raw stock is used up, ' : ''}so the line runs empty. Machines are starved by missing supply, `
+          + 'not by a bottleneck; output returns after the outage ends.',
     });
   } else if (warmedUp && constraints.length === 0 && (sourceStarved || anyBusy)) {
     suggestions.push({

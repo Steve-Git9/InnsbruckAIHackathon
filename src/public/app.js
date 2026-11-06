@@ -22,6 +22,7 @@ const SCRAP_Y = 240;
 
 // Widths / heights for element shapes
 const SRC_W  = 80;  const SRC_H  = 80;
+const SUP_W  = 84;  const SUP_H  = 80;   // the raw-material supplier in front of the source
 const MACH_W = 110; const MACH_H = 80;
 const BUF_W  = 70;  const BUF_H  = 60;
 const SINK_W = 70;  const SINK_H = 70;
@@ -51,7 +52,7 @@ function computeLayout(state) {
   for (const m of state.machines) (stationByInput[m.inputBufferId] ??= []).push(m);
 
   // Walk the chain: SOURCE, then [buffer, station]..., then SINK.
-  const columns = [{ kind: 'source' }];
+  const columns = [{ kind: 'supplier' }, { kind: 'source' }];
   let curId = srcBuf?.id;
   const seen = new Set();
   while (curId != null && !seen.has(curId)) {
@@ -65,6 +66,7 @@ function computeLayout(state) {
   columns.push({ kind: 'sink' });
 
   const widthOf = (c) =>
+    c.kind === 'supplier' ? SUP_W :
     c.kind === 'source' ? SRC_W :
     c.kind === 'buffer' ? BUF_W :
     c.kind === 'station' ? MACH_W : SINK_W;
@@ -73,12 +75,13 @@ function computeLayout(state) {
   for (const c of columns) { c.x = x; x += widthOf(c) + COL_GAP; }
   const totalW = x - COL_GAP + X0;
 
-  const pos = { machines: {}, buffers: {}, source: null, sink: null, scrap: null };
+  const pos = { machines: {}, buffers: {}, supplier: null, source: null, sink: null, scrap: null };
   let minY = MAIN_Y - SRC_H / 2;
   let maxY = MAIN_Y + SRC_H / 2;
 
   for (const c of columns) {
-    if (c.kind === 'source')  pos.source = { x: c.x };
+    if (c.kind === 'supplier') pos.supplier = { x: c.x };
+    else if (c.kind === 'source')  pos.source = { x: c.x };
     else if (c.kind === 'sink') pos.sink = { x: c.x };
     else if (c.kind === 'buffer') pos.buffers[c.buffer.id] = { x: c.x, y: MAIN_Y - BUF_H / 2 };
     else if (c.kind === 'station') {
@@ -105,6 +108,9 @@ function computeLayout(state) {
 
   // Connectors.
   const connectors = [];
+  if (pos.supplier && pos.source) {
+    connectors.push({ id: 'conn-sup-src', destBufferId: null, x1: pos.supplier.x + SUP_W, y1: MAIN_Y, x2: pos.source.x, y2: MAIN_Y });
+  }
   if (pos.source && pos.buffers[srcBuf.id]) {
     connectors.push({
       id: 'conn-src-b0', destBufferId: srcBuf.id,
@@ -184,6 +190,12 @@ function detectTransfers(prev, next) {
   // Source → source-fed buffer
   const srcDelta = (next.source?.totalGenerated ?? 0) - (prev.source?.totalGenerated ?? 0);
   if (srcDelta > 0) events.push({ connectorId: 'conn-src-b0', kind: 'good', count: srcDelta });
+
+  // Supplier → source: a truckload when the raw stock is topped up, else each part just in time
+  const s = next.source ?? {};
+  const deliveries = (s.rawDeliveries ?? 0) - (prev.source?.rawDeliveries ?? 0);
+  if (deliveries > 0) events.push({ connectorId: 'conn-sup-src', kind: 'good', count: 3 * Math.min(deliveries, 2) });
+  else if (srcDelta > 0 && !s.supplierOut && !(s.rawOnHand > 0)) events.push({ connectorId: 'conn-sup-src', kind: 'good', count: srcDelta });
 
   const prevMach = {};
   for (const m of prev.machines) prevMach[m.id] = m;
@@ -296,6 +308,7 @@ function buildPipeline(state) {
   startParticleLoop();
 
   // ── Stations / buffers / endpoints ──────────────────────────────────────────
+  drawSupplier(layout.pos.supplier);
   drawSource(layout.pos.source);
   for (const b of state.buffers) drawBuffer(b, layout.pos.buffers[b.id]);
   for (const m of state.machines) drawMachine(m, layout.pos.machines[m.id]);
@@ -304,6 +317,24 @@ function buildPipeline(state) {
 }
 
 // ─── Draw helpers ─────────────────────────────────────────────────────────────
+
+// The supplier: a truck that tops up the raw stock every 2 hours (or delivers just in time without stock)
+function drawSupplier(p) {
+  const x = p.x, y = MAIN_Y - SUP_H / 2;
+  const g = el('g', { id: 'elem-SUPPLIER' });
+  g.appendChild(el('rect', { id: 'sup-rect', x, y, width: SUP_W, height: SUP_H, rx: 6, fill: '#f6f3ec', stroke: '#4f46e5', 'stroke-width': 1.5 }));
+  g.appendChild(txt('SUPPLIER', { x: x + SUP_W / 2, y: y + 14, 'text-anchor': 'middle', 'font-size': '10', fill: '#4f46e5' }));
+  // truck: load box, cab, two wheels
+  const t = el('g', { id: 'sup-truck', transform: `translate(${x + SUP_W / 2 - 19} ${y + 21})`, fill: 'none', stroke: '#4f46e5', 'stroke-width': 1.6, 'stroke-linejoin': 'round' });
+  t.appendChild(el('rect', { x: 0, y: 2, width: 24, height: 16, rx: 2 }));
+  t.appendChild(el('path', { d: 'M24 7h7l6 6v5H24z' }));
+  t.appendChild(el('circle', { cx: 7, cy: 20, r: 3, fill: '#f6f3ec' }));
+  t.appendChild(el('circle', { cx: 30, cy: 20, r: 3, fill: '#f6f3ec' }));
+  g.appendChild(t);
+  g.appendChild(txt('', { id: 'sup-status', x: x + SUP_W / 2, y: y + 58, 'text-anchor': 'middle', 'font-size': '10', 'font-weight': 'bold', fill: '#166534' }));
+  g.appendChild(txt('', { id: 'sup-detail', x: x + SUP_W / 2, y: y + 71, 'text-anchor': 'middle', 'font-size': '9', fill: '#5b6475' }));
+  svg.appendChild(g);
+}
 
 function drawSource(p) {
   const x = p.x;
@@ -420,7 +451,7 @@ function drawSink(p) {
     'font-size': '20', fill: '#22c55e', 'font-weight': 'bold' }));
   g.appendChild(txt('parts', { x: x + SINK_W / 2, y: y + SINK_H - 6, 'text-anchor': 'middle', 'font-size': '9', fill: '#16a34a' }));
   // finished-goods warehouse (orders mode): the ERP starting stock plus what the line made, minus what was shipped
-  g.appendChild(txt('', { id: 'sink-fg-text', x: x + SINK_W / 2, y: y - 8, 'text-anchor': 'middle', 'font-size': '10', fill: '#166534' }));
+  g.appendChild(txt('', { id: 'sink-fg-text', x: x + SINK_W, y: y - 8, 'text-anchor': 'end', 'font-size': '10', fill: '#166534' }));
   svg.appendChild(g);
 }
 
@@ -448,14 +479,37 @@ function updatePipeline(state, metrics) {
   const stockText   = document.getElementById('src-stock-text');
   const initialStock = 200; // keep in sync with DEFAULT_CONFIG — used for bar scaling
 
+  // Raw stock at the source: live when the run started from the ERP stock; a preview of the ERP numbers while
+  // the switch is on and no run has used them yet; otherwise the starter's material counter (∞ = unlimited)
+  const preview = erpPreview(state);
+  const rawLevel = preview ? preview.raw : (src.rawSafetyLevel ?? 0);
+  const rawNow = preview ? preview.raw : (src.rawOnHand ?? 0);
   if (stockFill) {
-    const ratio = src.materialStock < 0 ? 1 : Math.min(src.materialStock / initialStock, 1);   // -1 = infinite
+    const ratio = rawLevel > 0 ? rawNow / rawLevel
+      : src.materialStock < 0 ? 1 : Math.min(src.materialStock / initialStock, 1);   // -1 = infinite
     const maxW  = SRC_W - 16;
-    stockFill.setAttribute('width', (ratio * maxW).toFixed(1));
+    stockFill.setAttribute('width', (Math.max(0, ratio) * maxW).toFixed(1));
     stockFill.setAttribute('fill', ratio > 0.3 ? '#6366f1' : ratio > 0.1 ? '#f59e0b' : '#ef4444');
   }
   if (stockText) {
-    stockText.textContent = stockLabel(src.materialStock);
+    stockText.textContent = rawLevel > 0 ? String(rawNow) : stockLabel(src.materialStock);
+  }
+  setTextContent('src-raw-text', preview ? `raw stock ${preview.raw} · ERP` : rawLevel > 0 ? `raw stock ${rawNow}/${rawLevel}` : '');
+  setTextContent('sink-fg-text', preview ? `warehouse ${preview.finished} sets · ERP`
+    : state.orders ? `warehouse ${state.orders.stock} sets` : '');
+
+  // Supplier: out during the outage, else a truck every 2 hours (with raw stock) or just-in-time parts
+  const supplierOut = !preview && !!src.supplierOut;
+  const supStatus = document.getElementById('sup-status');
+  if (supStatus) {
+    supStatus.textContent = supplierOut ? 'OUT' : rawLevel > 0 ? 'delivering' : 'just in time';
+    supStatus.setAttribute('fill', supplierOut ? '#b91c1c' : '#166534');
+    setTextContent('sup-detail', supplierOut ? 'no deliveries'
+      : preview ? 'truck every 2 h'
+      : rawLevel > 0 && src.rawNextDeliveryIn != null ? `next truck ${src.rawNextDeliveryIn} min` : '');
+    document.getElementById('sup-rect')?.setAttribute('stroke', supplierOut ? '#ef4444' : '#4f46e5');
+    document.getElementById('sup-truck')?.setAttribute('stroke', supplierOut ? '#ef4444' : '#4f46e5');
+    setConnectorBlocked('conn-sup-src', supplierOut);
   }
 
   // ── Buffers ────────────────────────────────────────────────────────────────
@@ -485,8 +539,6 @@ function updatePipeline(state, metrics) {
   // ── Sink / Scrap counts ────────────────────────────────────────────────────
   setTextContent('sink-count',  state.sink.partsReceived);
   setTextContent('scrap-count', state.scrap.partsReceived);
-  setTextContent('src-raw-text', src.rawSafetyLevel > 0 ? `raw stock ${src.rawOnHand}/${src.rawSafetyLevel}` : '');
-  setTextContent('sink-fg-text', state.orders ? `warehouse ${state.orders.stock} sets` : '');
 
   // Per-machine reject rates are shown in each machine's detail panel; the
   // shared scrap sink no longer carries a single rate label.
@@ -1654,7 +1706,7 @@ async function startRun(instant) {
       body: JSON.stringify({ action: 'runScenario', params: {
         scenario: document.getElementById('scenario-select').value,
         speed: Number(document.getElementById('speed-select').value), instant, shifts: shiftLimitValue(), seed: seedValue(),
-        start: erpStart(),
+        start: (erp.appliedKey = erpStartKey(), erpStart()),
       } }),
     });
     if (!res.ok) throw new Error('rejected');
@@ -2554,7 +2606,56 @@ const niceDate = (iso) => new Date(iso).toLocaleDateString('en-GB', { day: 'nume
 // at the SOURCE (used only while the supplier is out), finished sets wait at the end of the line (SINK) and
 // serve the first orders. The edited values and the switch are remembered in this browser only.
 const ERP_MAX = { finished: 500, raw: 2000 };
-const erp = { loaded: false, erpFinished: 0, erpRaw: 0, finished: 0, raw: 0, use: false };
+
+// ── Visuals of the Current Situation tiles ──
+// Icons: line drawings in the text colour (they follow the light / dark theme)
+const CS_ICONS = {
+  raw: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 12l11-6 11 6-11 6z"/><path d="M5 12v9l11 6 11-6v-9"/><path d="M16 18v9"/><path d="M10.5 9l11 6"/></svg>',
+  finished: '<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="4" y="5" width="24" height="15" rx="2"/><path d="M13 20l-3 7M19 20l3 7M8 27h16"/><path d="M8 9h7"/></svg>',
+  maintenance: '<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M20.5 4.5a6 6 0 0 0-6.9 7.9L5 21a2.8 2.8 0 0 0 4 4l8.6-8.6a6 6 0 0 0 7.9-6.9l-3.6 3.6-3.4-.9-.9-3.4z"/></svg>',
+};
+// How long a stock lasts, in shifts. ASSUMPTION for the picture only: the default line releases about
+// 42 raw parts per shift (measured in the outage: 85 parts in 2 shifts) and the flat demand is 34 sets per shift.
+const CS_RATE = { raw: 42, finished: 34 };
+const CS_SCALE_SHIFTS = 4;           // the bar is full at 4 shifts
+const OUTAGE_SHIFTS = 2;             // the reference supplier outage stops deliveries for 2 shifts
+
+function coverageHtml(k) {
+  const shifts = erp[k] / CS_RATE[k];
+  const fill = Math.min(1, shifts / CS_SCALE_SHIFTS) * 100;
+  const tone = k === 'raw' ? (shifts >= OUTAGE_SHIFTS ? 'good' : shifts >= 1 ? 'warn' : 'bad') : (shifts >= 1 ? 'good' : shifts >= 0.5 ? 'warn' : 'bad');
+  const text = k === 'raw'
+    ? `covers ≈ ${shifts.toFixed(1)} shifts without deliveries ${shifts >= OUTAGE_SHIFTS ? '— enough for the 2-shift outage' : '— less than the 2-shift outage'}`
+    : `covers ≈ ${shifts.toFixed(1)} shifts of orders (${CS_RATE.finished} sets per shift)`;
+  const marker = k === 'raw'
+    ? `<span class="cs-mark" style="left:${(OUTAGE_SHIFTS / CS_SCALE_SHIFTS) * 100}%" title="Reference outage: 2 shifts"></span>` : '';
+  return `<div class="cs-bar" role="img" aria-label="${esc(text)}"><span class="cs-fill ${tone}" style="width:${fill.toFixed(1)}%"></span>${marker}</div>
+    <div class="cs-cover">${esc(text)}</div>`;
+}
+function refreshCoverage() {
+  for (const k of ['raw', 'finished']) {
+    const box = document.getElementById(`erp-${k}-cover`);
+    if (box) box.innerHTML = coverageHtml(k);
+  }
+}
+
+// Days since the last maintenance of each machine as small bars (green < 14 days, amber < 28, red after)
+const daysSince = (iso) => {
+  const d = new Date(iso + 'T00:00:00'); const today = new Date(); today.setHours(0, 0, 0, 0);
+  return Math.max(0, Math.round((today - d) / 86400000));
+};
+function maintenanceBars(list) {
+  const scale = Math.max(30, ...list.map(m => daysSince(m.lastCompleted)));
+  return `<div class="cs-mbars">${list.map(m => {
+    const days = daysSince(m.lastCompleted);
+    const tone = days < 14 ? 'good' : days < 28 ? 'warn' : 'bad';
+    return `<div class="cs-mrow" title="${esc(`${m.machine} ${m.name}: ${m.type}, ${niceDate(m.lastCompleted)}`)}">
+      <span class="cs-mid">${esc(m.machine)}</span>
+      <span class="cs-mtrack"><span class="cs-fill ${tone}" style="width:${((days / scale) * 100).toFixed(1)}%"></span></span>
+      <span class="cs-mdays">${days} d</span></div>`;
+  }).join('')}</div>`;
+}
+const erp = { loaded: false, erpFinished: 0, erpRaw: 0, finished: 0, raw: 0, use: false, appliedKey: null };
 
 function erpStored(key) { try { return localStorage.getItem(`ui.erp.${key}`); } catch { return null; } }
 function erpStore(key, v) { try { localStorage.setItem(`ui.erp.${key}`, String(v)); } catch { /* no storage */ } }
@@ -2567,8 +2668,21 @@ function erpStart() {
 }
 const erpStartKey = () => { const s = erpStart(); return s ? `${s.finished}/${s.raw}` : '0/0'; };
 
+// The diagram previews the ERP stock while the switch is on and the shown run did not start from it
+// (Simulate starts a run with it: erp.appliedKey), so the numbers appear as soon as the switch is clicked.
+function erpPreview(state) {
+  if (!erp.loaded || !erp.use || state?.running) return null;
+  if (erp.appliedKey === erpStartKey()) return null;
+  return { raw: erp.raw, finished: erp.finished };
+}
+function redrawDiagram() {
+  if (lastState) updatePipeline(lastState, lastMetrics);
+}
+
 function renderErpState() {
   const on = erp.use;
+  refreshCoverage();
+  redrawDiagram();
   for (const k of ['finished', 'raw']) {
     const input = document.getElementById(`erp-${k}`);
     if (!input) continue;
@@ -2582,8 +2696,9 @@ function renderErpState() {
   const note = document.getElementById('erp-note');
   if (note) {
     note.textContent = on
-      ? `Next run starts with ${erp.raw} raw units at the source (safety stock, used only while the supplier is out) `
-        + `and ${erp.finished} finished sets in the warehouse (they serve the first orders). The cards and checks use the same stock.`
+      ? `Next run starts with ${erp.raw} raw units at the source (the line uses them and the supplier's truck tops them up `
+        + `every 2 hours; during the outage they keep the line running) and ${erp.finished} finished sets in the warehouse `
+        + '(they serve the first orders). The diagram shows both; the cards and checks use the same stock.'
       : 'Off: runs start with an empty warehouse, as the data package\'s reference scenarios.';
     if (erp.stale) note.textContent += ' Click Simulate to run with this setting: the results below are from the previous one.';
     note.classList.toggle('stale', !!erp.stale);
@@ -2615,24 +2730,33 @@ async function loadCurrentSituation() {
   erp.loaded = true;
 
   const stockTile = (k, label, link, unit, base) => `
-    <div class="cs-tile">
-      <div class="cs-label">${esc(label)} <span class="cs-link" title="Where this stock enters the simulation">${link}</span></div>
-      <div class="cs-edit">
-        <input type="number" id="erp-${k}" class="cs-input" min="0" max="${ERP_MAX[k]}" step="1" value="${erp[k]}" aria-label="${esc(label)}" />
-        <span class="cs-unit">${esc(unit)}</span>
-        <button id="erp-${k}-reset" class="link-btn" type="button" hidden>ERP value: ${esc(base)}</button>
+    <div class="cs-tile cs-tile-${k}">
+      <div class="cs-icon">${CS_ICONS[k]}</div>
+      <div class="cs-body">
+        <div class="cs-label">${esc(label)} <span class="cs-link" title="Where this stock enters the simulation">${link}</span></div>
+        <div class="cs-edit">
+          <input type="number" id="erp-${k}" class="cs-input" min="0" max="${ERP_MAX[k]}" step="1" value="${erp[k]}" aria-label="${esc(label)}" />
+          <span class="cs-unit">${esc(unit)}</span>
+          <button id="erp-${k}-reset" class="link-btn" type="button" hidden>ERP value: ${esc(base)}</button>
+        </div>
+        <div id="erp-${k}-cover" class="cs-coverage"></div>
       </div>
     </div>`;
   const latest = [...d.maintenance].sort((a, b) => b.lastCompleted.localeCompare(a.lastCompleted))[0];
   tiles.innerHTML = `
     ${stockTile('raw', 'Raw-material stock', '→ SOURCE', d.rawMaterial.unit, erp.erpRaw)}
     ${stockTile('finished', 'Finished-goods stock', '→ SINK (warehouse)', d.finishedGoods.unit, erp.erpFinished)}
-    <div class="cs-tile"><div class="cs-label">Last maintenance</div>
-      <div class="cs-value">${esc(latest.machine)} ${esc(latest.name)}</div>
-      <div class="cs-sub">${esc(niceDate(latest.lastCompleted))} (${esc(daysAgoText(latest.lastCompleted))}) · ${esc(latest.type)}</div>
-      <button id="cs-all" class="link-btn" type="button">all machines</button>
-      <ul id="cs-list" class="cs-list" hidden>${d.maintenance.map(m =>
-        `<li>${esc(m.machine)} ${esc(m.name)} – ${esc(niceDate(m.lastCompleted))} (${esc(daysAgoText(m.lastCompleted))}) · ${esc(m.type)}</li>`).join('')}</ul>
+    <div class="cs-tile cs-tile-maintenance">
+      <div class="cs-icon">${CS_ICONS.maintenance}</div>
+      <div class="cs-body">
+        <div class="cs-label">Last maintenance</div>
+        <div class="cs-value">${esc(latest.machine)} ${esc(latest.name)}</div>
+        <div class="cs-sub">${esc(niceDate(latest.lastCompleted))} (${esc(daysAgoText(latest.lastCompleted))}) · ${esc(latest.type)}</div>
+        ${maintenanceBars(d.maintenance)}
+        <button id="cs-all" class="link-btn" type="button">all machines</button>
+        <ul id="cs-list" class="cs-list" hidden>${d.maintenance.map(m =>
+          `<li>${esc(m.machine)} ${esc(m.name)} – ${esc(niceDate(m.lastCompleted))} (${esc(daysAgoText(m.lastCompleted))}) · ${esc(m.type)}</li>`).join('')}</ul>
+      </div>
     </div>`;
   const asOf = new Date(d.asOf);
   meta.textContent = `${d.source === 'demo' ? 'Demo data – not connected' : 'Data'} · as of ${asOf.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}, ${asOf.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`;

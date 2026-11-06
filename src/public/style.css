@@ -977,7 +977,30 @@ g[id^="elem-M"]:hover .machine-rect:not(.selected):not(.bottleneck) {
 /* ── Current Situation (demo data) ───────────────────────────────────────── */
 #current-situation { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px 12px; }
 .cs-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
-.cs-tile { background: var(--surface2); border-radius: 8px; padding: 8px 12px; }
+.cs-tile { background: var(--surface2); border-radius: 8px; padding: 10px 12px; display: flex; gap: 12px; align-items: flex-start; }
+.cs-body { flex: 1; min-width: 0; }
+/* icon in a tinted circle: indigo for raw material, green for finished goods, orange for maintenance */
+.cs-icon {
+  flex: none; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
+  background: var(--accent-tint); color: var(--accent);
+}
+.cs-icon svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.cs-tile-finished .cs-icon { background: var(--tint-green-bg); color: var(--tint-green-fg); }
+.cs-tile-maintenance .cs-icon { background: var(--tint-orange-bg); color: var(--tint-orange-fg); }
+/* coverage bar: how many shifts the stock lasts; the mark is the 2-shift reference outage */
+.cs-coverage { margin-top: 6px; }
+.cs-bar, .cs-mtrack { position: relative; display: block; height: 7px; border-radius: 999px; background: var(--track); overflow: visible; }
+.cs-fill { display: block; height: 100%; border-radius: 999px; transition: width 0.25s; }
+.cs-fill.good { background: var(--processing); }
+.cs-fill.warn { background: var(--starved); }
+.cs-fill.bad  { background: var(--blocked); }
+.cs-mark { position: absolute; top: -3px; width: 2px; height: 13px; background: var(--text-dim); border-radius: 1px; }
+.cs-cover { font-size: 0.78rem; color: var(--text-dim); margin-top: 3px; }
+/* days since the last maintenance, one small bar per machine */
+.cs-mbars { display: grid; gap: 3px; margin: 6px 0 2px; }
+.cs-mrow { display: grid; grid-template-columns: 26px 1fr 34px; align-items: center; gap: 6px; font-size: 0.74rem; color: var(--text-dim); cursor: default; }
+.cs-mid { font-weight: 700; }
+.cs-mdays { text-align: right; font-variant-numeric: tabular-nums; }
 .cs-label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-dim); }
 .cs-value { font-size: 1.15rem; font-weight: 700; }
 .cs-sub { font-size: 0.85rem; color: var(--text-dim); }

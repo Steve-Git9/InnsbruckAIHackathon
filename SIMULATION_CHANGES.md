@@ -166,7 +166,7 @@ Reference values from the data package: about 100 / 76 / 57 / 48%. All four matc
 ```bash
 npm install
 npm start                          # UI at http://localhost:3000 (the starter's original interface: /original)
-npm test                           # 227 unit tests
+npm test                           # 228 unit tests
 node src/headless/run.check.mjs    # organisers' acceptance test → ALL PASSED
 npm run scenarios                  # scenario table (takes a few minutes)
 npm run sweep                      # Phase 2: all levers on the 4 reference scenarios (about 10 min)
@@ -691,6 +691,42 @@ Example (Demand swing, seed 1, 20 shifts): revenue EUR 112,680, total cost EUR 1
 
 ---
 
+## 20. Current Situation tiles with icons and small graphics
+
+**What changed.** Each of the three ERP tiles has an icon and a small graphic. The icons are line drawings that follow the light / dark theme.
+
+- **Raw-material stock** (box icon): a bar of how many shifts the stock lasts without deliveries, with a mark at 2 shifts (the reference supplier outage). The text says whether the stock is enough for that outage: green when it is, amber or red when it is not.
+- **Finished-goods stock** (TV-stand icon): a bar of how many shifts of orders the stock covers (34 sets per shift).
+- **Last maintenance** (wrench icon): one small bar per machine with the days since its last maintenance. Green under 14 days, amber under 28, red after; the tooltip names the type and date.
+
+The bars update while a number is typed. **ASSUMPTION, for the picture only** (the simulation does not use it): the line releases about 42 raw parts per shift (measured in the outage: 85 parts in 2 shifts), and flat demand is 34 sets per shift. Example: 160 raw units ≈ 3.8 shifts, enough for the 2-shift outage; 24 finished sets ≈ 0.7 shifts of orders.
+
+**Files:** `src/public/app.js` (`CS_ICONS`, `coverageHtml`, `maintenanceBars`), `src/public/style.css`. Checked with screenshots in both themes. **227 / 227 tests pass.**
+
+---
+
+## 21. Supplier in the diagram, raw stock that goes down, ERP stock shown at once
+
+**What changed.**
+- **Supplier node.** The production-line diagram has a **SUPPLIER** box with a truck in front of the SOURCE.
+  - It shows **delivering** with the minutes to the next truck, or **just in time** without raw stock.
+  - It shows **OUT / no deliveries** in red during the supplier outage, with a red link to the source.
+  - Parts flow from the supplier to the source: a truckload at each delivery, or one by one just in time.
+- **Raw stock that goes down.** This replaces section 18's "used only during the outage".
+  - Every part the source releases takes one unit, and the supplier's truck tops the stock up to its ERP level every 2 hours (4 per shift; ASSUMPTION, no data).
+  - SOURCE shows the count and a fill bar (e.g. 160 → 155 → back to 160 at the truck). During the outage there are no trucks, so it drains (160 → 70 in the reference outage), and the first truck after the outage refills it.
+  - Outside the outage the stock never holds the line back: an empty stock is fed just in time, as without stock. So the results are the same as in section 18, apart from small differences around the outage: the outage starts with a stock between level − 11 and level, and the refill comes with the next truck instead of at once. Supplier outage, seed 1: 99.9% with 40 or 160 units (unchanged), 85.0% with 10 units.
+- **ERP stock shown at once.** When **Start the simulation from this stock** is clicked (or a number is changed), the diagram immediately shows the ERP amounts: "raw stock 160 · ERP" above SOURCE, "warehouse 24 sets · ERP" above SINK, the supplier with "truck every 2 h". After **Simulate** the labels become live ("raw stock 114/160", "warehouse 55 sets").
+- **Outage banner.** While raw stock covers the outage, the banner says the line keeps running from the stock (with the units left), instead of "the line runs empty".
+
+**Not changed:** the side-by-side comparison diagram (its strip already shows the raw stock as a number).
+
+**Files:** `src/simulation/engine.js` (`RAW_DELIVERY_EVERY`, state: `rawDeliveries`, `rawNextDeliveryIn`, `supplierOut`), `src/metrics/collector.js` (banner), `src/public/app.js` (supplier column, particles, preview).
+
+**Tests:** a new test in `test/start-stock.test.js` checks that the stock goes down before the first truck, is topped up at 120 minutes, drains during the outage and is refilled by the first truck after it, and that Standard with stock equals Standard without. **228 / 228 tests pass.** The page was checked with a scripted browser in three states: preview before the run, live during the outage (supplier OUT, raw stock 114/160) and after the run.
+
+---
+
 ## Change log
 
 | Date | Change |
@@ -714,3 +750,5 @@ Example (Demand swing, seed 1, 20 shifts): revenue EUR 112,680, total cost EUR 1
 | 2026-11-06 | Original interface (section 17): header button opens the starter's unchanged interface at `/original` in a new tab, with its own simulation. Tests: 217 / 217 pass |
 | 2026-11-06 | ERP stock connected to the simulation (section 18): editable raw-material and finished-goods stock with a switch (off = empty, the reference), raw stock as safety stock at the source used during the outage, the same start in runs, cards, checks, comparison and advisor; light / dark theme toggle. Tests: 224 / 224 pass; ALL PASSED |
 | 2026-11-06 | Results: Revenue, Total cost and Stock left tiles (they add up to the profit); compact countermeasure cards with Details; explanation chat on Claude Opus 4.8, the countermeasure pick stays on gpt-4o (section 19). Tests: 227 / 227 pass |
+| 2026-11-06 | Current Situation tiles: icons, stock coverage bars (shifts without deliveries / shifts of orders, outage mark) and days-since-maintenance bars per machine (section 20). Tests: 227 / 227 pass |
+| 2026-11-06 | Supplier node with truck in the diagram (delivering / just in time / OUT), raw stock used part by part and topped up every 2 hours, drains in the outage; ERP stock previewed in the diagram as soon as the switch is on (section 21). Tests: 228 / 228 pass |
