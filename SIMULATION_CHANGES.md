@@ -4,7 +4,7 @@ This is a living document that tracks every change to the `machine_sim` starter.
 explains why the change makes the simulation closer to the Smart Tech Components plant, and records how we validated it and
 how to run it. The plant data is in [DATA_README.md](DATA_README.md).
 
-_Last updated: 2026-11-05_
+_Last updated: 2026-11-06_
 
 ---
 
@@ -165,23 +165,26 @@ Reference values from the data package: about 100 / 76 / 57 / 48%. All four matc
 
 ```bash
 npm install
-npm start                          # UI at http://localhost:3000
-npm test                           # 201 unit tests
+npm start                          # UI at http://localhost:3000 (the starter's original interface: /original)
+npm test                           # 227 unit tests
 node src/headless/run.check.mjs    # organisers' acceptance test → ALL PASSED
 npm run scenarios                  # scenario table (takes a few minutes)
 npm run sweep                      # Phase 2: all levers on the 4 reference scenarios (about 10 min)
 npm run countermeasures                   # the 6 countermeasures in all 4 scenarios, 30 runs each (results/<scenario>_countermeasures.*)
 npm run countermeasures -- demand-swing   # one scenario only
+npm run eval:advisor               # AI advisor benchmark: 72 answers from the real AI (about 5 min, needs .env)
+npm run tokens                     # AI tokens used by this app so far (local tally); add -- --test for one tiny test call
 ```
 
 **AI features:** the "Explain" and "Ask the Intelligent Shift Advisor" buttons need a `.env` file in the root folder with `CLIENT_ID` and `CLIENT_SECRET` (the hackathon LLM proxy, see `api.py`). Everything else works without it.
 
 **CEO interface (sections 8–13):**
-1. Choose a scenario and a number of shifts, then click **Simulate** (animated) or **Instant Simulation**.
+1. Optionally, in **Current Situation**, edit the raw-material and finished-goods stock and switch on **Start the simulation from this stock** (off by default: empty warehouse, the reference).
+   Choose a scenario, a number of shifts and a **Seed** (default 1; 🎲 picks a random one), then click **Simulate** (animated) or **Instant Simulation**.
 2. Read the **Results** tiles.
-3. Click **Explain me these results**.
+3. Click **Explain me these results**, then ask follow-up questions in the chat (type one, or click a suggested question).
 4. Click **How to improve the results?**. The 6 countermeasure cards (Operational / Strategic) fill in with their simulated values. Either tick up to 3 and click **Test my selection**, or click **Ask the Intelligent Shift Advisor**.
-5. Read the **Cost of the improvement** panel, then click **Compare side by side**.
+5. Read the **Cost of the improvement** panel, then click **Compare side by side**. The two animated lines open right below the proposal card.
 
 With Docker: `docker compose up --build`. **Rebuild after every code change**, because the image copies the code when it is built.
 If the UI looks old after an update, restart the server and press **Ctrl+F5** in the browser.
@@ -528,6 +531,166 @@ Compared with the directions we expected before running it:
 
 ---
 
+## 14. Evaluation of the Intelligent Shift Advisor (benchmark)
+
+**What it is.** A repeatable test of the AI advisor's choices: `src/evaluation/advisor-benchmark.js`, run with `npm run eval:advisor`. It asks the **real AI** (the hackathon LLM proxy) for a countermeasure in every scenario, for 6 typical CEO profiles, 3 times each (4 × 6 × 3 = **72 answers**). Each answer is scored against a rule written in code, using the same simulated card values the AI reads. Output: `results/advisor_benchmark.md` (scorecard) and `.json` (every answer, with its reason).
+
+**CEO profiles:** "Give me the best" (no answers); goal on-time delivery; goal profit; goal balance; balance with investment up to EUR 60,000; delivery with no investment allowed.
+
+**The expected option per CEO goal** (only options the budget allows and the advisor may pick):
+
+| CEO goal | Expected option |
+|---|---|
+| No answers | Highest on-time delivery among options that don't lose money (if all lose money: the smallest loss) |
+| On-time delivery | Highest on-time delivery among options that don't lose money (if all lose money: highest on-time) |
+| Profit | Highest conservative profit change |
+| Balance | Options reaching ≥ 95% on time first, then highest profit change (the Phase 2 rule) |
+| Nothing helps | "none" |
+
+Near ties count as correct ("acceptable"): within 1 point on time, or within max(EUR 500, 5%) on profit. Example: in the supplier outage the additional supplier (+EUR 11,012) and finished-goods stock (+EUR 10,992) are a tie.
+
+**What is measured:** valid answer at the first try; valid after the one allowed retry; within the CEO's budget (re-checked outside the advisor); expected and acceptable pick; "none" when nothing pays off; the same answer in every repeat; the class named in the explanation; and **grounding**: every number in the explanation must appear in what the AI was given (allowing rounding and percent form).
+
+**Results (2026-11-05, 20 shifts, card values from 10 runs):**
+
+| Check | Result |
+|---|---|
+| Valid answer at the first try | 71 / 72 (99%) |
+| Valid answer after at most one retry | **72 / 72 (100%)** |
+| Within the CEO's limits | **72 / 72 (100%)** |
+| Picks the expected option | 60 / 72 (83%) |
+| Picks an acceptable option (near ties count) | **71 / 72 (99%)** |
+| Says "none" when nothing pays off | 36 / 36 (100%) |
+| Same answer in every repeat | 22 / 24 (92%) |
+| Names the class of its pick | 35 / 36 (97%) |
+| Numbers in the explanation found in its input | **166 / 166 (100%)** |
+
+Average 1.4 s per answer.
+
+**Reading.**
+- The AI never left the catalogue or the CEO's budget, and it invented no numbers: every number it wrote was in the simulation facts.
+- All but one pick are the expected option or a near tie. The 11 "expected ≠ picked" cases are ties in the supplier outage, where four options reach 100% on time with similar profit.
+- **The one mistake:** demand swing, "balance, up to EUR 60,000", 1 of 3 repeats: the AI chose *Improve a machine* (82% on time, +EUR 3,228) instead of *Finished-goods stock* (99%, +EUR 21,012). Its reason quoted the investment limit, as if the budget had to be used. The other two repeats were right; this is also one of the 2 inconsistent groups.
+- **Finding about the scenario, not the AI: Machinery breakdown.** With 10 runs, breakdowns make results so variable that no countermeasure is statistically certain. Every card shows "No effect", although outsourcing averages +5.6 points on time and +EUR 2,732, and finished-goods stock +6.6 points and +EUR 449. The code then lets the AI only answer "none", which it did (18 / 18). More runs for this scenario would make the effect visible (with 30 runs, section 13.5 shows outsourcing and finished stock as "delivery only").
+
+**Limits.** The pick is scored on the card values (default settings, 10 runs); the 10-run check after the pick isn't repeated. The rules are our definition of "best" per goal; another reasonable rule could rank near ties differently. Grounding checks that a number appears in the input, not that it's used in the right place.
+
+**Tests:** `test/advisor-benchmark.test.js` (7 tests, fake AI, no network) checks the rules per goal, the "none" and all-lose cases, near ties, the grounding check, the class check, a retry, a budget violation and the report. **208 / 208 tests pass.**
+
+---
+
+## 15. Explanation chat and AI token tally
+
+**What changed.** "Explain me these results" was a single answer. It is now a chat: the AI explains the run, then the CEO can ask follow-up questions about the same results.
+
+| Part | File | What it does |
+|---|---|---|
+| Chat rules for the AI | `src/advisor/advisor.js` (`CHAT_SYSTEM`, `ask`) | Same rules as the explanation: only numbers from the run's facts, no new calculations. At most 120 words, says "The simulation does not show that" when the facts do not contain the answer, and does not recommend actions (it points to **How to improve the results?**). Fractions are written as percentages (0.738 → 73.8%) |
+| Conversation | `src/server.js` (`POST /api/advisor/explain` with `{ question }`) | The server keeps the conversation of the run (facts, explanation, earlier questions and answers) and sends it with every question, so the AI remembers the chat and the browser cannot rewrite its answers. Limits: 500 characters per question, 10 questions per run. A new run starts a new chat |
+| Number check under every answer | `src/advisor/grounding.js` (shared with the benchmark, section 14) | Each AI answer shows "✓ N numbers checked against the simulation", or "⚠ Not in the simulation results: …" listing any number the AI calculated or guessed |
+| Chat window | `src/public/` | Message bubbles, scenario-specific suggested questions (e.g. "What happened during the supplier outage?"), Enter to send, **New explanation**, questions left and AI tokens used in this session |
+| Token tally | `src/advisor/llm.js`, `src/tools/tokens.js`, `GET /api/advisor/usage` | The hackathon proxy reports the tokens of each answer but has no endpoint for the remaining quota (`/api/v1/usage`, `/quota`, `/me` return 404). The app adds every answer's tokens to `.llm_usage.json` (git-ignored); `npm run tokens` prints calls and tokens, in total and per day |
+
+**Validated with the real AI (2026-11-06).** Supplier outage and Demand swing, 20 shifts: an explanation plus follow-ups ("What happened during the supplier outage?", "Which shifts were the worst?", "What should I do?"). All 42 numbers in the answers were found in the simulation results. The AI described the outage window (shifts 11–12, 960 minutes without supply, M3 starved 799 minutes), and for "What should I do?" pointed to the improve button. An explanation costs about 1,300 tokens; a follow-up about 1,350–1,450, because the whole conversation is sent again.
+
+**Tests:** `test/explain-chat.test.js` (4 tests, no network). They check that the follow-up prompt carries the facts, the explanation and earlier turns; that a number not in the facts is flagged; and that the token tally adds up. The endpoint is tested end to end against a fake AI proxy on localhost: no question before the explanation, empty or too-long questions, the 10-question limit, token counts per session, and a new run resetting the chat. **212 / 212 tests pass.**
+
+---
+
+## 16. Seed selector in the Simulate bar
+
+**What changed.** Every CEO run used seed 1 and the seed could only be changed in the advanced controls, which **Simulate** then overrode. The Simulate bar now has a **Seed** field (whole number 0–99,999, default 1) and a 🎲 button that picks a random seed. A line under the Results tiles names the seed of the run.
+
+**How the seed is used (and why this setup):**
+
+| Where | Seed(s) | Why |
+|---|---|---|
+| Main run (**Simulate** / **Instant Simulation**) | The seed in the bar (default 1) | Same seed → the identical run, so a demo is repeatable; another seed = another possible week |
+| Side-by-side comparison | The seed of the main run, on both lines | Line "As is" replays exactly the run shown in Results; the countermeasure is the only difference |
+| Countermeasure cards, 10-run check after a pick, advisor | Seeds 1–10 (average) | A decision must not depend on one lucky or unlucky week |
+| `npm run countermeasures` / `scenarios` / `sweep`, benchmark | Seeds 1–30 / 1–10 | Batch evaluation |
+
+The seed only moves the random events: which parts M2 rejects (10%), and in Machinery breakdown when the machines fail. Orders (demand file) and the supplier outage window are fixed. Each random process has its own stream, so the comparison stays fair.
+
+**Example (Machinery breakdown, 20 shifts):** seed 1 gives 93.2% on time / EUR 44,620 profit, seed 7 gives 98.4% / EUR 46,030, seed 1234 gives 78.7% / EUR 33,688. That spread is why the cards average 10 seeds.
+
+**Files:** `src/ui/scenarios.js` (`buildUiScenario(id, shifts, seed)`, `normaliseUiSeed`), `src/server.js` (`runScenario` takes `seed`, kept as `session.runSeed`, returned by `GET /api/results`, passed to the advisor and the comparison), `src/ui/compare-runner.js`, `src/public/`. A bad seed is refused with a 400 and the Simulate buttons stay disabled until it is fixed.
+
+**Tests:** `test/ui-seed.test.js` (3 tests): validation, same seed = same run, another seed = a different run, the comparison uses the run's seed. **215 / 215 tests pass.**
+
+---
+
+## 17. The original interface at /original
+
+**What changed.** The header has an **Original interface ↗** button. It opens the starter's interface as we received it, at `http://localhost:3000/original`, in a new tab, so the "before" and "after" can be shown side by side.
+
+- **Files:** `src/public/original/`, copied unchanged from the starter package (`index.html`, `app.js`, `style.css`, `sim-status.js`, `suggestions-view.js`). `/original` redirects to `/original/`.
+- **Its own simulation:** the server gives requests from the original page a separate session (same cookie, separate engine), recognised by the page that sends them. Pressing Play or Reset there never touches the CEO run of the main page, and the reverse.
+- **Same engine and API:** the original page runs on today's server, so it uses the current engine (seeded rejects, the same defaults: 200-part material limit, no orders). Every field it reads (`state.machines`, `buffers`, `sink`, `scrap`, the metrics) is still provided; the new fields are ignored.
+
+**Tests:** `test/original-page.test.js` (2 tests, real server): the redirect, the page and its 4 scripts, the header button, and that the two pages have separate simulations. **217 / 217 tests pass.**
+
+---
+
+## 18. ERP stock connected to the simulation, and a light / dark theme
+
+**What changed.** The Current Situation bar showed the ERP stock (24 finished sets, 160 raw units) as numbers the simulation did not use. Both are now editable fields, each labelled with where it enters the line (**→ SOURCE**, **→ SINK (warehouse)**), and a switch **Start the simulation from this stock** feeds them into the run.
+
+**Why a switch, off by default.** The ERP stock is large enough to hide every disruption. Seed 1, 20 shifts, orders on time:
+
+| Scenario | Empty stock (reference) | 24 finished sets | + 160 raw units |
+|---|---|---|---|
+| Standard | 99.9% | 100% | 100% |
+| Demand swing | 56.1% | 80.5% | 80.5% |
+| Supplier outage | 73.8% | 98.2% | 100% |
+| Machinery breakdown | 93.2% | 100% | 100% |
+
+The data package's reference scenarios start empty, so empty stays the default. With the switch off every result is unchanged (tested).
+
+**How the stock is modelled.**
+- **Finished sets** wait in the warehouse at the end of the line and serve the first orders (`initialFinishedGoods`, already in the engine and valued in the profit as starting stock).
+- **Raw material** is a safety stock at the source (`config.rawSafetyStock`, new, `engine.js`). Normal deliveries keep it at its level. While the supplier is out, the source keeps releasing parts from it until it is empty; when the supplier delivers again it is back at its level. Without an outage it is never used. ASSUMPTION: no holding cost and no reorder rule (the stock is already on hand); the **Increase stock of raw material** countermeasure keeps its own inventory model with storage costs.
+- **One start for every comparison** (`src/countermeasures/start-stock.js`). The main run, the side-by-side comparison, the countermeasure cards, the 10-run check and the AI advisor all use the same starting stock on the "without" and the "with" side, so a countermeasure is still the only difference. A countermeasure that adds stock adds it on top (finished-stock: ERP sets + its sets; raw-stock: its level + the ERP raw units).
+- **In the diagram:** above SOURCE "raw stock N/level" (counts down during the outage), above SINK "warehouse N sets". The Results note says whether the run started from the ERP stock and how many raw units the outage used; the AI's facts include it (`startStock`).
+- **Editing:** whole numbers (finished 0–500, raw 0–2,000); an "ERP value" link resets a field. Values and the switch are remembered in the browser. After a change the cards recompute and a note says to click Simulate.
+
+**Light / dark theme.** A toggle at the top right. Without a choice the page follows the system setting; the choice is remembered in the browser, and `?theme=light` or `?theme=dark` in the address forces one (useful for a demo). All colours are now theme tokens in `style.css`; the SVG diagrams keep their drawing code and are recoloured through CSS. The original interface (`/original`) is unchanged.
+
+**Files:** `src/simulation/engine.js`, `src/countermeasures/start-stock.js` (new), `evaluate.js`, `cards.js`, `src/advisor/advisor.js`, `src/ui/scenarios.js`, `compare-runner.js`, `run-summary.js`, `src/server.js` (`runScenario` takes `start`, cards take `finished` / `raw`), `src/public/`.
+
+**Tests:** `test/start-stock.test.js` (7 tests). It checks validation; that empty stock leaves the reference runs unchanged; the safety stock in the outage (used, refilled, unused without an outage, a small stock runs out); finished sets serving orders; countermeasure stock on top of the ERP stock; both comparison lines; the evaluator and its cache; and the endpoints. **224 / 224 tests pass**, and `run.check.mjs` prints **ALL PASSED**.
+
+---
+
+## 19. Money tiles, compact countermeasure cards, Claude Opus 4.8 for the explanation
+
+**Results: three new tiles.** They add up to the Profit tile: **revenue − total cost + value of the stock left = profit** (the profit rule of `costs.js`, tested in every scenario).
+
+| Tile | What it shows |
+|---|---|
+| Revenue | Sets shipped × EUR 180 |
+| Total cost | Every cost of the run: machines, material, missed-order penalties (EUR 90 per late set), storage, outsourcing, investments, starting stock; the caption names the 3 biggest |
+| Stock left at the end | Finished sets still in the warehouse, valued at EUR 103 per set (the data package's rule; unsold, tied-up money), the storage paid for finished stock during the run, and the parts still inside the line |
+
+Example (Demand swing, seed 1, 20 shifts): revenue EUR 112,680, total cost EUR 103,984, 109 sets left worth EUR 11,227, profit EUR 19,923. The 109 unsold sets come from the drop in demand at the end of the run. The new values are in the run summary (`money.totalCost`, `money.costs`, `stockEnd`), so the AI can explain them too.
+
+**Countermeasure cards: compact, with details on demand.** Each of the 6 cards now shows:
+- its name, its class (Operational / Strategic) and the tick box;
+- one summary line: on time without → with, profit change and the verdict.
+
+**Details** opens the description, the settings and the 4 KPIs (on time, profit change, upfront investment, cost per good set) and the cost note; **Hide details** closes it again. The comparison table of all 6 is folded under **Compare all 6 in one table**.
+
+**Explanation chat on Claude Opus 4.8.** "Explain me these results" and its follow-up questions now call `claude-opus-4-8` through the same hackathon proxy (see `api copy.py`: only the `model` field of the request changes). The chat shows the model name on every answer.
+- **The countermeasure pick stays on gpt-4o:** that is the model the advisor benchmark (section 14) measured; switching it would need a new benchmark run.
+- **Overrides:** both models can be changed with `LLM_EXPLAIN_MODEL` / `LLM_MODEL`.
+- **Timeout:** raised to 60 s.
+- **Token tally:** `npm run tokens` now also counts per model.
+- **Live check:** Demand swing, an explanation and one follow-up about the stock left took 7.4 s and 4.2 s, about 2,250 tokens each. All 27 numbers in the answers were found in the simulation results.
+
+**Tests:** `test/model-and-money.test.js` (3 tests): the chat asks for `claude-opus-4-8` while the pick keeps gpt-4o; the tally counts per model; the money tiles add up to the profit and the cost lines to the total, in all 4 scenarios. **227 / 227 tests pass.**
+
+---
+
 ## Change log
 
 | Date | Change |
@@ -544,3 +707,10 @@ Compared with the directions we expected before running it:
 | 2026-11-05 | Documentation: "How to run it" updated (test count, AI `.env`, CEO flow); new section 12 with design decisions (what the AI reads, JEV not adopted), open explainability/finance options and the long-term plan |
 | 2026-11-05 | One pool of 6 countermeasures (section 13): improve a machine and new assembly line (Strategic); additional supplier (jit backup rule), production outsourcing (new engine option, EUR 150 per set ASSUMPTION), raw-material stock, finished-goods stock (Operational) in all 4 scenarios; overtime out of the pool, UI, prompt and questionnaire (engine kept); cards with 4 comparable values simulated on the spot for the scenario and shift limit of the top bar (in-memory cache, no precomputation); the advisor reads the card values and picks exactly one or "none"; class badges everywhere; new cost lines (outsourcing, additional supplier). Tests: 201 / 201 pass; reference check ALL PASSED |
 | 2026-11-05 | Repository cleanup: working documents (plans, roadmap, early result dumps, console logs) removed from the repository and listed in `.gitignore`; this document references only files in the repository |
+| 2026-11-05 | Advisor benchmark (section 14): `npm run eval:advisor`, 72 answers from the real AI scored against a written rule per CEO goal; 99% acceptable picks, 100% within limits, 100% of numbers grounded; finding: Machinery breakdown cards are not significant at 10 runs. Tests: 208 / 208 pass |
+| 2026-11-06 | Explanation chat (section 15): follow-up questions with the conversation kept on the server, number check under every answer, suggested questions, 10 questions per run; AI token tally (`.llm_usage.json`, `npm run tokens`, `GET /api/advisor/usage`). Tests: 212 / 212 pass |
+| 2026-11-06 | Side-by-side comparison moved from above the controls to right below the proposal card and its **Compare side by side** button, so the page no longer jumps back up when it opens. Tests: 212 / 212 pass |
+| 2026-11-06 | Seed selector in the Simulate bar (section 16): seed 0–99,999 with a random-seed button; the side-by-side comparison replays the run's seed; cards and checks still average seeds 1–10. Tests: 215 / 215 pass |
+| 2026-11-06 | Original interface (section 17): header button opens the starter's unchanged interface at `/original` in a new tab, with its own simulation. Tests: 217 / 217 pass |
+| 2026-11-06 | ERP stock connected to the simulation (section 18): editable raw-material and finished-goods stock with a switch (off = empty, the reference), raw stock as safety stock at the source used during the outage, the same start in runs, cards, checks, comparison and advisor; light / dark theme toggle. Tests: 224 / 224 pass; ALL PASSED |
+| 2026-11-06 | Results: Revenue, Total cost and Stock left tiles (they add up to the profit); compact countermeasure cards with Details; explanation chat on Claude Opus 4.8, the countermeasure pick stays on gpt-4o (section 19). Tests: 227 / 227 pass |

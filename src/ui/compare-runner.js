@@ -9,6 +9,7 @@ import { SimulationEngine } from '../simulation/engine.js';
 import { DEFAULT_CONFIG } from '../simulation/config.js';
 import { resolveSelection } from '../countermeasures/catalog.js';
 import { buildUiScenario, RUN_SHIFTS } from './scenarios.js';
+import { normaliseStart, variantWith } from '../countermeasures/start-stock.js';
 
 const clone = (o) => JSON.parse(JSON.stringify(o));
 const STEP_MS = 20;            // timer granularity; several ticks are run per callback when needed
@@ -19,23 +20,27 @@ function baseConfig() {
   return cfg;
 }
 
-// advice = { scenarioId, selection: [{ id, params }], label, shifts, configOverride? }
+// advice = { scenarioId, selection: [{ id, params }], label, shifts, seed, start, configOverride? }
+// start = the starting stock of the run (both lines); a countermeasure's extra stock comes on top of it.
+// Both engines use the seed of the CEO's run, so line A replays exactly the run shown in Results.
 // Engine A: as is. Engine B: the countermeasures' config override merged over the defaults.
 // configOverride (optional) replaces the selection with a raw engine config, for engine features that are
 // not in the pool of countermeasures any more (e.g. overtime); the CEO interface never sets it.
 export function buildEngines(advice) {
   const shifts = advice.shifts ?? RUN_SHIFTS;
-  const sc = buildUiScenario(advice.scenarioId, shifts);
+  const start = normaliseStart(advice.start);
+  const sc = buildUiScenario(advice.scenarioId, shifts, advice.seed, start);
   const override = advice.configOverride ? { config: advice.configOverride } : resolveSelection(advice.selection, sc.disruptionId).override;
+  const withB = variantWith({}, override, start);
 
   const a = new SimulationEngine(baseConfig());
   a.configureScenario({ ...sc.configureOptions, runShifts: shifts });
 
-  const cfgB = { ...baseConfig(), ...clone(override.config ?? {}) };
+  const { rawSafetyStock = 0, ...configB } = withB.config;
+  const cfgB = { ...baseConfig(), ...clone(configB) };
   const b = new SimulationEngine(cfgB);
   b.configureScenario({
-    ...sc.configureOptions, runShifts: shifts,
-    ...(override.initialFinishedGoods != null ? { initialFinishedGoods: override.initialFinishedGoods } : {}),
+    ...sc.configureOptions, runShifts: shifts, initialFinishedGoods: withB.initialFinishedGoods, rawSafetyStock,
   });
   return { a, b, scenario: { id: sc.id, label: sc.label }, shifts };
 }

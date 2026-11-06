@@ -11,13 +11,16 @@
  *   GET  /              → serves index.html (the visual frontend)
  *   GET  /api/state     → current simulation state (JSON)
  *   GET  /api/metrics   → calculateMetrics() output (JSON, for frontend polling)
+ *   GET  /original/     → the starter's original interface (own simulation, same API)
  *   GET  /api/events    → SSE stream, pushes state+metrics every 250 ms
  *   POST /api/control   → play/pause/reset/param updates
  *   GET  /api/presets   → scenario presets (id, label, description)
  *   GET  /api/export    → per-tick history as CSV (?format=csv) or JSON (the simulation log)
  *   GET  /api/kpis      → orders, service level and economics of the closed shifts
  *   GET  /api/results   → CEO interface: status of the scenario run + summary when done
- *   POST /api/advisor/explain, /api/advisor/improve → AI shift advisor (LLM called server-side only)
+ *   POST /api/advisor/explain, /api/advisor/improve → AI shift advisor (LLM called server-side only);
+ *        explain with { question } asks a follow-up in the explanation chat of this run
+ *   GET  /api/advisor/usage → tokens used by the AI (this browser session and the local tally of all runs)
  *   GET  /api/countermeasures[/cards] → the pool of 6 countermeasures; the cards' simulated values (computed on the spot)
  *
  * POST /api/control also takes the realism-layer options (all off by default) in
@@ -43,7 +46,7 @@ import { liveResult, shiftRowsFromEngine } from './simulation/summary.js';
 import { computeEconomics } from './economics/costs.js';
 import { loadRateCard, loadDemand, loadCurrentSituation } from './data/loaders.js';
 import { REFERENCE_OUTAGE } from './scenarios/scenarios.js';
-import { buildUiScenario, normaliseShifts, UI_SCENARIO_IDS, RUN_SHIFTS } from './ui/scenarios.js';
+import { buildUiScenario, normaliseShifts, normaliseUiSeed, UI_SCENARIO_IDS, RUN_SHIFTS, DEFAULT_SEED } from './ui/scenarios.js';
 import { reconfiguresEngine } from './ui/session-rules.js';
 import { catalogueFor, resolveSelection } from './countermeasures/catalog.js';
 import { evaluateSelection } from './countermeasures/evaluate.js';
@@ -51,8 +54,10 @@ import { createCardStore } from './countermeasures/cards.js';
 import { range } from './scenarios/scenarios.js';
 import { buildRunSummary, engineRecord } from './ui/run-summary.js';
 import { costBreakdown } from './economics/breakdown.js';
-import { createAdvisor } from './advisor/advisor.js';
+import { createAdvisor, MAX_FOLLOW_UPS, QUESTION_MAX } from './advisor/advisor.js';
+import { readUsage } from './advisor/llm.js';
 import { validateAnswers } from './advisor/constraints.js';
+import { NO_START, normaliseStart } from './countermeasures/start-stock.js';
 import { CompareRunner } from './ui/compare-runner.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -131,7 +136,7 @@ function getSession(sid) {
     // kicks off the run with Play (or the start banner). Avoids the line racing
     // ahead before the page has even rendered.
     const engine = new SimulationEngine(DEFAULT_CONFIG);
-    s = { engine, sseClients: new Set(), cleanupTimer: null, scenario: null, runShifts: RUN_SHIFTS, advice: null, compare: null };
+    s = { engine, sseClients: new Set(), cleanupTimer: null, scenario: null, runShifts: RUN_SHIFTS, runSeed: DEFAULT_SEED, runStart: { ...NO_START }, advice: null, compare: null, chat: null, aiTokens: { calls: 0, totalTokens: 0 } };
     sessions.set(sid, s);
   }
   if (s.cleanupTimer) {
@@ -174,14 +179,26 @@ app.addHook('onRequest', (req, reply, done) => {
     sid = randomUUID();
     reply.header('Set-Cookie', `sid=${sid}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`);
   }
+  // The original starter interface (/original/) gets its own simulation, so its controls never touch
+  // the CEO run of the main page. Its files are unchanged, so it is recognised by the page that sent the request.
+  if (isOriginalPage(req)) sid += ':original';
   req.sid = sid;
   done();
 });
+
+function isOriginalPage(req) {
+  if (req.url.startsWith('/original')) return true;
+  try { return new URL(req.headers.referer ?? '').pathname.startsWith('/original'); }
+  catch { return false; }
+}
 
 app.register(fastifyStatic, {
   root:   join(__dirname, 'public'),
   prefix: '/',
 });
+
+// The interface as received in the starter (src/public/original/, files unchanged), opened from the header
+app.get('/original', (req, reply) => reply.redirect('/original/'));
 
 // ── SSE broadcast loop ─────────────────────────────────────────────────────
 
@@ -269,6 +286,7 @@ app.post('/api/control', async (req, reply) => {
   if (reconfiguresEngine(action, params)) {
     session.scenario = null;
     session.advice = null;
+    session.chat = null;
     dropCompare(session);
   }
 
@@ -281,23 +299,29 @@ app.post('/api/control', async (req, reply) => {
     case 'removeMachine':   engine.removeMachine(params); break;
     case 'configureScenario': break;      // handled below with the other params
     case 'runScenario': {
-      // CEO interface: one of the 4 scenarios, 20 shifts, animated at 10x, stops by itself
+      // CEO interface: one of the 4 scenarios, the shifts and the seed of the Simulate bar, animated or instant, stops by itself
       const id = params.scenario;
       if (!UI_SCENARIO_IDS.includes(id)) {
         reply.code(400);
         return { ok: false, error: `unknown scenario (allowed: ${UI_SCENARIO_IDS.join(', ')})` };
       }
-      let shifts;
-      try { shifts = normaliseShifts(params.shifts === undefined ? undefined : Number(params.shifts)); }
-      catch (err) { reply.code(400); return { ok: false, error: err.message }; }
-      const sc = buildUiScenario(id, shifts);
+      let shifts, seed, start;
+      try {
+        shifts = normaliseShifts(params.shifts === undefined ? undefined : Number(params.shifts));
+        seed = normaliseUiSeed(params.seed === undefined || params.seed === '' ? undefined : Number(params.seed));
+        start = normaliseStart(params.start);          // the ERP stock when switched on; absent = empty stock
+      } catch (err) { reply.code(400); return { ok: false, error: err.message }; }
+      const sc = buildUiScenario(id, shifts, seed, start);
       const cfg = JSON.parse(JSON.stringify(DEFAULT_CONFIG));
       cfg.source.materialStock = -1;
       engine.loadConfig(cfg);
       engine.configureScenario({ ...sc.configureOptions, runShifts: shifts });
       session.scenario = id;
       session.runShifts = shifts;
+      session.runSeed = seed;
+      session.runStart = start;
       session.advice = null;
+      session.chat = null;                     // a new run starts a new explanation chat
       dropCompare(session);
       if (params.instant) {
         // run all shifts at once (about a second); the diagram jumps to the final state
@@ -361,8 +385,9 @@ function resultsFor(session) {
   const shiftsDone = engine.orders?.rows.length ?? 0;
   const done = shiftsDone >= session.runShifts;
   return {
-    status: done ? 'done' : 'running', scenario: session.scenario, shiftsDone, shiftsTotal: session.runShifts,
-    summary: done ? buildRunSummary(engine, buildUiScenario(session.scenario, session.runShifts), RATE_CARD) : null,
+    status: done ? 'done' : 'running', scenario: session.scenario, shiftsDone, shiftsTotal: session.runShifts, seed: session.runSeed,
+    start: session.runStart,
+    summary: done ? buildRunSummary(engine, buildUiScenario(session.scenario, session.runShifts, session.runSeed, session.runStart), RATE_CARD) : null,
   };
 }
 
@@ -372,7 +397,7 @@ app.get('/api/results', async (req) => resultsFor(getSession(req.sid)));
 // The values on the countermeasure cards: simulated on the spot for the scenario and the run length of the
 // top bar, kept in memory only (no precomputation, no file). Shared by the cards endpoint and the advisor.
 const cardStore = createCardStore();
-const advisor = createAdvisor({ getCards: (scenarioId, shifts) => cardStore.whenReady(scenarioId, shifts) });
+const advisor = createAdvisor({ getCards: (scenarioId, shifts, start) => cardStore.whenReady(scenarioId, shifts, start) });
 
 async function advise(req, reply, run) {
   const session = getSession(req.sid);
@@ -382,14 +407,51 @@ async function advise(req, reply, run) {
     return { error: 'Run a scenario to the end first' };
   }
   try {
-    return await run(r.summary, buildUiScenario(session.scenario, session.runShifts));
+    return await run(r.summary, buildUiScenario(session.scenario, session.runShifts, session.runSeed, session.runStart));
   } catch (err) {
     reply.code(502);
     return { error: err.message };
   }
 }
 
-app.post('/api/advisor/explain', (req, reply) => advise(req, reply, (summary) => advisor.explain(summary)));
+// Explanation chat. No question: a new explanation (starts the chat of this run again).
+// { question }: a follow-up; the server keeps the conversation, so the browser cannot rewrite the AI's answers.
+function countTokens(session, r) {
+  session.aiTokens.calls += 1;
+  session.aiTokens.totalTokens += r.usage?.totalTokens ?? 0;
+  return { ...r, sessionTokens: { ...session.aiTokens } };
+}
+
+app.post('/api/advisor/explain', async (req, reply) => {
+  const session = getSession(req.sid);
+  const question = req.body?.question;
+  if (question === undefined || question === null) {
+    return advise(req, reply, async (summary) => {
+      const r = await advisor.explain(summary);
+      session.chat = { explanation: r.text, turns: [] };
+      return { ...countTokens(session, r), followUpsLeft: MAX_FOLLOW_UPS };
+    });
+  }
+  if (typeof question !== 'string' || !question.trim()) { reply.code(400); return { error: 'Type a question first' }; }
+  if (question.trim().length > QUESTION_MAX) { reply.code(400); return { error: `Keep the question under ${QUESTION_MAX} characters` }; }
+  if (!session.chat) { reply.code(409); return { error: 'Ask for the explanation first' }; }
+  if (session.chat.turns.length >= MAX_FOLLOW_UPS) {
+    reply.code(429);
+    return { error: `That is the limit of ${MAX_FOLLOW_UPS} questions for this run. Ask for a new explanation to start again.` };
+  }
+  return advise(req, reply, async (summary) => {
+    const chat = session.chat;
+    const r = await advisor.ask(summary, chat, question);
+    if (session.chat !== chat) throw new Error('The run changed while the AI was answering');
+    chat.turns.push({ question: question.trim(), answer: r.text });
+    return { ...countTokens(session, r), followUpsLeft: MAX_FOLLOW_UPS - chat.turns.length };
+  });
+});
+
+app.get('/api/advisor/usage', async (req) => {
+  const all = readUsage();
+  return { session: getSession(req.sid).aiTokens, allRuns: { calls: all.calls, totalTokens: all.totalTokens, since: all.firstCall } };
+});
 app.post('/api/advisor/improve', async (req, reply) => {
   let answers;
   try { answers = validateAnswers(req.body?.answers ?? null); }
@@ -400,12 +462,12 @@ app.post('/api/advisor/improve', async (req, reply) => {
     return { error: 'Stop the comparison first' };
   }
   return advise(req, reply, async (summary, sc) => {
-    const r = await advisor.improve(summary, sc, answers, { shifts: session.runShifts });
+    const r = await advisor.improve(summary, sc, answers, { shifts: session.runShifts, start: session.runStart });
     if (r.status === 'proposed') {
       dropCompare(session);                    // a new proposal replaces the old comparison
       session.advice = {
         scenarioId: sc.id, selection: [{ id: r.countermeasure.id, params: r.countermeasure.params }],
-        label: r.countermeasure.label, source: 'advisor', shifts: session.runShifts,
+        label: r.countermeasure.label, source: 'advisor', shifts: session.runShifts, seed: session.runSeed, start: session.runStart,
       };
     } else if (r.status === 'none') {
       dropCompare(session);                    // "no countermeasure pays off": nothing to compare
@@ -415,14 +477,17 @@ app.post('/api/advisor/improve', async (req, reply) => {
   });
 });
 
-// Scenario and run length of a cards request: the query (the top bar, before Simulate was pressed),
-// else the scenario and shift limit of the session. Throws a message for a bad value.
+// Scenario, run length and starting stock of a cards request: the query (the top bar and the ERP bar, before
+// Simulate was pressed), else the scenario, shift limit and starting stock of the session. Throws for a bad value.
 function cardsTarget(req) {
   const session = getSession(req.sid);
-  const scenario = req.query?.scenario ?? session.scenario ?? 'standard';
+  const q = req.query ?? {};
+  const scenario = q.scenario ?? session.scenario ?? 'standard';
   if (!UI_SCENARIO_IDS.includes(scenario)) throw new Error(`unknown scenario (allowed: ${UI_SCENARIO_IDS.join(', ')})`);
-  const shifts = normaliseShifts(req.query?.shifts === undefined ? session.runShifts : Number(req.query.shifts));
-  return { scenario: buildUiScenario(scenario, shifts).disruptionId, shifts };
+  const shifts = normaliseShifts(q.shifts === undefined ? session.runShifts : Number(q.shifts));
+  const start = q.finished === undefined && q.raw === undefined
+    ? session.runStart : normaliseStart({ finished: q.finished, raw: q.raw });
+  return { scenario: buildUiScenario(scenario, shifts).disruptionId, shifts, start };
 }
 
 // The pool of 6 countermeasures (the same in every scenario; one source: the catalogue)
@@ -436,8 +501,8 @@ app.get('/api/countermeasures', async (req, reply) => {
 // server process only, so a pair that was computed before is instant.
 app.get('/api/countermeasures/cards', async (req, reply) => {
   try {
-    const { scenario, shifts } = cardsTarget(req);
-    return cardStore.snapshot(scenario, shifts);
+    const { scenario, shifts, start } = cardsTarget(req);
+    return cardStore.snapshot(scenario, shifts, start);
   } catch (err) {
     reply.code(400);
     return { error: err.message };
@@ -450,17 +515,17 @@ app.post('/api/countermeasures/test', async (req, reply) => {
   const r = resultsFor(session);
   if (r.status !== 'done') { reply.code(409); return { error: 'Run a scenario to the end first' }; }
   if (session.compare?.running) { reply.code(409); return { error: 'Stop the comparison first' }; }
-  const sc = buildUiScenario(session.scenario, session.runShifts);
+  const sc = buildUiScenario(session.scenario, session.runShifts, session.runSeed, session.runStart);
   const selection = req.body?.selection;
   let resolved;
   try { resolved = resolveSelection(selection, sc.disruptionId); }
   catch (err) { reply.code(400); return { error: err.message }; }
   try {
-    const check = await evaluateSelection(sc.disruptionId, selection, { seeds: range(1, 10), shifts: session.runShifts });
+    const check = await evaluateSelection(sc.disruptionId, selection, { seeds: range(1, 10), shifts: session.runShifts, start: session.runStart });
     dropCompare(session);
     session.advice = {
       scenarioId: sc.id, selection: resolved.items.map(i => ({ id: i.cm.id, params: i.params })),
-      label: resolved.label, source: 'manual', shifts: session.runShifts,
+      label: resolved.label, source: 'manual', shifts: session.runShifts, seed: session.runSeed, start: session.runStart,
     };
     return {
       status: 'proposed', source: 'manual', countermeasure: check.countermeasure, constraintsApplied: [], answers: null, costs: check.costs,
@@ -472,7 +537,8 @@ app.post('/api/countermeasures/test', async (req, reply) => {
   }
 });
 
-// Demo values for the Current Situation bar (visual only; the simulation does not read them)
+// ERP values for the Current Situation bar (demo data). The simulation uses the stock only when the CEO
+// switches "Start from the ERP stock" on; the page then sends it with Simulate as params.start.
 app.get('/api/current-situation', async () => loadCurrentSituation());
 
 // Side-by-side comparison: as is vs. with the proposed countermeasure

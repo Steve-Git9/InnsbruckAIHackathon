@@ -182,6 +182,10 @@ export class SimulationEngine extends EventEmitter {
       else delete cfg.demand;
     }
     if (opts.initialFinishedGoods !== undefined) cfg.initialFinishedGoods = opts.initialFinishedGoods;
+    if (opts.rawSafetyStock !== undefined) {
+      if (opts.rawSafetyStock) cfg.rawSafetyStock = opts.rawSafetyStock;
+      else delete cfg.rawSafetyStock;
+    }
     if (opts.overtime !== undefined) {
       if (opts.overtime) cfg.overtime = { ...OVERTIME_DEFAULTS, ...opts.overtime, enabled: true };
       else delete cfg.overtime;
@@ -312,6 +316,8 @@ export class SimulationEngine extends EventEmitter {
         id:            this.source.id,
         interval:      this.source.interval,
         materialStock: this.source.materialStock,
+        rawOnHand:     this.rawOnHand,
+        rawSafetyLevel: this.rawSafetyLevel,
         totalGenerated: this.source.totalGenerated,
         lastEmitted:   this.source.lastEmitted,
         ticksSinceLast: this.source.ticksSinceLast,
@@ -395,6 +401,11 @@ export class SimulationEngine extends EventEmitter {
       : null;
     this.outsourcing = cfg.outsourcing?.enabled && this.orders ? new Outsourcing(cfg.outsourcing) : null;
     this.backupParts = 0;          // parts released by the backup supplier during an outage (jit mode)
+    // Raw-material safety stock at the source (config.rawSafetyStock, jit mode, ERP starting stock): normal
+    // deliveries keep it at its level; while the supplier is out the source releases from it until it is empty.
+    this.rawSafetyLevel = Math.max(0, Math.floor(cfg.rawSafetyStock ?? 0));
+    this.rawOnHand      = this.rawSafetyLevel;
+    this.rawFromStock   = 0;       // parts released from the safety stock during the outage
     this._shiftWipSum  = 0;
     this._otTicks      = 0;        // overtime ticks so far (engine ticks that did not advance the plant clock)
     this._otActive     = false;    // true while the line works overtime at a shift end
@@ -727,11 +738,17 @@ export class SimulationEngine extends EventEmitter {
     // first leadTime ticks of the window, then releases normally; those parts cost the premium.
     const outage = this._config.source.outage;
     const pt = this.plantTick;
-    let backup = false;
-    if (!this.supply && outage && pt > outage.startTick && pt <= outage.endTick) {
-      const bk = this._config.source.backupSupplier;
-      if (!bk?.enabled || pt <= outage.startTick + bk.leadTime) return;
-      backup = true;
+    let backup = false, fromStock = false;
+    const inOutage = !this.supply && outage && pt > outage.startTick && pt <= outage.endTick;
+    if (inOutage) {
+      if (this.rawOnHand > 0) fromStock = true;      // the raw safety stock keeps the source running
+      else {
+        const bk = this._config.source.backupSupplier;
+        if (!bk?.enabled || pt <= outage.startTick + bk.leadTime) return;
+        backup = true;
+      }
+    } else if (this.rawOnHand < this.rawSafetyLevel) {
+      this.rawOnHand = this.rawSafetyLevel;           // the supplier delivers again: stock back to its level
     }
 
     // Material starvation check: -1 means infinite stock; 0 means depleted.
@@ -758,6 +775,7 @@ export class SimulationEngine extends EventEmitter {
     this.source.totalGenerated++;
     this.source.lastEmitted     = true;
     if (backup) this.backupParts++;
+    if (fromStock) { this.rawOnHand--; this.rawFromStock++; }
 
     // Decrement material stock; -1 means infinite (no decrement). Not used in inventory mode.
     if (!this.supply && this.source.materialStock > 0) {

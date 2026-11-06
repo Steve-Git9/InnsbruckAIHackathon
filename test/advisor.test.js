@@ -40,7 +40,8 @@ const noCards = async () => [];
 test('explain sends the FACTS and returns the text', async () => {
   const chat = mockChat(['It went badly.']);
   const r = await createAdvisor({ chat, getCards: noCards }).explain(summary);
-  assert.deepEqual(r, { text: 'It went badly.' });
+  assert.equal(r.text, 'It went badly.');
+  assert.deepEqual(r.grounding, { numbers: 0, ungrounded: [] });
   const user = chat.calls[0].find(m => m.role === 'user').content;
   assert.ok(user.startsWith('FACTS:\n'));
   assert.equal(JSON.parse(user.slice(7)).orders.late, 260);

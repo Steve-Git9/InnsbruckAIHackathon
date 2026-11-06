@@ -23,8 +23,9 @@ import { compare } from '../scenarios/sweep.js';
 import { costBreakdown } from '../economics/breakdown.js';
 import { loadRateCard, loadDemand } from '../data/loaders.js';
 import { DISRUPTIONS, catalogueFor, resolveSelection } from './catalog.js';
+import { NO_START, normaliseStart, startKey, baseVariant, variantWith } from './start-stock.js';
 
-const baseCache = new Map();   // "disruption|seeds|shifts" -> baseline variant (the "without" run)
+const baseCache = new Map();   // "disruption|seeds|shifts|start" -> baseline variant (the "without" run)
 
 function verdictOf(c) {
   const slUp = c.dSL.lo > 0, slDown = c.dSL.hi < 0;
@@ -38,24 +39,23 @@ function verdictOf(c) {
 }
 
 // One countermeasure or any combination: selection = [{ id, params }]
+// start = the plant's starting stock { finished, raw } (start-stock.js), the same on both sides; default empty
 export async function evaluateSelection(disruptionId, selection, {
-  seeds = range(1, 30), shifts = 20, rate = loadRateCard(), profile = loadDemand(),
+  seeds = range(1, 30), shifts = 20, rate = loadRateCard(), profile = loadDemand(), start = NO_START,
 } = {}) {
+  start = normaliseStart(start);
   const d = DISRUPTIONS[disruptionId];
   if (!d) throw new Error(`unknown scenario "${disruptionId}" (allowed: ${Object.keys(DISRUPTIONS).join(', ')})`);
   const { items, label, override } = resolveSelection(selection, disruptionId);
   const ctx = { seeds, shifts, rate, profile };
 
-  const key = `${disruptionId}|${seeds.join(',')}|${shifts}`;
+  const key = `${disruptionId}|${seeds.join(',')}|${shifts}|${startKey(start)}`;
   let base = baseCache.get(key);
   if (!base) {
-    base = await runVariant(d.spec, { config: d.spec.config ?? {}, initialFinishedGoods: 0 }, ctx);
+    base = await runVariant(d.spec, baseVariant(d.spec.config ?? {}, start), ctx);
     baseCache.set(key, base);
   }
-  const variant = await runVariant(d.spec, {
-    config: { ...(d.spec.config ?? {}), ...(override.config ?? {}) },
-    initialFinishedGoods: override.initialFinishedGoods ?? 0,
-  }, ctx);
+  const variant = await runVariant(d.spec, variantWith(d.spec.config ?? {}, override, start), ctx);
   const c = compare(base, variant);
   const mean = (a) => a.reduce((x, y) => x + y, 0) / a.length;
   const first = items[0];
@@ -69,7 +69,7 @@ export async function evaluateSelection(disruptionId, selection, {
       cost: items.map(i => i.cm.cost).join(' | '),
       items: items.map(i => ({ id: i.cm.id, label: i.cm.label, category: i.cm.category, params: i.params, cost: i.cm.cost })),
     },
-    runs: seeds.length, shifts,
+    runs: seeds.length, shifts, start,
     without: {
       serviceLevel: base.serviceLevel.mean, profit: base.profit.mean,
       goodPerShift: base.goodPerShift.mean, lostSales: base.lostSales.mean, costPerGoodUnit: base.costPerGoodUnit.mean,

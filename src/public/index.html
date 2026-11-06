@@ -4,6 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Multi-Machine Production Line Simulation</title>
+  <script>
+    // Light / dark theme before the first paint: ?theme=light|dark in the address, else the saved choice,
+    // else the system setting
+    (function () {
+      var t = new URLSearchParams(location.search).get('theme');
+      if (t !== 'light' && t !== 'dark') { try { t = localStorage.getItem('ui.theme'); } catch (e) { t = null; } }
+      if (t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -20,6 +30,11 @@
       <span class="hdr-badge hdr-outage" id="badge-outage" hidden>OUTAGE</span>
       <span class="hdr-badge hdr-down" id="badge-down" hidden></span>
       <span>Time: <strong id="time-counter">0.0</strong> s</span>
+      <a id="btn-original" class="hdr-link" href="/original/" target="_blank" rel="noopener"
+        title="The interface of the starter as we received it, in a new tab, with its own simulation">Original interface ↗</a>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch between light and dark mode">
+        <span class="theme-icon" aria-hidden="true"></span><span class="theme-text"></span>
+      </button>
     </div>
   </header>
   <div id="toast" class="toast" hidden></div>
@@ -28,7 +43,12 @@
   <section id="current-situation">
     <div id="cs-tiles" class="cs-tiles"></div>
     <div id="cs-meta" class="cs-meta"></div>
-    <div class="cs-note">The simulation starts from the reference setting (empty warehouse); these values are not used in it yet.</div>
+    <label class="cs-switch">
+      <input type="checkbox" id="erp-use" />
+      <span class="cs-slider" aria-hidden="true"></span>
+      <span class="cs-switch-text">Start the simulation from this stock</span>
+    </label>
+    <div id="erp-note" class="cs-note"></div>
   </section>
 
   <!-- ── Scenario bar (CEO interface) ────────────────────────────────────── -->
@@ -43,6 +63,10 @@
     <label for="shift-limit">Shifts</label>
     <input type="number" id="shift-limit" min="1" max="60" step="1" value="20" />
     <span id="shift-hint" class="shift-hint" hidden>Enter a whole number from 1 to 60.</span>
+    <label for="seed-input">Seed <span class="info-icon" data-tip="The seed picks the random events of the run: which parts fail the quality check, and when machines break down. The same seed always gives exactly the same run; another seed is another possible week of the same scenario. The countermeasure cards do not depend on it: they average 10 seeds.">i</span></label>
+    <input type="number" id="seed-input" min="0" max="99999" step="1" value="1" />
+    <button id="seed-dice" class="seed-dice" type="button" title="Pick a random seed: another possible week of the same scenario" aria-label="Pick a random seed">🎲</button>
+    <span id="seed-hint" class="shift-hint" hidden>Enter a whole number from 0 to 99,999.</span>
     <label for="speed-select">Speed</label>
     <select id="speed-select">
       <option value="1">×1</option>
@@ -139,46 +163,7 @@
     <div id="results-empty">Choose a scenario and click Simulate.</div>
     <div id="result-tiles" class="tiles"></div>
     <div id="results-note" class="cm-note" hidden>Reference values of the data package refer to 20 shifts.</div>
-  </section>
-
-  <!-- ── Side-by-side comparison ─────────────────────────────────────────── -->
-  <section id="compare" hidden>
-    <div class="cmp-head">
-      <h2 id="cmp-title">Side-by-side</h2>
-      <div class="cmp-controls">
-        <label for="cmp-speed">Speed</label>
-        <select id="cmp-speed">
-          <option value="1">×1</option>
-          <option value="2">×2</option>
-          <option value="10" selected>×10</option>
-        </select>
-        <button id="cmp-run" class="primary-btn" type="button">Run comparison</button>
-        <button id="cmp-instant" class="advisor-btn" type="button">Instant</button>
-        <span id="cmp-status" class="cmp-status"></span>
-      </div>
-    </div>
-    <div class="cmp-grid">
-      <div class="cmp-card" id="cmp-card-a">
-        <div class="cmp-card-head">
-          <span class="cmp-title">As is</span><span class="tag tag-grey">scenario</span>
-        </div>
-        <svg id="cmp-svg-a" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid meet"></svg>
-        <div class="cmp-strip" id="cmp-strip-a"></div>
-      </div>
-      <div class="cmp-card" id="cmp-card-b">
-        <div class="cmp-card-head">
-          <span class="cmp-title">With countermeasure</span><span class="tag tag-green" id="cmp-b-tag">fix</span>
-        </div>
-        <svg id="cmp-svg-b" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid meet"></svg>
-        <div class="cmp-strip" id="cmp-strip-b"></div>
-      </div>
-    </div>
-    <div id="cmp-results" hidden>
-      <h3>Before → after</h3>
-      <div id="cmp-tiles" class="tiles"></div>
-      <div class="cm-note">One run each (same random draws); the check above averages 10 runs, so numbers differ slightly.</div>
-      <div class="cost-panel" id="cmp-cost"></div>
-    </div>
+    <div id="results-seed" class="cm-note" hidden></div>
   </section>
 
   <!-- ── Controls ────────────────────────────────────────────────────────── -->
@@ -370,9 +355,19 @@
       <button id="btn-explain" class="advisor-btn" type="button" disabled>Explain me these results</button>
       <button id="btn-improve" class="advisor-btn" type="button" disabled>How to improve the results?</button>
     </div>
-    <div id="advisor-output" class="advisor-card" hidden>
-      <div class="advisor-label">AI explanation – based only on the simulation numbers above</div>
-      <div id="advisor-text" class="advisor-text"></div>
+    <div id="advisor-output" class="advisor-card chat-card" hidden>
+      <div class="chat-head">
+        <div class="advisor-label">Chat with the AI about these results – it only uses the simulation numbers above</div>
+        <button id="chat-restart" class="link-btn" type="button">New explanation</button>
+      </div>
+      <div id="chat-log" class="chat-log" aria-live="polite"></div>
+      <div id="chat-suggest" class="chips chat-suggest"></div>
+      <form id="chat-form" class="chat-form" autocomplete="off">
+        <textarea id="chat-input" rows="2" maxlength="500"
+          placeholder="Ask a follow-up question, e.g. “Why were so many orders late?” (Enter to send, Shift+Enter for a new line)"></textarea>
+        <button id="chat-send" class="primary-btn" type="submit">Send</button>
+      </form>
+      <div id="chat-foot" class="chat-foot"></div>
     </div>
     <div id="improve-panel" class="advisor-card" hidden></div>
     <div id="questionnaire" class="advisor-card" hidden>
@@ -393,6 +388,45 @@
       </div>
     </div>
     <div id="proposal-card" class="advisor-card" hidden></div>
+    <!-- Side-by-side comparison: opened by "Compare side by side" in the proposal card just above -->
+    <section id="compare" hidden>
+      <div class="cmp-head">
+        <h2 id="cmp-title">Side-by-side</h2>
+        <div class="cmp-controls">
+          <label for="cmp-speed">Speed</label>
+          <select id="cmp-speed">
+            <option value="1">×1</option>
+            <option value="2">×2</option>
+            <option value="10" selected>×10</option>
+          </select>
+          <button id="cmp-run" class="primary-btn" type="button">Run comparison</button>
+          <button id="cmp-instant" class="advisor-btn" type="button">Instant</button>
+          <span id="cmp-status" class="cmp-status"></span>
+        </div>
+      </div>
+      <div class="cmp-grid">
+        <div class="cmp-card" id="cmp-card-a">
+          <div class="cmp-card-head">
+            <span class="cmp-title">As is</span><span class="tag tag-grey">scenario</span>
+          </div>
+          <svg id="cmp-svg-a" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="cmp-strip" id="cmp-strip-a"></div>
+        </div>
+        <div class="cmp-card" id="cmp-card-b">
+          <div class="cmp-card-head">
+            <span class="cmp-title">With countermeasure</span><span class="tag tag-green" id="cmp-b-tag">fix</span>
+          </div>
+          <svg id="cmp-svg-b" viewBox="0 0 1200 300" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="cmp-strip" id="cmp-strip-b"></div>
+        </div>
+      </div>
+      <div id="cmp-results" hidden>
+        <h3>Before → after</h3>
+        <div id="cmp-tiles" class="tiles"></div>
+        <div class="cm-note">One run each (same random draws); the check above averages 10 runs, so numbers differ slightly.</div>
+        <div class="cost-panel" id="cmp-cost"></div>
+      </div>
+    </section>
   </section>
 
 </div><!-- #app -->

@@ -4,7 +4,7 @@
  * AI advisor use. Pure: every number comes from the simulation.
  */
 import { liveResult, shiftRowsFromEngine, machineKpis } from '../simulation/summary.js';
-import { computeEconomics } from '../economics/costs.js';
+import { computeEconomics, FG_VALUE } from '../economics/costs.js';
 import { runRecord } from '../economics/breakdown.js';
 import { bottleneckLoss } from '../analysis/analysis.js';
 import { DEFAULT_CONFIG } from '../simulation/config.js';
@@ -29,6 +29,11 @@ export function buildRunSummary(engine, scenario, rate) {
 
   const late = o.ordered - o.shippedOnTime;
   const goodParts = k.goodParts;
+
+  // Money: revenue - total cost + value of the finished sets left = profit (the profit rule of costs.js)
+  const totalCost = econ.machineCost + econ.overtimeCost + econ.materialCost + econ.backupPremium + econ.outsourcingCost
+    + econ.holdingWip + econ.holdingFg + econ.holdingRaw + econ.amortised + econ.lostSales + econ.startValue;
+  const inLineParts = engine.buffers.reduce((a, b) => a + b.parts.length, 0) + engine.machines.filter(m => m.currentPart).length;
 
   // worst shift = the largest shortfall of orders shipped on time
   let worst = null;
@@ -55,8 +60,27 @@ export function buildRunSummary(engine, scenario, rate) {
     shifts,
     orders: { ordered: o.ordered, shippedOnTime: o.shippedOnTime, serviceLevel: o.ordered > 0 ? o.shippedOnTime / o.ordered : 1, late, backlogEnd: o.backlog },
     production: { goodParts, goodPerShift: shifts ? goodParts / shifts : 0, scrap: k.scrap, released: k.released, lineYield: k.released ? goodParts / k.released : 0, overtimeHours: perShift.reduce((a, r) => a + (r.overtimeMin ?? 0), 0) / 60, outsourcedSets: k.outsourcedReceived ?? 0, backupParts: k.backupParts ?? 0 },
-    money: { profit: econ.profit, costPerGoodUnit: econ.costPerGoodUnit, revenue: econ.revenue, lostSalesPenalty: econ.lostSales },
+    money: {
+      profit: econ.profit, costPerGoodUnit: econ.costPerGoodUnit, revenue: econ.revenue, lostSalesPenalty: econ.lostSales,
+      totalCost, soldSets: perShift.reduce((a, r) => a + (r.shipped ?? 0), 0),
+      pricePerSet: rate.selling_price_per_good_unit,
+      costs: {
+        machines: econ.machineCost + econ.overtimeCost, material: econ.materialCost + econ.backupPremium,
+        outsourcing: econ.outsourcingCost, storage: econ.holdingWip + econ.holdingFg + econ.holdingRaw,
+        lostSalesPenalty: econ.lostSales, investments: econ.amortised, startingStock: econ.startValue,
+      },
+    },
+    // what is left when the run ends: finished sets in the warehouse (valued at EUR 103 each, credited in the
+    // profit) and parts still inside the line (their material is already booked as cost)
+    stockEnd: {
+      finishedSets: o.stock, valuePerSet: FG_VALUE, finishedValue: econ.endValue,
+      storageCostFinished: econ.holdingFg, inLineParts, storageCostInLine: econ.holdingWip,
+    },
     worstShift: worst,
+    // the starting stock, when the CEO started from the ERP stock (absent = empty stock, the reference)
+    ...((cfg.initialFinishedGoods ?? 0) > 0 || engine.rawSafetyLevel > 0 ? { startStock: {
+      finishedSets: cfg.initialFinishedGoods ?? 0, rawUnits: engine.rawSafetyLevel, rawUsedDuringOutage: engine.rawFromStock,
+    } } : {}),
     bottleneck,
     disruption: disruptionOf(scenario, engine, cfg, loss, perShift, mk),
     perShift,

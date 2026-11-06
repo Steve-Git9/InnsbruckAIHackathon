@@ -318,6 +318,8 @@ function drawSource(p) {
     rx: 3, fill: '#6366f1' }));
   g.appendChild(txt('SOURCE', { x: x + SRC_W / 2, y: y + 18, 'text-anchor': 'middle', 'font-size': '10', fill: '#4f46e5' }));
   g.appendChild(txt('', { id: 'src-stock-text', x: x + SRC_W / 2, y: y + 38, 'text-anchor': 'middle', 'font-size': '11' }));
+  // raw-material safety stock (ERP starting stock), shown when the run starts from it
+  g.appendChild(txt('', { id: 'src-raw-text', x: x + SRC_W / 2, y: y - 8, 'text-anchor': 'middle', 'font-size': '10', fill: '#4f46e5' }));
 
   svg.appendChild(g);
 }
@@ -417,6 +419,8 @@ function drawSink(p) {
   g.appendChild(txt('0', { id: 'sink-count', x: x + SINK_W / 2, y: y + 40, 'text-anchor': 'middle',
     'font-size': '20', fill: '#22c55e', 'font-weight': 'bold' }));
   g.appendChild(txt('parts', { x: x + SINK_W / 2, y: y + SINK_H - 6, 'text-anchor': 'middle', 'font-size': '9', fill: '#16a34a' }));
+  // finished-goods warehouse (orders mode): the ERP starting stock plus what the line made, minus what was shipped
+  g.appendChild(txt('', { id: 'sink-fg-text', x: x + SINK_W / 2, y: y - 8, 'text-anchor': 'middle', 'font-size': '10', fill: '#166534' }));
   svg.appendChild(g);
 }
 
@@ -481,6 +485,8 @@ function updatePipeline(state, metrics) {
   // ── Sink / Scrap counts ────────────────────────────────────────────────────
   setTextContent('sink-count',  state.sink.partsReceived);
   setTextContent('scrap-count', state.scrap.partsReceived);
+  setTextContent('src-raw-text', src.rawSafetyLevel > 0 ? `raw stock ${src.rawOnHand}/${src.rawSafetyLevel}` : '');
+  setTextContent('sink-fg-text', state.orders ? `warehouse ${state.orders.stock} sets` : '');
 
   // Per-machine reject rates are shown in each machine's detail panel; the
   // shared scrap sink no longer carries a single rate label.
@@ -1480,6 +1486,7 @@ function clearResults() {
   document.getElementById('results-empty').hidden = false;
   document.getElementById('results-empty').textContent = 'Choose a scenario and click Simulate.';
   document.getElementById('results-note').hidden = true;
+  document.getElementById('results-seed').hidden = true;
   document.getElementById('improve-panel').hidden = true;
   document.getElementById('advisor-output').hidden = true;
   document.getElementById('proposal-card').hidden = true;
@@ -1506,8 +1513,35 @@ function disruptionTile(s) {
   return tile('Disruption', `${d.peakOrders} sets`, `Peak order: ${d.peakOrders} sets in shift ${d.peakShift}; lowest: ${d.minOrders}`);
 }
 
-function renderResults(s) {
+// The biggest cost lines of the run, for the caption of the Total cost tile
+function costCaption(m) {
+  const c = m.costs;
+  if (!c) return '';
+  const lines = [['machines', c.machines], ['material', c.material], ['missed orders', c.lostSalesPenalty], ['storage', c.storage],
+    ['outsourcing', c.outsourcing], ['starting stock', c.startingStock], ['investments', c.investments]]
+    .filter(([, v]) => v > 0.5).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  return lines.map(([k, v]) => `${k} ${eurText(v)}`).join(' · ');
+}
+
+// Finished sets left in the warehouse at the end (and parts still in the line): what they tie up and cost
+function stockLeftTile(st) {
+  if (!st) return '';
+  const value = st.finishedSets > 0 ? `${fmt0(st.finishedSets)} sets · ${eurText(st.finishedValue)}` : '0 sets';
+  const caption = `${st.finishedSets > 0 ? `valued at EUR ${st.valuePerSet} per set (unsold, tied-up money) · ` : ''}`
+    + `storage paid ${eurText(st.storageCostFinished)} · ${fmt0(st.inLineParts)} parts still in the line`;
+  return tile('Stock left at the end', value, caption);
+}
+
+function renderResults(s, seed = 1) {
   lastSummary = s;
+  if (erp.stale) { erp.stale = false; renderErpState(); }
+  const seedNote = document.getElementById('results-seed');
+  seedNote.hidden = false;
+  const st = s.startStock;
+  seedNote.textContent = `Seed ${seed}: one possible week of this scenario (the same seed always gives the same run). `
+    + 'The countermeasure cards and checks below average 10 seeds, so they do not depend on this one. '
+    + (st ? `Started from the ERP stock: ${st.rawUnits} raw units at the source (${st.rawUsedDuringOutage} used during the outage) `
+      + `and ${st.finishedSets} finished sets.` : 'Started with an empty warehouse (reference).');
   const sl = s.orders.serviceLevel * 100;
   const tone = sl >= 95 ? 'green' : sl >= 80 ? 'amber' : 'red';
   const w = s.worstShift;
@@ -1515,7 +1549,10 @@ function renderResults(s) {
     tile('Orders on time', `${fmt1(sl)}%`, `${s.orders.shippedOnTime} of ${s.orders.ordered} sets delivered on time`, tone),
     tile('Late / missed sets', String(s.orders.late), `backlog at the end: ${s.orders.backlogEnd} sets`),
     tile('Sets produced', fmt0(s.production.goodParts), `≈ ${fmt0(s.production.goodPerShift)} per shift · scrap ${s.production.scrap}`),
-    tile('Profit', eurText(s.money.profit), `cost per good set EUR ${fmt1(s.money.costPerGoodUnit)}`),
+    tile('Revenue', eurText(s.money.revenue), `${fmt0(s.money.soldSets)} sets shipped × EUR ${fmt0(s.money.pricePerSet)}`),
+    tile('Total cost', eurText(s.money.totalCost), costCaption(s.money)),
+    stockLeftTile(s.stockEnd),
+    tile('Profit', eurText(s.money.profit), `revenue − cost + stock left · cost per good set EUR ${fmt1(s.money.costPerGoodUnit)}`),
     tile('Bottleneck', `${s.bottleneck.machine} · ${fmt0(s.bottleneck.utilisation * 100)}%`, `lost ${fmt0(s.bottleneck.lostMinutes)} min, mainly: ${s.bottleneck.mainCause}`),
     tile('Worst shift', w ? `Shift ${w.shift}` : '–', w ? `ordered ${w.orders}, on time ${w.shippedOnTime}` : 'No shift missed orders'),
     disruptionTile(s),
@@ -1543,7 +1580,7 @@ async function pollResults() {
     status.textContent = `Finished – ${r.shiftsTotal} shifts`;
     setRunButtons(false);
     if (was || document.getElementById('result-tiles').children.length === 0) {
-      renderResults(r.summary);
+      renderResults(r.summary, r.seed);
       setAdvisorEnabled(true);
     }
     clearInterval(ceoPoll); ceoPoll = null;
@@ -1567,15 +1604,36 @@ function shiftLimitValue() {
   return raw !== '' && Number.isInteger(n) && n >= 1 && n <= 60 ? n : null;
 }
 
+// Seed: a whole number from 0 to 99,999 (same seed = same run; another seed = another possible week)
+const MAX_SEED = 99999;
+function seedValue() {
+  const raw = document.getElementById('seed-input').value.trim();
+  const n = Number(raw);
+  return raw !== '' && Number.isInteger(n) && n >= 0 && n <= MAX_SEED ? n : null;
+}
+
 let runBusy = false;
 function refreshRunButtons() {
   const valid = shiftLimitValue() !== null;
+  const seedOk = seedValue() !== null;
   document.getElementById('shift-limit').classList.toggle('invalid', !valid);
   document.getElementById('shift-hint').hidden = valid;
+  document.getElementById('seed-input').classList.toggle('invalid', !seedOk);
+  document.getElementById('seed-hint').hidden = seedOk;
+  document.getElementById('seed-dice').disabled = runBusy;
   const n = shiftLimitValue();
   document.getElementById('shift-note').hidden = !(valid && n < 12 && document.getElementById('scenario-select').value === 'supplier-outage');
-  for (const id of ['btn-simulate', 'btn-instant']) document.getElementById(id).disabled = runBusy || !valid;
+  for (const id of ['btn-simulate', 'btn-instant']) document.getElementById(id).disabled = runBusy || !valid || !seedOk;
 }
+
+document.getElementById('seed-input').addEventListener('input', refreshRunButtons);
+document.getElementById('seed-dice').addEventListener('click', () => {
+  const input = document.getElementById('seed-input');
+  let s;
+  do { s = 1 + Math.floor(Math.random() * 9999); } while (String(s) === input.value);
+  input.value = s;
+  refreshRunButtons();
+});
 
 function setRunButtons(disabled) {
   runBusy = disabled;
@@ -1595,7 +1653,8 @@ async function startRun(instant) {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'runScenario', params: {
         scenario: document.getElementById('scenario-select').value,
-        speed: Number(document.getElementById('speed-select').value), instant, shifts: shiftLimitValue(),
+        speed: Number(document.getElementById('speed-select').value), instant, shifts: shiftLimitValue(), seed: seedValue(),
+        start: erpStart(),
       } }),
     });
     if (!res.ok) throw new Error('rejected');
@@ -1624,18 +1683,152 @@ async function callAdvisor(path) {
   return body;
 }
 
-document.getElementById('btn-explain').addEventListener('click', async () => {
-  const out = document.getElementById('advisor-output');
-  const txt = document.getElementById('advisor-text');
-  setAdvisorEnabled(false);
-  out.hidden = false;
-  txt.innerHTML = '<span class="spinner"></span>Thinking…';
-  try {
-    txt.textContent = (await callAdvisor('/api/advisor/explain')).text;
-  } catch (e) {
-    txt.innerHTML = `<span class="advisor-error">${esc(e.message)}</span>`;
+// ── Explanation chat: the first explanation, then follow-up questions ─────────
+// The server keeps the conversation of the run; the browser only shows it.
+
+const SUGGESTIONS = {
+  any: ['Why were orders late?', 'Which machine limited the output?', 'Where did the money go?', 'Which shifts were the worst?'],
+  standard: ['Is anything going wrong in this run?'],
+  'demand-swing': ['How did demand change during the run?'],
+  'supplier-outage': ['What happened during the supplier outage?'],
+  'machinery-breakdown': ['How much did the breakdowns cost us?'],
+};
+let chatBusy = false;
+let chatAsked = new Set();
+let chatLeft = 0;
+
+// Plain text with **bold** and "### headings" shown as bold; everything else stays text
+const richText = (s) => esc(s)
+  .replace(/^#{1,4}\s*(.+)$/gm, '<strong>$1</strong>')
+  .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+function groundingNote(g) {
+  if (!g || g.numbers === 0) return '';
+  if (g.ungrounded.length === 0) {
+    return `<span class="ground-ok" title="Every number in this answer appears in the simulation results (rounding and % allowed)">✓ ${g.numbers} number${g.numbers === 1 ? '' : 's'} checked against the simulation</span>`;
   }
-  setAdvisorEnabled(true);
+  const list = g.ungrounded.map(v => v.toLocaleString('en-US')).join(', ');
+  return `<span class="ground-warn" title="These numbers are not in the simulation results: the AI calculated or guessed them">⚠ Not in the simulation results: ${esc(list)}</span>`;
+}
+
+function addMessage(who, text, meta = null) {
+  const log = document.getElementById('chat-log');
+  const el = document.createElement('div');
+  el.className = `msg msg-${who}`;
+  const tokens = meta?.usage?.totalTokens ? `<span>${fmt0(meta.usage.totalTokens)} tokens</span>` : '';
+  const whoAi = meta?.model?.label ? `AI advisor · ${esc(meta.model.label)}` : 'AI advisor';
+  el.innerHTML = `<div class="msg-who">${who === 'ai' ? whoAi : 'You'}</div>`
+    + `<div class="msg-body">${who === 'ai' ? richText(text) : esc(text)}</div>`
+    + (meta ? `<div class="msg-meta">${groundingNote(meta.grounding)}${tokens}</div>` : '');
+  log.appendChild(el);
+  log.scrollTop = log.scrollHeight;
+  return el;
+}
+
+function addError(text) {
+  const el = document.createElement('div');
+  el.className = 'msg-error';
+  el.textContent = text;
+  document.getElementById('chat-log').appendChild(el);
+}
+
+function addThinking() {
+  const el = addMessage('ai', '');
+  el.querySelector('.msg-body').innerHTML = '<span class="spinner"></span>Thinking…';
+  return el;
+}
+
+function renderSuggestions() {
+  const box = document.getElementById('chat-suggest');
+  box.innerHTML = '';
+  if (chatLeft <= 0) return;
+  const list = [...(SUGGESTIONS[lastSummary?.scenario?.id] ?? []), ...SUGGESTIONS.any].filter(q => !chatAsked.has(q)).slice(0, 4);
+  for (const q of list) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip';
+    b.textContent = q;
+    b.disabled = chatBusy;
+    b.addEventListener('click', () => askFollowUp(q));
+    box.appendChild(b);
+  }
+}
+
+function setChatBusy(on) {
+  chatBusy = on;
+  setAdvisorEnabled(!on);
+  const input = document.getElementById('chat-input');
+  input.disabled = on || chatLeft <= 0;
+  document.getElementById('chat-send').disabled = on || chatLeft <= 0;
+  document.getElementById('chat-restart').disabled = on;
+  input.placeholder = chatLeft <= 0
+    ? 'Question limit reached for this run. Click “New explanation” to start again.'
+    : 'Ask a follow-up question, e.g. “Why were so many orders late?” (Enter to send, Shift+Enter for a new line)';
+  renderSuggestions();
+}
+
+function showUsage(r) {
+  const s = r?.sessionTokens;
+  const left = chatLeft > 0 ? `${chatLeft} question${chatLeft === 1 ? '' : 's'} left for this run` : 'No questions left for this run';
+  document.getElementById('chat-foot').textContent =
+    `${left}${s ? ` · AI usage in this session: ${fmt0(s.totalTokens)} tokens in ${s.calls} answer${s.calls === 1 ? '' : 's'}` : ''}`;
+}
+
+async function startExplanation() {
+  document.getElementById('advisor-output').hidden = false;
+  document.getElementById('chat-log').innerHTML = '';
+  document.getElementById('chat-foot').textContent = '';
+  chatAsked = new Set();
+  chatLeft = 0;
+  setChatBusy(true);
+  const thinking = addThinking();
+  try {
+    const r = await callAdvisorJson('/api/advisor/explain', {});
+    thinking.remove();
+    chatLeft = r.followUpsLeft;
+    addMessage('ai', r.text, r);
+    showUsage(r);
+  } catch (e) {
+    thinking.remove();
+    addError(e.message);
+  }
+  setChatBusy(false);
+  document.getElementById('chat-input').focus({ preventScroll: true });
+}
+
+async function askFollowUp(question) {
+  const q = question.trim();
+  if (!q || chatBusy || chatLeft <= 0) return;
+  chatAsked.add(q);
+  addMessage('ceo', q);
+  document.getElementById('chat-input').value = '';
+  setChatBusy(true);
+  const thinking = addThinking();
+  try {
+    const r = await callAdvisorJson('/api/advisor/explain', { question: q });
+    thinking.remove();
+    chatLeft = r.followUpsLeft;
+    addMessage('ai', r.text, r);
+    showUsage(r);
+  } catch (e) {
+    thinking.remove();
+    addError(e.message);
+  }
+  setChatBusy(false);
+  document.getElementById('chat-input').focus({ preventScroll: true });
+}
+
+document.getElementById('btn-explain').addEventListener('click', startExplanation);
+document.getElementById('chat-restart').addEventListener('click', startExplanation);
+document.getElementById('chat-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  askFollowUp(document.getElementById('chat-input').value);
+});
+document.getElementById('chat-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+    e.preventDefault();
+    askFollowUp(e.target.value);
+  }
 });
 
 // ── Questionnaire (hard limits are enforced on the server) ────────────────────
@@ -1825,26 +2018,27 @@ const SCENARIO_LABELS = { standard: 'Standard', 'demand-swing': 'Demand swing', 
 let cardsData = null;        // { scenario, shifts, runs, ready: Map(id -> card), pending: [id], errors }
 let cardsToken = 0, cardsTimer = null, cardsDebounce = null;
 
-const topBarPair = () => ({ scenario: document.getElementById('scenario-select').value, shifts: shiftLimitValue() });
+const topBarPair = () => ({ scenario: document.getElementById('scenario-select').value, shifts: shiftLimitValue(), start: erpStartKey() });
 
 // Start (or restart) the simulation of the 6 cards for the pair in the top bar; clears the cards to "simulating…"
 function requestCards() {
-  const { scenario, shifts } = topBarPair();
+  const { scenario, shifts, start } = topBarPair();
   if (shifts === null) return;
   clearTimeout(cardsTimer);
   const token = ++cardsToken;
-  if (!cardsData || cardsData.scenario !== scenario || cardsData.shifts !== shifts) {
-    cardsData = { scenario, shifts, runs: 10, ready: new Map(), pending: cmCatalogue.map(c => c.id), errors: {} };
+  if (!cardsData || cardsData.scenario !== scenario || cardsData.shifts !== shifts || cardsData.start !== start) {
+    cardsData = { scenario, shifts, start, runs: 10, ready: new Map(), pending: cmCatalogue.map(c => c.id), errors: {} };
   }
   updateCardValues();
   pollCards(token);
 }
 
 async function pollCards(token) {
-  const { scenario, shifts } = cardsData;
+  const { scenario, shifts, start } = cardsData;
+  const [finished, raw] = start.split('/');
   let r;
   try {
-    r = await (await fetch(`/api/countermeasures/cards?scenario=${encodeURIComponent(scenario)}&shifts=${shifts}`)).json();
+    r = await (await fetch(`/api/countermeasures/cards?scenario=${encodeURIComponent(scenario)}&shifts=${shifts}&finished=${finished}&raw=${raw}`)).json();
     if (r.error) throw new Error(r.error);
   } catch {
     if (token === cardsToken) cardsTimer = setTimeout(() => pollCards(token), 3000);
@@ -1863,9 +2057,9 @@ async function pollCards(token) {
 function scheduleCards() {
   clearTimeout(cardsDebounce);
   if (shiftLimitValue() === null) return;
-  const { scenario, shifts } = topBarPair();
-  if (cardsData && (cardsData.scenario !== scenario || cardsData.shifts !== shifts)) {
-    cardsData = { scenario, shifts, runs: 10, ready: new Map(), pending: cmCatalogue.map(c => c.id), errors: {} };
+  const { scenario, shifts, start } = topBarPair();
+  if (cardsData && (cardsData.scenario !== scenario || cardsData.shifts !== shifts || cardsData.start !== start)) {
+    cardsData = { scenario, shifts, start, runs: 10, ready: new Map(), pending: cmCatalogue.map(c => c.id), errors: {} };
     updateCardValues();
   }
   cardsDebounce = setTimeout(requestCards, 400);
@@ -1921,6 +2115,17 @@ function cardSliderHtml(cm, pick) {
 }
 
 const CARD_ROWS = [['ontime', 'On-time delivery'], ['profit', 'Profit change per run'], ['invest', 'Upfront investment'], ['cost', 'Cost per good set']];
+const cmOpen = {};             // id -> details panel open (kept while the page is open)
+
+// The one-line summary of a closed card: on-time change and profit change
+function summaryHtml(kind, card) {
+  if (!card) return kind === 'ontime' ? SKELETON : '';
+  if (kind === 'ontime') {
+    return `<span class="dim">On time</span> ${pct0(card.onTime.without)} → <strong>${pct0(card.onTime.with)}</strong>`;
+  }
+  const v = card.profit.conservative;
+  return `<span class="dim">Profit</span> <span class="${v >= 0 ? 'pos' : 'neg'}">${esc(eurSigned(v))}</span>`;
+}
 
 function renderImprovePanel() {
   const panel = document.getElementById('improve-panel');
@@ -1929,16 +2134,26 @@ function renderImprovePanel() {
   }
   const cardHtml = (cm) => {
     const pick = cmPick[cm.id];
-    return `<div class="cm-card${pick.selected ? ' selected' : ''}" data-id="${esc(cm.id)}">
-      <div class="cm-card-badge">${classBadge(cm.category)}</div>
-      <label class="cm-card-head"><input type="checkbox" class="cm-pick" ${pick.selected ? 'checked' : ''} /> ${esc(cm.label)}</label>
-      <div class="cm-card-desc">${esc(cm.description)}</div>
-      <div class="cm-card-params">${cardSliderHtml(cm, pick)}
-        <div class="cm-card-note" hidden>values at default setting — press Test to simulate yours</div>
+    const open = !!cmOpen[cm.id];
+    return `<div class="cm-card${pick.selected ? ' selected' : ''}${open ? ' open' : ''}" data-id="${esc(cm.id)}">
+      <div class="cm-card-top">
+        <label class="cm-card-head"><input type="checkbox" class="cm-pick" ${pick.selected ? 'checked' : ''} /> ${esc(cm.label)}</label>
+        ${classBadge(cm.category)}
       </div>
-      <div class="cm-vals">${CARD_ROWS.map(([row, label]) => `<div class="cm-val" data-row="${row}"><span class="cm-val-label">${label}</span><span class="cm-val-v"></span></div>`).join('')}</div>
-      <div class="cm-verdict"></div>
-      <div class="cm-card-cost">${esc(cm.cost)}</div>
+      <div class="cm-card-summary">
+        <span class="cm-sum" data-sum="ontime"></span><span class="cm-sum" data-sum="profit"></span><span class="cm-verdict"></span>
+        <button type="button" class="cm-more-btn" aria-expanded="${open}" aria-controls="cm-more-${esc(cm.id)}">
+          <span class="cm-more-label">${open ? 'Hide details' : 'Details'}</span><span class="chev" aria-hidden="true">▾</span>
+        </button>
+      </div>
+      <div class="cm-more" id="cm-more-${esc(cm.id)}" ${open ? '' : 'hidden'}>
+        <div class="cm-card-desc">${esc(cm.description)}</div>
+        <div class="cm-card-params">${cardSliderHtml(cm, pick)}
+          <div class="cm-card-note" hidden>values at default setting — press Test to simulate yours</div>
+        </div>
+        <div class="cm-vals">${CARD_ROWS.map(([row, label]) => `<div class="cm-val" data-row="${row}"><span class="cm-val-label">${label}</span><span class="cm-val-v"></span></div>`).join('')}</div>
+        <div class="cm-card-cost">${esc(cm.cost)}</div>
+      </div>
     </div>`;
   };
   const groups = GROUPS.map(([cat, title]) => `
@@ -1954,13 +2169,14 @@ function renderImprovePanel() {
       <button id="imp-ask" class="advisor-btn" type="button">Ask the Intelligent Shift Advisor</button>
       <span class="cm-small" id="imp-limit">Up to ${MAX_PICK} countermeasures can be combined.</span>
     </div>
-    <div class="imp-table-wrap">
+    <details class="imp-table-wrap" id="imp-table-details">
+      <summary>Compare all 6 in one table</summary>
       <table class="imp-table">
         <caption>Values at the default settings, averages of simulated runs. Unsold extra stock is valued at EUR 0 in the profit change. ★ marks the best value of a row.</caption>
         <thead><tr><th>Compare the countermeasures</th><th>On time</th><th>Profit change</th><th>Upfront investment</th><th>Running cost / shift</th><th>Extra unsold stock</th><th>Verdict</th></tr></thead>
         <tbody id="imp-table-body"></tbody>
       </table>
-    </div>`;
+    </details>`;
 
   const refresh = () => {
     const n = cmCatalogue.filter(c => cmPick[c.id].selected).length;
@@ -1973,6 +2189,13 @@ function renderImprovePanel() {
   };
   for (const cardEl of panel.querySelectorAll('.cm-card')) {
     const id = cardEl.dataset.id, cm = cmCatalogue.find(c => c.id === id);
+    cardEl.querySelector('.cm-more-btn').addEventListener('click', (e) => {
+      cmOpen[id] = !cmOpen[id];
+      cardEl.classList.toggle('open', cmOpen[id]);
+      cardEl.querySelector('.cm-more').hidden = !cmOpen[id];
+      e.currentTarget.setAttribute('aria-expanded', String(cmOpen[id]));
+      e.currentTarget.querySelector('.cm-more-label').textContent = cmOpen[id] ? 'Hide details' : 'Details';
+    });
     cardEl.querySelector('.cm-pick').addEventListener('change', (e) => {
       cmPick[id].selected = e.target.checked;
       cardEl.classList.toggle('selected', e.target.checked);
@@ -2025,6 +2248,7 @@ function updateCardValues() {
       rowEl.classList.toggle('pending', !card);
       rowEl.querySelector('.cm-val-v').innerHTML = valueHtml(row, card) + (isBest ? ' <span class="star" title="Best value of this row among the countermeasures">★</span>' : '');
     }
+    for (const kind of ['ontime', 'profit']) cardEl.querySelector(`.cm-sum[data-sum="${kind}"]`).innerHTML = summaryHtml(kind, card);
     const chip = card ? (VERDICT_CHIP[card.verdict.code] ?? ['grey', card.verdict.text]) : null;
     cardEl.querySelector('.cm-verdict').innerHTML = chip
       ? `<span class="verdict ${chip[0]}" title="${esc(card.verdict.text)}">${esc(chip[1])}</span>` : '<span class="skeleton">simulating…</span>';
@@ -2057,8 +2281,9 @@ async function openImprovePanel() {
   document.getElementById('improve-panel').hidden = false;
   renderImprovePanel();
   // normally the cards are already being computed (the CEO picked the scenario before); make sure of it
-  const { scenario, shifts } = topBarPair();
-  if (!cardsData || cardsData.scenario !== scenario || cardsData.shifts !== shifts || cardsData.ready.size < cmCatalogue.length) requestCards();
+  const { scenario, shifts, start } = topBarPair();
+  if (!cardsData || cardsData.scenario !== scenario || cardsData.shifts !== shifts || cardsData.start !== start
+    || cardsData.ready.size < cmCatalogue.length) requestCards();
   document.getElementById('improve-panel').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
 
@@ -2113,6 +2338,7 @@ function stripHtml(side) {
   const shift = Math.min(cmpShifts(), Math.max(1, Math.ceil(side.state.plantTick / 480)));
   return `<span>Shift <strong>${shift}</strong></span><span>On time <strong>${fmt1(sl)}%</strong></span>`
     + `<span>Backlog <strong>${o.backlog}</strong></span><span>Finished stock <strong>${o.stock}</strong></span>`
+    + ((side.state.source?.rawSafetyLevel ?? 0) > 0 ? `<span>Raw stock <strong>${side.state.source.rawOnHand}</strong></span>` : '')
     + (side.state.outsourcing ? `<span>Outsourced sets <strong>${side.state.outsourcing.received}</strong></span>` : '')
     + ((side.state.supply?.backupParts ?? 0) > 0 ? `<span>Backup-supplier parts <strong>${side.state.supply.backupParts}</strong></span>` : '');
 }
@@ -2323,6 +2549,53 @@ function daysAgoText(isoDate) {
 }
 const niceDate = (iso) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
+// ── ERP stock: editable, and used by the simulation when "Start from this stock" is on ──
+// Off (default): runs start empty, as the data package's reference scenarios. On: raw material is safety stock
+// at the SOURCE (used only while the supplier is out), finished sets wait at the end of the line (SINK) and
+// serve the first orders. The edited values and the switch are remembered in this browser only.
+const ERP_MAX = { finished: 500, raw: 2000 };
+const erp = { loaded: false, erpFinished: 0, erpRaw: 0, finished: 0, raw: 0, use: false };
+
+function erpStored(key) { try { return localStorage.getItem(`ui.erp.${key}`); } catch { return null; } }
+function erpStore(key, v) { try { localStorage.setItem(`ui.erp.${key}`, String(v)); } catch { /* no storage */ } }
+const erpValid = (k, v) => Number.isInteger(v) && v >= 0 && v <= ERP_MAX[k];
+
+// The start the next run uses: null = empty stock (the reference)
+function erpStart() {
+  if (!erp.loaded || !erp.use) return null;
+  return { finished: erp.finished, raw: erp.raw };
+}
+const erpStartKey = () => { const s = erpStart(); return s ? `${s.finished}/${s.raw}` : '0/0'; };
+
+function renderErpState() {
+  const on = erp.use;
+  for (const k of ['finished', 'raw']) {
+    const input = document.getElementById(`erp-${k}`);
+    if (!input) continue;
+    const v = Number(input.value);
+    input.classList.toggle('invalid', !erpValid(k, v));
+    const reset = document.getElementById(`erp-${k}-reset`);
+    const base = k === 'finished' ? erp.erpFinished : erp.erpRaw;
+    if (reset) reset.hidden = erp[k] === base;
+  }
+  document.querySelectorAll('.cs-link').forEach(e => e.classList.toggle('on', on));
+  const note = document.getElementById('erp-note');
+  if (note) {
+    note.textContent = on
+      ? `Next run starts with ${erp.raw} raw units at the source (safety stock, used only while the supplier is out) `
+        + `and ${erp.finished} finished sets in the warehouse (they serve the first orders). The cards and checks use the same stock.`
+      : 'Off: runs start with an empty warehouse, as the data package\'s reference scenarios.';
+    if (erp.stale) note.textContent += ' Click Simulate to run with this setting: the results below are from the previous one.';
+    note.classList.toggle('stale', !!erp.stale);
+  }
+}
+
+// A change of the starting stock: new card values; the results shown are from the old stock until Simulate
+function erpChanged() {
+  erp.stale = !!lastSummary;
+  scheduleCards();
+}
+
 async function loadCurrentSituation() {
   const tiles = document.getElementById('cs-tiles');
   const meta = document.getElementById('cs-meta');
@@ -2333,10 +2606,27 @@ async function loadCurrentSituation() {
     meta.textContent = '';
     return;
   }
+  erp.erpFinished = d.finishedGoods.value;
+  erp.erpRaw = d.rawMaterial.value;
+  const num = (k, base) => { const v = Number(erpStored(k)); return erpStored(k) !== null && erpValid(k, v) ? v : base; };
+  erp.finished = num('finished', erp.erpFinished);
+  erp.raw = num('raw', erp.erpRaw);
+  erp.use = erpStored('use') === '1';
+  erp.loaded = true;
+
+  const stockTile = (k, label, link, unit, base) => `
+    <div class="cs-tile">
+      <div class="cs-label">${esc(label)} <span class="cs-link" title="Where this stock enters the simulation">${link}</span></div>
+      <div class="cs-edit">
+        <input type="number" id="erp-${k}" class="cs-input" min="0" max="${ERP_MAX[k]}" step="1" value="${erp[k]}" aria-label="${esc(label)}" />
+        <span class="cs-unit">${esc(unit)}</span>
+        <button id="erp-${k}-reset" class="link-btn" type="button" hidden>ERP value: ${esc(base)}</button>
+      </div>
+    </div>`;
   const latest = [...d.maintenance].sort((a, b) => b.lastCompleted.localeCompare(a.lastCompleted))[0];
   tiles.innerHTML = `
-    <div class="cs-tile"><div class="cs-label">Finished-goods stock</div><div class="cs-value">${esc(d.finishedGoods.value)} ${esc(d.finishedGoods.unit)}</div></div>
-    <div class="cs-tile"><div class="cs-label">Raw-material stock</div><div class="cs-value">${esc(d.rawMaterial.value)} ${esc(d.rawMaterial.unit)}</div></div>
+    ${stockTile('raw', 'Raw-material stock', '→ SOURCE', d.rawMaterial.unit, erp.erpRaw)}
+    ${stockTile('finished', 'Finished-goods stock', '→ SINK (warehouse)', d.finishedGoods.unit, erp.erpFinished)}
     <div class="cs-tile"><div class="cs-label">Last maintenance</div>
       <div class="cs-value">${esc(latest.machine)} ${esc(latest.name)}</div>
       <div class="cs-sub">${esc(niceDate(latest.lastCompleted))} (${esc(daysAgoText(latest.lastCompleted))}) · ${esc(latest.type)}</div>
@@ -2351,7 +2641,47 @@ async function loadCurrentSituation() {
     list.hidden = !list.hidden;
     document.getElementById('cs-all').textContent = list.hidden ? 'all machines' : 'hide';
   });
+
+  for (const k of ['finished', 'raw']) {
+    const input = document.getElementById(`erp-${k}`);
+    input.addEventListener('input', () => {
+      const v = Number(input.value);
+      if (input.value.trim() !== '' && erpValid(k, v)) { erp[k] = v; erpStore(k, v); if (erp.use) erpChanged(); }
+      renderErpState();
+    });
+    document.getElementById(`erp-${k}-reset`).addEventListener('click', () => {
+      erp[k] = k === 'finished' ? erp.erpFinished : erp.erpRaw;
+      input.value = erp[k];
+      erpStore(k, erp[k]);
+      if (erp.use) erpChanged();
+      renderErpState();
+    });
+  }
+  const toggle = document.getElementById('erp-use');
+  toggle.checked = erp.use;
+  toggle.addEventListener('change', () => {
+    erp.use = toggle.checked;
+    erpStore('use', erp.use ? '1' : '0');
+    erpChanged();
+    renderErpState();
+  });
+  renderErpState();
 }
+
+// ── Light / dark theme (the choice is set before the first paint by the script in index.html) ──
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  const btn = document.getElementById('theme-toggle');
+  btn.querySelector('.theme-icon').textContent = t === 'dark' ? '☀' : '☾';
+  btn.querySelector('.theme-text').textContent = t === 'dark' ? 'Light' : 'Dark';
+  btn.title = t === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+}
+applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  try { localStorage.setItem('ui.theme', next); } catch { /* no storage: the choice lasts for this page */ }
+  applyTheme(next);
+});
 
 // ── Collapsible sections and sub-blocks (state remembered in localStorage) ────
 

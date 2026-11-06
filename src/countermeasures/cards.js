@@ -4,12 +4,12 @@
  * (the shift limit of the top bar): nothing is precomputed and nothing is saved to disk.
  *
  *   const store = createCardStore();
- *   const entry = store.request('demand-swing', 20);   // starts the background work if needed
+ *   const entry = store.request('demand-swing', 20, start);   // start = starting stock { finished, raw }, default empty
  *   entry.cards  : Map(id -> card)    // what is done so far
  *   entry.pending: [id, ...]          // what is still running (empty = all 6 are ready)
  *   await store.whenReady('demand-swing', 20)  -> [card, ...] in catalogue order
  *
- * The results live in memory for the life of the server, by "scenario|shifts|seeds": going back to a
+ * The results live in memory for the life of the server, by "scenario|shifts|seeds|start": going back to a
  * pair that was already computed is instant. Only ONE computation runs at a time, and it works on the most
  * recently requested pair: a new scenario or run length deprioritises the old one (it keeps what it has
  * and resumes only if it is requested again).
@@ -19,6 +19,7 @@
 import { evaluateCountermeasure } from './evaluate.js';
 import { COUNTERMEASURES, DISRUPTIONS } from './catalog.js';
 import { range } from '../scenarios/scenarios.js';
+import { NO_START, normaliseStart, startKey } from './start-stock.js';
 
 export const CARD_SEEDS = range(1, 10);
 
@@ -60,7 +61,7 @@ export function createCardStore({ evaluate = evaluateCountermeasure, seeds = CAR
       while (latest && latest.pending.length) {
         const entry = latest, id = entry.pending[0];
         try {
-          entry.cards.set(id, cardOf(id, await evaluate(entry.scenarioId, id, {}, { seeds, shifts: entry.shifts })));
+          entry.cards.set(id, cardOf(id, await evaluate(entry.scenarioId, id, {}, { seeds, shifts: entry.shifts, start: entry.start })));
         } catch (err) {
           entry.errors[id] = err.message;
         }
@@ -72,12 +73,13 @@ export function createCardStore({ evaluate = evaluateCountermeasure, seeds = CAR
     }
   }
 
-  function request(scenarioId, shifts) {
+  function request(scenarioId, shifts, start = NO_START) {
     if (!DISRUPTIONS[scenarioId]) throw new Error(`unknown scenario "${scenarioId}" (allowed: ${Object.keys(DISRUPTIONS).join(', ')})`);
-    const key = `${scenarioId}|${shifts}|${seeds.join(',')}`;
+    start = normaliseStart(start);
+    const key = `${scenarioId}|${shifts}|${seeds.join(',')}|${startKey(start)}`;
     let entry = entries.get(key);
     if (!entry) {
-      entry = { key, scenarioId, shifts, runs: seeds.length, cards: new Map(), errors: {}, pending: Object.keys(COUNTERMEASURES) };
+      entry = { key, scenarioId, shifts, start, runs: seeds.length, cards: new Map(), errors: {}, pending: Object.keys(COUNTERMEASURES) };
       entry.done = new Promise(resolve => { entry.finish = resolve; });
       entries.set(key, entry);
     }
@@ -87,8 +89,8 @@ export function createCardStore({ evaluate = evaluateCountermeasure, seeds = CAR
   }
 
   // All cards of the pair in catalogue order (waits for the computation; rejects when one failed)
-  async function whenReady(scenarioId, shifts) {
-    const entry = request(scenarioId, shifts);
+  async function whenReady(scenarioId, shifts, start = NO_START) {
+    const entry = request(scenarioId, shifts, start);
     await entry.done;
     const failed = Object.entries(entry.errors);
     if (failed.length) throw new Error(`could not simulate ${failed.map(([id, m]) => `${id}: ${m}`).join('; ')}`);
@@ -96,11 +98,11 @@ export function createCardStore({ evaluate = evaluateCountermeasure, seeds = CAR
   }
 
   // JSON for GET /api/countermeasures/cards: what is done so far, what is still pending
-  function snapshot(scenarioId, shifts) {
-    const entry = request(scenarioId, shifts);
+  function snapshot(scenarioId, shifts, start = NO_START) {
+    const entry = request(scenarioId, shifts, start);
     const order = Object.keys(COUNTERMEASURES);
     return {
-      scenario: scenarioId, shifts, runs: entry.runs,
+      scenario: scenarioId, shifts, runs: entry.runs, start: entry.start,
       ready: order.filter(id => entry.cards.has(id)).map(id => entry.cards.get(id)),
       pending: [...entry.pending],
       errors: entry.errors,

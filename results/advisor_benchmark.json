@@ -1,0 +1,2124 @@
+{
+  "meta": {
+    "date": "2026-11-05",
+    "shifts": 20,
+    "repeats": 3,
+    "scenarios": [
+      "standard",
+      "demand-swing",
+      "supplier-outage",
+      "machinery-breakdown"
+    ],
+    "profiles": [
+      "best",
+      "delivery",
+      "profit",
+      "balance",
+      "budget-60k",
+      "no-investment"
+    ],
+    "tolerance": {
+      "onTimePoints": 1,
+      "profitAbs": 500,
+      "profitRel": 0.05
+    }
+  },
+  "cases": [
+    {
+      "scenario": "standard",
+      "profile": "best",
+      "repeat": 1,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "All simulated countermeasures show no improvement in on-time delivery (onTimePoints = 0) and result in negative profit changes. Recommending a measure that loses money would be wrong.",
+      "seconds": 1.703,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "standard",
+      "profile": "best",
+      "repeat": 2,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "All simulated countermeasures show no improvement in on-time delivery (onTimePoints = 0) and result in negative profit changes (profitChange < 0). Recommending a measure that loses money would be wrong.",
+      "seconds": 1.264,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "standard",
+      "profile": "best",
+      "repeat": 3,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "All simulated countermeasures show no improvement in on-time delivery (onTimePoints = 0) and result in negative profit changes (profitChange < 0). Recommending a measure that loses money would be wrong.",
+      "seconds": 1.235,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "standard",
+      "profile": "delivery",
+      "repeat": 1,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "All countermeasures in the catalogue show no improvement in on-time delivery (onTimeWithout = 1, onTimeWith = 1) and have negative profit changes (profitChange < 0). Recommending a measure that loses money would be wrong.",
+      "seconds": 1.122,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "standard",
+      "profile": "delivery",
+      "repeat": 2,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "All countermeasures show no improvement in on-time delivery (onTimePoints: 0) and result in negative profit changes (profitChange ≤ 0). Therefore, no action is recommended. The CEO's preference for on-time delivery cannot be addressed by the available options.",
+      "seconds": 1.214,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "standard",
+      "profile": "delivery",
+      "repeat": 3,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "All countermeasures have no clear effect on on-time delivery (onTimePoints: 0 for all) and result in negative profit changes. The current service level is 0.9985, with only 1 late order and no backlog at the end. Therefore, no action is needed.",
+      "seconds": 1.232,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 1,
+      "ungrounded": []
+    },
+    {
+      "scenario": "standard",
+      "profile": "profit",
+      "repeat": 1,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "All countermeasures result in a negative profit change, which goes against the CEO's priority of maximizing profit. None of the options improve on-time delivery, and the current service level is already 99.85%, with only 1 late order and no backlog at the end of the scenario.",
+      "seconds": 1.058,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 1,
+      "ungrounded": []
+    },
+    {
+      "scenario": "standard",
+      "profile": "profit",
+      "repeat": 2,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "All simulated countermeasures show no improvement in on-time delivery (onTimePoints = 0) and result in negative profit changes. Implementing any of them would reduce profit, which is the CEO's top priority. Therefore, no action is recommended.",
+      "seconds": 1.189,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "standard",
+      "profile": "profit",
+      "repeat": 3,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "All countermeasures have a negative profitChange, which contradicts the CEO's priority of profit. None of the options improve on-time delivery, and the current service level is already 0.9985294117647059, with only 1 late order and no backlog at the end. No action is needed.",
+      "seconds": 1.346,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 1,
+      "ungrounded": []
+    },
+    {
+      "scenario": "standard",
+      "profile": "balance",
+      "repeat": 1,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "The current service level is 0.9985, with only 1 late order and no backlog at the end of the scenario. None of the countermeasures improve on-time delivery or profit, as shown by their simulated results. Therefore, no action is needed.",
+      "seconds": 1.226,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 1,
+      "ungrounded": []
+    },
+    {
+      "scenario": "standard",
+      "profile": "balance",
+      "repeat": 2,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "The current service level is 0.9985, with only 1 late order and no backlog at the end of the scenario. None of the countermeasures improve on-time delivery or have a positive profit change, as shown in the simulated results. Therefore, no action is recommended.",
+      "seconds": 1.214,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 1,
+      "ungrounded": []
+    },
+    {
+      "scenario": "standard",
+      "profile": "balance",
+      "repeat": 3,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "All simulated countermeasures show no improvement in on-time delivery (onTimePoints: 0 for all) and result in negative profit changes (profitChange: -11697, -42503, -21, -45, -8939, -3981). The CEO's answers prioritize a balanced approach, but no measure provides a clear benefit in this scenario. Therefore, no countermeasure is recommended.",
+      "seconds": 1.537,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 6,
+      "ungrounded": []
+    },
+    {
+      "scenario": "standard",
+      "profile": "budget-60k",
+      "repeat": 1,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "All simulated countermeasures show no improvement in on-time delivery (onTimePoints = 0) and result in negative profit changes (profitChange < 0). Implementing any of them would not align with the CEO's preference for balancing both on-time delivery and profitability.",
+      "seconds": 1.233,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "standard",
+      "profile": "budget-60k",
+      "repeat": 2,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "The current service level is 0.9985, with only 1 late order and no backlog at the end. None of the countermeasures improve on-time delivery or profit, and recommending a measure that loses money would be wrong.",
+      "seconds": 1.124,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 1,
+      "ungrounded": []
+    },
+    {
+      "scenario": "standard",
+      "profile": "budget-60k",
+      "repeat": 3,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "The current service level is 0.9985, with only 1 late order and no backlog at the end. None of the countermeasures improve on-time delivery or profit, as shown by their simulated results. Therefore, no action is needed.",
+      "seconds": 1.237,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 1,
+      "ungrounded": []
+    },
+    {
+      "scenario": "standard",
+      "profile": "no-investment",
+      "repeat": 1,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "On-time delivery is already at 1 (FACTS: serviceLevel 0.9985294117647059, shippedOnTime 679 out of 680 orders). None of the catalogue options improve on-time delivery or profit (simulated: onTimePoints 0, profitChange negative for all options). The CEO's preference for no investment aligns with this decision.",
+      "seconds": 1.418,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 3,
+      "ungrounded": []
+    },
+    {
+      "scenario": "standard",
+      "profile": "no-investment",
+      "repeat": 2,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "On-time delivery is already at 1 (FACTS: serviceLevel 0.9985294117647059, shippedOnTime 679 out of 680 orders), and none of the countermeasures improve it further or have a positive profitChange (CATALOGUE: profitChange -45 for outsourcing, -8939 for raw-stock, -3981 for finished-stock). The CEO's answers prioritize on-time delivery and no investment, so no action is needed.",
+      "seconds": 1.345,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 6,
+      "ungrounded": []
+    },
+    {
+      "scenario": "standard",
+      "profile": "no-investment",
+      "repeat": 3,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "The service level is already 0.9985, with only 1 late order and no backlog at the end. None of the catalogue options improve on-time delivery or have a positive profit change. The CEO's answers prioritize on-time delivery and specify no investment, so no action is needed.",
+      "seconds": 1.531,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 1,
+      "ungrounded": []
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "best",
+      "repeat": 1,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "finished-stock"
+      ],
+      "rule": "highest on-time without losing money",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "A strategic investment that improves on-time delivery the most, increasing it by 42.2 percentage points (from 0.569 to 0.99) and raising profit by EUR 20,984 per run. This aligns with the CEO's request to prioritize on-time delivery improvement without losing money.",
+      "seconds": 1.343,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": false,
+      "numbers": 4,
+      "ungrounded": []
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "best",
+      "repeat": 2,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "finished-stock"
+      ],
+      "rule": "highest on-time without losing money",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix. It improves on-time delivery from 0.569 to 0.99 (a 42.2 percentage point increase) and increases profit by EUR 20,984 per run. It has no upfront investment and a low running cost of EUR 139 per shift. This choice aligns with the CEO's request to prioritize improving on-time delivery without losing money.",
+      "seconds": 1.429,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 5,
+      "ungrounded": []
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "best",
+      "repeat": 3,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "finished-stock"
+      ],
+      "rule": "highest on-time without losing money",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix that improves on-time delivery the most, increasing it from 0.569 to 0.99 (a 42.2 percentage point improvement). It also increases profit by EUR 20,984 per run, with no upfront investment required. This aligns with the CEO's preference to improve on-time delivery without losing money.",
+      "seconds": 1.207,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 4,
+      "ungrounded": []
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "delivery",
+      "repeat": 1,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "finished-stock"
+      ],
+      "rule": "highest on-time without losing money",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix that improves on-time delivery significantly, increasing it from 56.9% to 99% (a 42.2 percentage point improvement). It also increases profit by EUR 20,984 per run, with no upfront investment and a low running cost of EUR 139 per shift. This aligns with the CEO's priority of improving on-time delivery.",
+      "seconds": 1.322,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 5,
+      "ungrounded": []
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "delivery",
+      "repeat": 2,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "finished-stock"
+      ],
+      "rule": "highest on-time without losing money",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix that improves on-time delivery from 0.569 to 0.99 (+42.2 percentage points) and increases profit by EUR 20,984 per run. It aligns with the CEO's priority of improving on-time delivery.",
+      "seconds": 1.236,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 4,
+      "ungrounded": []
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "delivery",
+      "repeat": 3,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "finished-stock"
+      ],
+      "rule": "highest on-time without losing money",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix that improves on-time delivery from 0.569 to 0.99 (a 42.2 percentage point increase) and increases profit by EUR 20,984 per run. The CEO prioritizes on-time delivery, and this measure achieves the best improvement in that area.",
+      "seconds": 1.326,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 4,
+      "ungrounded": []
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "profit",
+      "repeat": 1,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "finished-stock"
+      ],
+      "rule": "highest profit change",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix. It improves on-time delivery from 0.569 to 0.99 (a 42.2 percentage point increase) and increases profit by EUR 20,984 per run. The CEO's focus on profit drove this choice.",
+      "seconds": 1.737,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 4,
+      "ungrounded": []
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "profit",
+      "repeat": 2,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "finished-stock"
+      ],
+      "rule": "highest profit change",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix. It improves on-time delivery from 0.569 to 0.99 (a 42.2 percentage point increase) and increases profit by EUR 20,984 per run. The CEO prioritized profit, and this measure has the highest profit increase among all options.",
+      "seconds": 1.328,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 4,
+      "ungrounded": []
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "profit",
+      "repeat": 3,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "finished-stock"
+      ],
+      "rule": "highest profit change",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix. It improves on-time delivery from 0.569 to 0.99 (a 42.2 percentage point increase) and raises profit by EUR 20,984 per run. The CEO's answers prioritize profit, and this measure delivers the highest profit increase among all options.",
+      "seconds": 1.383,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 4,
+      "ungrounded": []
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "balance",
+      "repeat": 1,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "finished-stock"
+      ],
+      "rule": ">= 95% on time, then highest profit",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix. It improves on-time delivery from 0.569 to 0.99 (+42.2 percentage points) and increases profit by EUR 20,984 per run. The CEO's answers prioritize a balance of delivery and profit, and this measure achieves both effectively.",
+      "seconds": 1.26,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 4,
+      "ungrounded": []
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "balance",
+      "repeat": 2,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "finished-stock"
+      ],
+      "rule": ">= 95% on time, then highest profit",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix that improves on-time delivery from 0.569 to 0.99 (+42.2 percentage points) and increases profit by EUR 20,984 per run. It aligns with the CEO's preference for a balanced approach and has no upfront investment.",
+      "seconds": 1.151,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 4,
+      "ungrounded": []
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "balance",
+      "repeat": 3,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "finished-stock"
+      ],
+      "rule": ">= 95% on time, then highest profit",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix. It improves on-time delivery from 0.569 to 0.99 (+42.2 percentage points) and increases profit by EUR 20,984 per run. The CEO's answers prioritize a balance of delivery and profit, and this measure achieves both effectively.",
+      "seconds": 1.328,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 4,
+      "ungrounded": []
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "budget-60k",
+      "repeat": 1,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "finished-stock"
+      ],
+      "rule": ">= 95% on time, then highest profit",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix that improves on-time delivery from 0.569 to 0.99 (+42.2 percentage points) and increases profit by €20,984 per run. It requires no upfront investment and has a low running cost of €139 per shift. This choice balances both profit and service level, aligning with the CEO's answers.",
+      "seconds": 1.432,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 5,
+      "ungrounded": []
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "budget-60k",
+      "repeat": 2,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "finished-stock"
+      ],
+      "rule": ">= 95% on time, then highest profit",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix that improves on-time delivery from 0.569 to 0.99 (+42.2 percentage points) and increases profit by €20,984 per run. It requires no upfront investment and has a low running cost of €139 per shift. This aligns with the CEO's preference for a balanced improvement in both delivery and profit within the €60,000 investment limit.",
+      "seconds": 1.525,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 6,
+      "ungrounded": []
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "budget-60k",
+      "repeat": 3,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "finished-stock"
+      ],
+      "rule": ">= 95% on time, then highest profit",
+      "status": "proposed",
+      "pick": "improve-machine",
+      "params": {
+        "minutesSaved": 2
+      },
+      "reason": "This is a strategic investment that balances on-time delivery improvement (+25.1 percentage points, from 0.569 to 0.82) and profit increase (+€3,228 per run). It fits the CEO's investment limit (€60,000 upfront cost).",
+      "seconds": 1.341,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": false,
+      "acceptable": false,
+      "classNamed": true,
+      "numbers": 5,
+      "ungrounded": []
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "no-investment",
+      "repeat": 1,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "finished-stock"
+      ],
+      "rule": "highest on-time without losing money",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix that improves on-time delivery significantly, increasing it from 0.569 to 0.99 (a 42.2 percentage point improvement). It also increases profit by EUR 20984 per run, with no upfront investment required. This aligns with the CEO's priority of improving on-time delivery without additional investment.",
+      "seconds": 1.213,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 4,
+      "ungrounded": []
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "no-investment",
+      "repeat": 2,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "finished-stock"
+      ],
+      "rule": "highest on-time without losing money",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix that improves on-time delivery from 0.569 to 0.99 (a 42.2 percentage point increase) and increases profit by EUR 20,984 per run. It aligns with the CEO's priority of improving on-time delivery without requiring upfront investment.",
+      "seconds": 1.083,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 4,
+      "ungrounded": []
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "no-investment",
+      "repeat": 3,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "finished-stock"
+      ],
+      "rule": "highest on-time without losing money",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix that improves on-time delivery from 0.569 to 0.99 (a 42.2 percentage point increase) and increases profit by EUR 20984 per run. The CEO prioritizes on-time delivery and does not want any upfront investment, which this measure satisfies.",
+      "seconds": 1.401,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 4,
+      "ungrounded": []
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "best",
+      "repeat": 1,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "improve-machine",
+        "extra-supplier",
+        "raw-stock",
+        "finished-stock"
+      ],
+      "rule": "highest on-time without losing money",
+      "status": "proposed",
+      "pick": "extra-supplier",
+      "params": {},
+      "reason": "An operational, short-term fix. This countermeasure improves on-time delivery from 0.771 to 1 (a 22.9 percentage point increase) and increases profit by EUR 11,103 per run. It has a low upfront investment of EUR 2,000 and a manageable running cost of EUR 195 per shift. This aligns with the CEO's request to prioritize improving on-time delivery without losing money.",
+      "seconds": 2.065,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": false,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 5,
+      "ungrounded": []
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "best",
+      "repeat": 2,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "improve-machine",
+        "extra-supplier",
+        "raw-stock",
+        "finished-stock"
+      ],
+      "rule": "highest on-time without losing money",
+      "status": "proposed",
+      "pick": "extra-supplier",
+      "params": {},
+      "reason": "An operational, short-term fix. It improves on-time delivery from 0.771 to 1 (a gain of 22.9 percentage points) and increases profit by EUR 11,103 per run. The upfront investment is only EUR 2,000, and the running cost per shift is EUR 195. This choice aligns with the CEO's request to prioritize improved on-time delivery without losing money.",
+      "seconds": 1.526,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": false,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 5,
+      "ungrounded": []
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "best",
+      "repeat": 3,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "improve-machine",
+        "extra-supplier",
+        "raw-stock",
+        "finished-stock"
+      ],
+      "rule": "highest on-time without losing money",
+      "status": "proposed",
+      "pick": "extra-supplier",
+      "params": {},
+      "reason": "An operational, short-term fix. It improves on-time delivery from 0.771 to 1 (22.9 percentage points) and increases profit by EUR 11,103 per run. The upfront investment is only EUR 2,000, with a running cost of EUR 195 per shift. This choice aligns with the CEO's request to prioritize on-time delivery improvement without losing money.",
+      "seconds": 1.332,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": false,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 5,
+      "ungrounded": []
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "delivery",
+      "repeat": 1,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "improve-machine",
+        "extra-supplier",
+        "raw-stock",
+        "finished-stock"
+      ],
+      "rule": "highest on-time without losing money",
+      "status": "proposed",
+      "pick": "extra-supplier",
+      "params": {},
+      "reason": "An operational, short-term fix. This countermeasure improves on-time delivery from 0.771 to 1 (a 22.9 percentage point increase) and increases profit by EUR 11,103 per run. It addresses the supplier outage, which caused 799 minutes of starvation at the bottleneck (M3). The CEO's focus on on-time delivery drove this choice.",
+      "seconds": 1.818,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": false,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 4,
+      "ungrounded": []
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "delivery",
+      "repeat": 2,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "improve-machine",
+        "extra-supplier",
+        "raw-stock",
+        "finished-stock"
+      ],
+      "rule": "highest on-time without losing money",
+      "status": "proposed",
+      "pick": "extra-supplier",
+      "params": {},
+      "reason": "An operational, short-term fix. It improves on-time delivery from 0.771 to 1 (a 22.9 percentage point increase) and increases profit by EUR 11,103 per run. The upfront investment is only EUR 2,000, with a running cost of EUR 195 per shift. This aligns with the CEO's priority of on-time delivery and has no investment limit.",
+      "seconds": 1.468,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": false,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 5,
+      "ungrounded": []
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "delivery",
+      "repeat": 3,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "improve-machine",
+        "extra-supplier",
+        "raw-stock",
+        "finished-stock"
+      ],
+      "rule": "highest on-time without losing money",
+      "status": "proposed",
+      "pick": "extra-supplier",
+      "params": {},
+      "reason": "An operational, short-term fix. It improves on-time delivery from 0.771 to 1 (a 22.9 percentage point increase) and increases profit by EUR 11,103 per run. The upfront investment is only EUR 2,000, with a running cost of EUR 195 per shift. This aligns with the CEO's priority of improving on-time delivery.",
+      "seconds": 1.236,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": false,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 5,
+      "ungrounded": []
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "profit",
+      "repeat": 1,
+      "expected": "extra-supplier",
+      "acceptableSet": [
+        "extra-supplier",
+        "finished-stock"
+      ],
+      "rule": "highest profit change",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix that improves profit by EUR 11,061 per run and increases on-time delivery by 22.9 percentage points. It aligns with the CEO's priority of maximizing profit.",
+      "seconds": 1.523,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": false,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 2,
+      "ungrounded": []
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "profit",
+      "repeat": 2,
+      "expected": "extra-supplier",
+      "acceptableSet": [
+        "extra-supplier",
+        "finished-stock"
+      ],
+      "rule": "highest profit change",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix. It improves on-time delivery from 0.771 to 1 (a 22.9 percentage point increase) and increases profit by EUR 11,061 per run. The CEO prioritized profit, and this measure has the highest profit increase among all options.",
+      "seconds": 1.341,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": false,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 3,
+      "ungrounded": []
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "profit",
+      "repeat": 3,
+      "expected": "extra-supplier",
+      "acceptableSet": [
+        "extra-supplier",
+        "finished-stock"
+      ],
+      "rule": "highest profit change",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix that improves profit by EUR 11,061 and ensures all orders are delivered on time (onTimeWithout: 0.771, onTimeWith: 1, onTimePoints: 22.9). It aligns with the CEO's priority of maximizing profit.",
+      "seconds": 1.395,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": false,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 3,
+      "ungrounded": []
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "balance",
+      "repeat": 1,
+      "expected": "extra-supplier",
+      "acceptableSet": [
+        "extra-supplier",
+        "finished-stock"
+      ],
+      "rule": ">= 95% on time, then highest profit",
+      "status": "proposed",
+      "pick": "extra-supplier",
+      "params": {},
+      "reason": "An operational, short-term fix. The supplier outage caused 799 minutes of starvation at the bottleneck (M3), leading to 178 late orders and a backlog of 8 at the end. Adding an extra supplier improves on-time delivery from 0.771 to 1 (+22.9 percentage points) and increases profit by EUR 11,103 per run, with only EUR 2,000 upfront investment and EUR 195 running cost per shift. This aligns with the CEO's preference for a balanced approach and no investment limit.",
+      "seconds": 1.562,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 7,
+      "ungrounded": []
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "balance",
+      "repeat": 2,
+      "expected": "extra-supplier",
+      "acceptableSet": [
+        "extra-supplier",
+        "finished-stock"
+      ],
+      "rule": ">= 95% on time, then highest profit",
+      "status": "proposed",
+      "pick": "extra-supplier",
+      "params": {},
+      "reason": "An operational, short-term fix that improves both on-time delivery and profit. The simulated on-time delivery increases from 0.771 to 1, a 22.9 percentage point improvement, and profit increases by EUR 11,103 per run. This aligns with the CEO's preference for a balanced solution without investment limits or specific fix preferences.",
+      "seconds": 1.096,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 3,
+      "ungrounded": []
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "balance",
+      "repeat": 3,
+      "expected": "extra-supplier",
+      "acceptableSet": [
+        "extra-supplier",
+        "finished-stock"
+      ],
+      "rule": ">= 95% on time, then highest profit",
+      "status": "proposed",
+      "pick": "extra-supplier",
+      "params": {},
+      "reason": "An operational, short-term fix that improves on-time delivery from 0.771 to 1 (22.9 percentage points) and increases profit by EUR 11,103 per run. It has the lowest upfront investment of EUR 2,000 and a running cost of EUR 195 per shift. This aligns with the CEO's preference for a balanced approach without investment limits or fix type preference.",
+      "seconds": 1.258,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 5,
+      "ungrounded": []
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "budget-60k",
+      "repeat": 1,
+      "expected": "extra-supplier",
+      "acceptableSet": [
+        "extra-supplier",
+        "finished-stock"
+      ],
+      "rule": ">= 95% on time, then highest profit",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix that balances improved on-time delivery and profit. It increases on-time delivery from 0.771 to 1 (a 22.9 percentage point improvement) and raises profit by €11,061 per run. The upfront investment is €0, and the running cost per shift is €170, which fits within the CEO's investment limit of €60,000.",
+      "seconds": 1.329,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": false,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 5,
+      "ungrounded": []
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "budget-60k",
+      "repeat": 2,
+      "expected": "extra-supplier",
+      "acceptableSet": [
+        "extra-supplier",
+        "finished-stock"
+      ],
+      "rule": ">= 95% on time, then highest profit",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix that improves on-time delivery from 0.771 to 1 (a 22.9 percentage point increase) and increases profit by €11,061 per run. It requires no upfront investment and has the lowest running cost per shift (€170) among effective options. This aligns with the CEO's preference for a balanced approach and fits within the investment limit of €60,000.",
+      "seconds": 1.328,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": false,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 5,
+      "ungrounded": []
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "budget-60k",
+      "repeat": 3,
+      "expected": "extra-supplier",
+      "acceptableSet": [
+        "extra-supplier",
+        "finished-stock"
+      ],
+      "rule": ">= 95% on time, then highest profit",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix that improves on-time delivery from 0.771 to 1 (a 22.9 percentage point increase) and increases profit by €11,061 per run. It requires no upfront investment and has the lowest running cost per shift (€170) among the options that meet the CEO's preference for balancing on-time delivery and profit.",
+      "seconds": 1.234,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": false,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 4,
+      "ungrounded": []
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "no-investment",
+      "repeat": 1,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "raw-stock",
+        "finished-stock"
+      ],
+      "rule": "highest on-time without losing money",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix that improves on-time delivery from 0.771 to 1 (a 22.9 percentage point increase) and increases profit by EUR 11061 per run. It requires no upfront investment, aligning with the CEO's preference for no investment and prioritizing on-time delivery.",
+      "seconds": 1.262,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 3,
+      "ungrounded": []
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "no-investment",
+      "repeat": 2,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "raw-stock",
+        "finished-stock"
+      ],
+      "rule": "highest on-time without losing money",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix that improves on-time delivery from 0.771 to 1, a change of 22.9 percentage points, and increases profit by EUR 11061 per run. It aligns with the CEO's priority of improving on-time delivery without requiring any upfront investment.",
+      "seconds": 1.185,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 3,
+      "ungrounded": []
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "no-investment",
+      "repeat": 3,
+      "expected": "finished-stock",
+      "acceptableSet": [
+        "raw-stock",
+        "finished-stock"
+      ],
+      "rule": "highest on-time without losing money",
+      "status": "proposed",
+      "pick": "finished-stock",
+      "params": {
+        "sets": 50
+      },
+      "reason": "This is an operational, short-term fix that improves on-time delivery from 0.771 to 1 (a 22.9 percentage point increase) and increases profit by EUR 11061. It requires no upfront investment, aligning with the CEO's preference for no investment and prioritizing on-time delivery.",
+      "seconds": 1.655,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": true,
+      "numbers": 3,
+      "ungrounded": []
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "best",
+      "repeat": 1,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "None of the countermeasures improve on-time delivery without losing money, as all have the simulated verdict 'No clear effect: do not apply.'",
+      "seconds": 2.831,
+      "calls": 2,
+      "validFirstTry": false,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "best",
+      "repeat": 2,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "None of the countermeasures improve on-time delivery and profit simultaneously. The simulated verdict for all options is 'No clear effect: do not apply.'",
+      "seconds": 2.665,
+      "calls": 2,
+      "validFirstTry": false,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "best",
+      "repeat": 3,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "None of the countermeasures improve on-time delivery without losing money. The CEO's preference for improving on-time delivery without losing money cannot be fulfilled by the catalogue options.",
+      "seconds": 1.289,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "delivery",
+      "repeat": 1,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "None of the countermeasures improve on-time delivery or have a positive profit change. The simulated numbers show no clear effect for any option, and recommending a measure that loses money would be wrong.",
+      "seconds": 0.95,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "delivery",
+      "repeat": 2,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "None of the countermeasures improve on-time delivery or have a positive profit change in this scenario. The simulated results show no clear effect for any option, and recommending a measure that loses money would be wrong.",
+      "seconds": 1.128,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "delivery",
+      "repeat": 3,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "None of the countermeasures improve on-time delivery or have a positive profit change in this scenario. Recommending a measure that loses money would be wrong.",
+      "seconds": 0.917,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "profit",
+      "repeat": 1,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "None of the countermeasures improve profit, which is the CEO's priority. All simulated options result in either negative profit changes or negligible positive changes, making them unsuitable.",
+      "seconds": 1.238,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "profit",
+      "repeat": 2,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "None of the countermeasures improve profit, which is the CEO's priority. The simulated profit changes for all options are negative or negligible, and no measure has a clear positive effect.",
+      "seconds": 1.126,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "profit",
+      "repeat": 3,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "None of the countermeasures improve profit, which is the CEO's top priority. The simulated profitChange for all options is either negative or negligible, making them unsuitable.",
+      "seconds": 1.102,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "balance",
+      "repeat": 1,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "None of the countermeasures improve on-time delivery or have a positive profit change in this scenario. The simulated results show no clear effect for any option, and recommending a measure that loses money would be against business interests.",
+      "seconds": 1.048,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "balance",
+      "repeat": 2,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "None of the countermeasures improve on-time delivery or have a positive profit change. The simulated numbers show no clear effect for any option, and recommending a measure that loses money would be wrong.",
+      "seconds": 0.898,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "balance",
+      "repeat": 3,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "None of the countermeasures improve on-time delivery or have a positive profit change in this scenario. The simulated numbers show no clear effect for any option, and recommending a measure that loses money would be against business interests.",
+      "seconds": 0.965,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "budget-60k",
+      "repeat": 1,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "None of the countermeasures improve on-time delivery or result in a positive profit change. The simulated results show no clear effect for any option, and recommending a measure that loses money would be incorrect.",
+      "seconds": 1.306,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "budget-60k",
+      "repeat": 2,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "None of the countermeasures improve on-time delivery or have a positive profit change in this scenario. The CEO's answers do not change this conclusion.",
+      "seconds": 1.103,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "budget-60k",
+      "repeat": 3,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "None of the countermeasures improve on-time delivery or have a positive profit change. The simulated results show no clear effect for any option, and recommending a measure that loses money would be against the CEO's priorities.",
+      "seconds": 1.289,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "no-investment",
+      "repeat": 1,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "None of the countermeasures improve both on-time delivery and profit. Outsourcing increases on-time delivery by 5.7 percentage points but has no clear effect on profit. Increasing raw material stock has no effect on on-time delivery and reduces profit by EUR 9044. Increasing finished goods stock improves on-time delivery by 6.6 percentage points but has minimal profit change (EUR 449). The CEO prioritizes on-time delivery but does not want any investment, which none of the options can achieve effectively.",
+      "seconds": 1.703,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 4,
+      "ungrounded": []
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "no-investment",
+      "repeat": 2,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "None of the countermeasures improve both on-time delivery and profit. The CEO prioritizes on-time delivery but does not want to make any investments, and all options either have no clear effect or result in a profit loss.",
+      "seconds": 0.985,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "no-investment",
+      "repeat": 3,
+      "expected": "none",
+      "acceptableSet": [
+        "none"
+      ],
+      "rule": "nothing helps: none",
+      "status": "none",
+      "pick": "none",
+      "params": null,
+      "reason": "None of the countermeasures improve on-time delivery without a negative profit change. The CEO prioritizes on-time delivery but does not want to make any investments, and none of the options meet these criteria. The simulated results show no clear positive effect for any countermeasure.",
+      "seconds": 1.021,
+      "calls": 1,
+      "validFirstTry": true,
+      "valid": true,
+      "withinLimits": true,
+      "agree": true,
+      "acceptable": true,
+      "classNamed": null,
+      "numbers": 0,
+      "ungrounded": []
+    }
+  ],
+  "groups": [
+    {
+      "scenario": "standard",
+      "profile": "best",
+      "picks": [
+        "none",
+        "none",
+        "none"
+      ],
+      "consistent": true,
+      "expected": "none"
+    },
+    {
+      "scenario": "standard",
+      "profile": "delivery",
+      "picks": [
+        "none",
+        "none",
+        "none"
+      ],
+      "consistent": true,
+      "expected": "none"
+    },
+    {
+      "scenario": "standard",
+      "profile": "profit",
+      "picks": [
+        "none",
+        "none",
+        "none"
+      ],
+      "consistent": true,
+      "expected": "none"
+    },
+    {
+      "scenario": "standard",
+      "profile": "balance",
+      "picks": [
+        "none",
+        "none",
+        "none"
+      ],
+      "consistent": true,
+      "expected": "none"
+    },
+    {
+      "scenario": "standard",
+      "profile": "budget-60k",
+      "picks": [
+        "none",
+        "none",
+        "none"
+      ],
+      "consistent": true,
+      "expected": "none"
+    },
+    {
+      "scenario": "standard",
+      "profile": "no-investment",
+      "picks": [
+        "none",
+        "none",
+        "none"
+      ],
+      "consistent": true,
+      "expected": "none"
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "best",
+      "picks": [
+        "finished-stock",
+        "finished-stock",
+        "finished-stock"
+      ],
+      "consistent": true,
+      "expected": "finished-stock"
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "delivery",
+      "picks": [
+        "finished-stock",
+        "finished-stock",
+        "finished-stock"
+      ],
+      "consistent": true,
+      "expected": "finished-stock"
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "profit",
+      "picks": [
+        "finished-stock",
+        "finished-stock",
+        "finished-stock"
+      ],
+      "consistent": true,
+      "expected": "finished-stock"
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "balance",
+      "picks": [
+        "finished-stock",
+        "finished-stock",
+        "finished-stock"
+      ],
+      "consistent": true,
+      "expected": "finished-stock"
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "budget-60k",
+      "picks": [
+        "finished-stock",
+        "finished-stock",
+        "improve-machine"
+      ],
+      "consistent": false,
+      "expected": "finished-stock"
+    },
+    {
+      "scenario": "demand-swing",
+      "profile": "no-investment",
+      "picks": [
+        "finished-stock",
+        "finished-stock",
+        "finished-stock"
+      ],
+      "consistent": true,
+      "expected": "finished-stock"
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "best",
+      "picks": [
+        "extra-supplier",
+        "extra-supplier",
+        "extra-supplier"
+      ],
+      "consistent": true,
+      "expected": "finished-stock"
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "delivery",
+      "picks": [
+        "extra-supplier",
+        "extra-supplier",
+        "extra-supplier"
+      ],
+      "consistent": true,
+      "expected": "finished-stock"
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "profit",
+      "picks": [
+        "finished-stock",
+        "finished-stock",
+        "finished-stock"
+      ],
+      "consistent": true,
+      "expected": "extra-supplier"
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "balance",
+      "picks": [
+        "extra-supplier",
+        "extra-supplier",
+        "extra-supplier"
+      ],
+      "consistent": true,
+      "expected": "extra-supplier"
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "budget-60k",
+      "picks": [
+        "finished-stock",
+        "finished-stock",
+        "finished-stock"
+      ],
+      "consistent": true,
+      "expected": "extra-supplier"
+    },
+    {
+      "scenario": "supplier-outage",
+      "profile": "no-investment",
+      "picks": [
+        "finished-stock",
+        "finished-stock",
+        "finished-stock"
+      ],
+      "consistent": true,
+      "expected": "finished-stock"
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "best",
+      "picks": [
+        "none",
+        "none",
+        "none"
+      ],
+      "consistent": true,
+      "expected": "none"
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "delivery",
+      "picks": [
+        "none",
+        "none",
+        "none"
+      ],
+      "consistent": true,
+      "expected": "none"
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "profit",
+      "picks": [
+        "none",
+        "none",
+        "none"
+      ],
+      "consistent": true,
+      "expected": "none"
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "balance",
+      "picks": [
+        "none",
+        "none",
+        "none"
+      ],
+      "consistent": true,
+      "expected": "none"
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "budget-60k",
+      "picks": [
+        "none",
+        "none",
+        "none"
+      ],
+      "consistent": true,
+      "expected": "none"
+    },
+    {
+      "scenario": "machinery-breakdown",
+      "profile": "no-investment",
+      "picks": [
+        "none",
+        "none",
+        "none"
+      ],
+      "consistent": true,
+      "expected": "none"
+    }
+  ],
+  "score": {
+    "cases": 72,
+    "validFirstTry": 70,
+    "valid": 72,
+    "withinLimits": 72,
+    "expected": 59,
+    "acceptable": 71,
+    "consistent": 23,
+    "groups": 24,
+    "classNamed": 35,
+    "proposed": 36,
+    "numbers": 180,
+    "groundedNumbers": 180,
+    "fullyGroundedCases": 72,
+    "noneCases": 36,
+    "noneCorrect": 36,
+    "avgSeconds": 1.3395833333333338
+  }
+}

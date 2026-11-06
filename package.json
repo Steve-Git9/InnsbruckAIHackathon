@@ -13,7 +13,9 @@
     "test": "node --test",
     "scenarios": "node src/scenarios/scenarios.js",
     "sweep": "node src/scenarios/sweep.js",
-    "countermeasures": "node src/countermeasures/evaluate.js"
+    "countermeasures": "node src/countermeasures/evaluate.js",
+    "eval:advisor": "node src/evaluation/advisor-benchmark.js",
+    "tokens": "node src/tools/tokens.js"
   },
   "dependencies": {
     "fastify": "^4.28.0",
