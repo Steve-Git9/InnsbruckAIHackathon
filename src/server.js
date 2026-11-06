@@ -12,6 +12,7 @@
  *   GET  /api/state     → current simulation state (JSON)
  *   GET  /api/metrics   → calculateMetrics() output (JSON, for frontend polling)
  *   GET  /original/     → the starter's original interface (own simulation, same API)
+ *   GET  /evaluation/   → the evaluation page; its data: GET /api/evaluation (saved results, no simulation)
  *   GET  /api/events    → SSE stream, pushes state+metrics every 250 ms
  *   POST /api/control   → play/pause/reset/param updates
  *   GET  /api/presets   → scenario presets (id, label, description)
@@ -56,6 +57,7 @@ import { buildRunSummary, engineRecord } from './ui/run-summary.js';
 import { costBreakdown } from './economics/breakdown.js';
 import { createAdvisor, MAX_FOLLOW_UPS, QUESTION_MAX } from './advisor/advisor.js';
 import { readUsage } from './advisor/llm.js';
+import { loadEvaluation } from './evaluation/summary.js';
 import { validateAnswers } from './advisor/constraints.js';
 import { NO_START, normaliseStart } from './countermeasures/start-stock.js';
 import { CompareRunner } from './ui/compare-runner.js';
@@ -199,6 +201,11 @@ app.register(fastifyStatic, {
 
 // The interface as received in the starter (src/public/original/, files unchanged), opened from the header
 app.get('/original', (req, reply) => reply.redirect('/original/'));
+
+// The evaluation page (src/public/evaluation/): how we checked the simulation and the AI advisor,
+// drawn from the saved result files (npm run countermeasures, npm run eval:advisor)
+app.get('/evaluation', (req, reply) => reply.redirect('/evaluation/'));
+app.get('/api/evaluation', async () => loadEvaluation());
 
 // ── SSE broadcast loop ─────────────────────────────────────────────────────
 

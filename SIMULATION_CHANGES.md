@@ -165,8 +165,8 @@ Reference values from the data package: about 100 / 76 / 57 / 48%. All four matc
 
 ```bash
 npm install
-npm start                          # UI at http://localhost:3000 (the starter's original interface: /original)
-npm test                           # 228 unit tests
+npm start                          # UI at http://localhost:3000 (the starter's original interface: /original; the evaluation page: /evaluation)
+npm test                           # 231 unit tests
 node src/headless/run.check.mjs    # organisers' acceptance test → ALL PASSED
 npm run scenarios                  # scenario table (takes a few minutes)
 npm run sweep                      # Phase 2: all levers on the 4 reference scenarios (about 10 min)
@@ -727,6 +727,27 @@ The bars update while a number is typed. **ASSUMPTION, for the picture only** (t
 
 ---
 
+## 22. Evaluation page at /evaluation
+
+**What it is.** A page for the judges at `http://localhost:3000/evaluation`, opened from the **Evaluation ↗** button in the header. It shows in one place why the simulation and the AI advisor can be trusted, drawn from the saved result files (nothing is simulated or sent to the AI when the page opens).
+
+| Part | What it shows | Source |
+|---|---|---|
+| Three layers of checks | Simulation → countermeasures → AI advisor, one headline number each | all below |
+| 1 · Simulation vs data package | On time without countermeasure per scenario, with the data package's reference as a mark: Standard 100.0% (ref. 100%), Demand swing 56.8% (57%), Supplier outage 77.2% (76%) | `results/<scenario>_countermeasures.json` (`npm run countermeasures`, 30 runs) |
+| 2 · Countermeasure verdicts | 4 scenarios × 6 countermeasures: verdict, on-time change and profit change; the tooltip gives the 95% ranges | same files |
+| 3 · AI advisor benchmark | The scorecard as bars (within limits, valid, acceptable, expected, "none", consistent, class named, numbers found) | `results/advisor_benchmark.json` (`npm run eval:advisor`) |
+| Every answer | Scenario × CEO profile grid, one dot per repeat (best pick / near tie / wrong); a click shows the rule and the AI's reasons | same file |
+| Limits, Reproduce it | What the checks do not prove, and the four commands | – |
+
+The page follows the light / dark theme and shows the date each result file was saved, so after a new `npm run countermeasures` or `npm run eval:advisor` it updates by itself.
+
+**Files:** `src/public/evaluation/index.html`, `src/evaluation/summary.js` (`loadEvaluation`), `src/server.js` (`GET /evaluation`, `GET /api/evaluation`).
+
+**Tests:** `test/evaluation-page.test.js` (3 tests): the loader reads and compacts both kinds of file; missing or broken files give an empty page instead of an error; and the saved reference results are within 3 points of the data package. **231 / 231 tests pass.** Checked with screenshots in both themes.
+
+---
+
 ## Change log
 
 | Date | Change |
@@ -752,3 +773,4 @@ The bars update while a number is typed. **ASSUMPTION, for the picture only** (t
 | 2026-11-06 | Results: Revenue, Total cost and Stock left tiles (they add up to the profit); compact countermeasure cards with Details; explanation chat on Claude Opus 4.8, the countermeasure pick stays on gpt-4o (section 19). Tests: 227 / 227 pass |
 | 2026-11-06 | Current Situation tiles: icons, stock coverage bars (shifts without deliveries / shifts of orders, outage mark) and days-since-maintenance bars per machine (section 20). Tests: 227 / 227 pass |
 | 2026-11-06 | Supplier node with truck in the diagram (delivering / just in time / OUT), raw stock used part by part and topped up every 2 hours, drains in the outage; ERP stock previewed in the diagram as soon as the switch is on (section 21). Tests: 228 / 228 pass |
+| 2026-11-06 | Evaluation page `/evaluation` (section 22): simulation vs data package, countermeasure verdict matrix, advisor scorecard and answer grid, from the saved result files; header button. Tests: 231 / 231 pass |

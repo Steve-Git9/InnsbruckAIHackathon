@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Evaluation</title>
+  <script>
+    // same theme as the simulation page: ?theme=, else the saved choice, else the system setting
+    (function () {
+      var t = new URLSearchParams(location.search).get('theme');
+      if (t !== 'light' && t !== 'dark') { try { t = localStorage.getItem('ui.theme'); } catch (e) { t = null; } }
+      if (t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    body { padding: 0; }
+    .ev { max-width: 1120px; margin: 0 auto; padding: 20px 16px 48px; display: flex; flex-direction: column; gap: 16px; }
+    .ev-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; }
+    .ev-head h1 { font-size: 1.25rem; }
+    .ev-head p { color: var(--text-dim); font-size: 0.9rem; }
+    .ev-actions { display: flex; gap: 8px; align-items: center; }
+    .ev-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+    .ev-card h2 { font-size: 1.05rem; margin-bottom: 4px; }
+    .ev-lead { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 12px; }
+    .ev-src { color: var(--text-dim); font-size: 0.78rem; margin-top: 10px; }
+    code { font-family: ui-monospace, Consolas, monospace; font-size: 0.85em; background: var(--surface2); padding: 1px 5px; border-radius: 4px; }
+
+    /* three layers */
+    .layers { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+    .layer { background: var(--surface2); border-radius: 8px; padding: 12px 14px; display: flex; gap: 12px; }
+    .layer-n { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: #fff;
+      display: grid; place-items: center; font-weight: 800; }
+    .layer h3 { font-size: 0.95rem; }
+    .layer p { font-size: 0.85rem; color: var(--text-dim); }
+    .layer .big { font-size: 1.4rem; font-weight: 800; color: var(--text); }
+
+    /* horizontal bars */
+    .bars { display: grid; gap: 10px; }
+    .bar-row { display: grid; grid-template-columns: 220px 1fr 240px; gap: 12px; align-items: center; font-size: 0.9rem; }
+    .bar-track { position: relative; height: 14px; background: var(--track); border-radius: 999px; }
+    .bar-fill { position: absolute; inset: 0 auto 0 0; border-radius: 999px; background: var(--accent); }
+    .bar-fill.good { background: var(--processing); } .bar-fill.warn { background: var(--starved); } .bar-fill.bad { background: var(--blocked); }
+    .bar-mark { position: absolute; top: -4px; width: 3px; height: 22px; border-radius: 2px; background: var(--text); }
+    .bar-val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
+    .bar-val small { display: block; font-weight: 400; color: var(--text-dim); font-size: 0.75rem; }
+    .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.8rem; color: var(--text-dim); margin-top: 10px; }
+    .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 5px; }
+
+    /* benchmark grid */
+    .grid-wrap { overflow-x: auto; }
+    table.bm { border-collapse: separate; border-spacing: 4px; width: 100%; min-width: 720px; }
+    table.bm th { font-size: 0.75rem; font-weight: 600; color: var(--text-dim); text-align: center; padding: 2px 4px; }
+    table.bm th, table.cm th { text-transform: none; letter-spacing: 0; }
+    table.bm th.row { text-align: left; font-size: 0.85rem; color: var(--text); white-space: nowrap; }
+    table.bm td { background: var(--surface2); border-radius: 8px; text-align: center; padding: 8px 4px; cursor: pointer; border: 1px solid transparent; }
+    table.bm td:hover, table.bm td.sel { border-color: var(--accent); }
+    .dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; margin: 0 2px; vertical-align: middle; }
+    .dot.ok { background: var(--processing); }
+    .dot.near { background: transparent; border: 3px solid var(--processing); }
+    .dot.bad { background: var(--blocked); }
+    .cell-pick { display: block; font-size: 0.72rem; color: var(--text-dim); margin-top: 3px; }
+    .detail { margin-top: 12px; background: var(--surface2); border-radius: 8px; padding: 12px 14px; font-size: 0.88rem; }
+    .detail h4 { font-size: 0.92rem; margin-bottom: 6px; }
+    .detail .rep { border-top: 1px solid var(--border); padding-top: 8px; margin-top: 8px; }
+    .detail .rep:first-of-type { border-top: 0; margin-top: 0; padding-top: 0; }
+    .tag { display: inline-block; border-radius: 999px; padding: 1px 9px; font-size: 0.75rem; font-weight: 700; }
+    .tag.ok { background: var(--tint-green-bg); color: var(--tint-green-fg); }
+    .tag.near { background: var(--tint-amber-bg); color: var(--tint-amber-fg); }
+    .tag.bad { background: var(--tint-red-bg); color: var(--tint-red-fg); }
+    .tag.grey { background: var(--surface); color: var(--text-dim); border: 1px solid var(--border); }
+
+    /* countermeasure verdict matrix */
+    table.cm { border-collapse: separate; border-spacing: 4px; width: 100%; min-width: 820px; }
+    table.cm th { font-size: 0.75rem; color: var(--text-dim); font-weight: 600; padding: 2px 4px; text-align: center; }
+    table.cm th.row { text-align: left; color: var(--text); font-size: 0.85rem; white-space: nowrap; }
+    table.cm td { border-radius: 8px; padding: 8px 6px; text-align: center; font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+    table.cm td b { display: block; font-size: 0.8rem; margin-bottom: 2px; }
+    .v-effective { background: var(--tint-green-bg); color: var(--tint-green-fg); }
+    .v-delivery-only, .v-profit-only { background: var(--accent-tint); color: var(--accent); }
+    .v-costly { background: var(--tint-amber-bg); color: var(--tint-amber-fg); }
+    .v-harmful { background: var(--tint-red-bg); color: var(--tint-red-fg); }
+    .v-no-effect { background: var(--surface2); color: var(--text-dim); }
+
+    ul.limits { padding-left: 18px; font-size: 0.9rem; display: grid; gap: 4px; }
+    .run { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; font-size: 0.88rem; align-items: baseline; }
+    .empty { color: var(--text-dim); font-style: italic; }
+    @media (max-width: 640px) { .bar-row { grid-template-columns: 1fr; gap: 4px; } .bar-val { text-align: left; } }
+  </style>
+</head>
+<body>
+<div class="ev">
+  <header class="ev-head">
+    <div>
+      <h1>Evaluation: can the simulation and the AI advisor be trusted?</h1>
+      <p>Everything on this page comes from saved, repeatable runs. The commands to reproduce each part are at the bottom.</p>
+    </div>
+    <div class="ev-actions">
+      <a class="hdr-link" href="/">← Back to the simulation</a>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch between light and dark mode">
+        <span class="theme-icon" aria-hidden="true"></span><span class="theme-text"></span></button>
+    </div>
+  </header>
+
+  <section class="ev-card">
+    <h2>Three layers of checks</h2>
+    <p class="ev-lead">Each layer checks the one above it. The AI never produces a number on its own: it reads the simulation and picks.</p>
+    <div class="layers" id="layers"></div>
+  </section>
+
+  <section class="ev-card">
+    <h2>1 · The simulation matches the data package</h2>
+    <p class="ev-lead">Orders delivered on time without any countermeasure (empty stock, 30 runs, 20 shifts), against the reference
+      values the organisers give in the data package. The mark on each bar is the reference.</p>
+    <div class="bars" id="ref-bars"></div>
+    <div class="legend"><span><i style="background:var(--processing)"></i>our simulation, within 3 points of the reference</span>
+      <span><i style="background:var(--accent)"></i>no reference value</span>
+      <span><i style="background:var(--text)"></i>data-package reference</span></div>
+    <p class="ev-src">Also checked by the organisers' acceptance test <code>node src/headless/run.check.mjs</code> (ALL PASSED) and the unit tests <code>npm test</code>.</p>
+  </section>
+
+  <section class="ev-card">
+    <h2>2 · Every countermeasure is tested in the simulation, not guessed</h2>
+    <p class="ev-lead">Change in orders on time and in profit for each countermeasure at its default setting (30 runs, same random draws
+      with and without). The verdict is only "effective" when the 95% range of both changes is above zero.</p>
+    <div class="grid-wrap"><table class="cm" id="cm-table"></table></div>
+    <div class="legend">
+      <span><i class="v-effective"></i>Effective</span><span><i class="v-delivery-only"></i>Delivery only / profit only</span>
+      <span><i class="v-costly"></i>Costly</span><span><i class="v-harmful"></i>Harmful</span><span><i class="v-no-effect"></i>No clear effect</span>
+    </div>
+    <p class="ev-src" id="cm-src"></p>
+  </section>
+
+  <section class="ev-card">
+    <h2>3 · The AI advisor benchmark</h2>
+    <p class="ev-lead" id="bm-lead"></p>
+    <div class="bars" id="score-bars"></div>
+    <p class="ev-src" id="bm-src"></p>
+  </section>
+
+  <section class="ev-card">
+    <h2>Every answer, scenario by CEO profile</h2>
+    <p class="ev-lead">One dot per repeat. Click a cell to read the AI's reasons.</p>
+    <div class="grid-wrap"><table class="bm" id="bm-grid"></table></div>
+    <div class="legend">
+      <span><span class="dot ok"></span> the rule's best pick</span>
+      <span><span class="dot near"></span> a near tie (within 1 point on time / EUR 500 or 5% profit)</span>
+      <span><span class="dot bad"></span> wrong pick</span>
+    </div>
+    <div class="detail" id="bm-detail" hidden></div>
+  </section>
+
+  <section class="ev-card">
+    <h2>What this does not prove</h2>
+    <ul class="limits">
+      <li>The picks are scored on the card values the AI reads (default settings, 10 runs); the 10-run check after a pick is not repeated in the benchmark.</li>
+      <li>"Best" is our written rule per CEO goal. Another reasonable rule could rank near ties differently.</li>
+      <li>The number check confirms that each number appears in what the AI was given, not that it is used in the right sentence.</li>
+      <li>In Machinery breakdown the effects are small against the run-to-run noise, so at 10 runs no countermeasure is clearly effective and the AI correctly answers "none".</li>
+      <li>The benchmark measures the countermeasure pick (gpt-4o). The explanation chat runs on Claude Opus 4.8; its answers show a number check in the page.</li>
+    </ul>
+  </section>
+
+  <section class="ev-card">
+    <h2>Reproduce it</h2>
+    <div class="run">
+      <code>npm test</code><span>unit tests (no AI)</span>
+      <code>node src/headless/run.check.mjs</code><span>the organisers' acceptance test → ALL PASSED</span>
+      <code>npm run countermeasures</code><span>section 2: the 6 countermeasures in the 4 scenarios, 30 runs each (a few minutes)</span>
+      <code>npm run eval:advisor</code><span>section 3: 72 answers from the real AI (about 5 minutes, uses tokens)</span>
+    </div>
+  </section>
+</div>
+
+<script type="module">
+const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const pct = (v, d = 1) => `${(v * 100).toFixed(d)}%`;
+const eur = (v) => `${v < 0 ? '−' : '+'}EUR ${Math.abs(Math.round(v)).toLocaleString('en-US')}`;
+const day = (iso) => iso ? new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '–';
+
+const SCENARIO = { standard: 'Standard', 'demand-swing': 'Demand swing', 'supplier-outage': 'Supplier outage', 'machinery-breakdown': 'Machinery breakdown' };
+const PROFILE = {
+  best: 'Let the AI decide', delivery: 'On-time first', profit: 'Profit first', balance: 'Balance',
+  'budget-60k': 'Balance, max EUR 60k', 'no-investment': 'Delivery, no investment',
+};
+const CM = {
+  'improve-machine': 'Improve a machine', 'new-line': 'New assembly line', 'extra-supplier': 'Additional supplier',
+  outsourcing: 'Outsourcing', 'raw-stock': 'Raw-material stock', 'finished-stock': 'Finished-goods stock', none: 'none',
+};
+const cmName = (id) => CM[id] ?? id;
+
+// theme toggle (same storage key as the simulation page)
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  const b = document.getElementById('theme-toggle');
+  b.querySelector('.theme-icon').textContent = t === 'dark' ? '☀' : '☾';
+  b.querySelector('.theme-text').textContent = t === 'dark' ? 'Light' : 'Dark';
+}
+applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  try { localStorage.setItem('ui.theme', next); } catch { /* no storage */ }
+  applyTheme(next);
+});
+
+function barRow(label, value, max, valText, sub, tone = 'good', mark = null) {
+  const w = Math.max(0, Math.min(1, value / max)) * 100;
+  return `<div class="bar-row"><div>${label}</div>
+    <div class="bar-track" role="img" aria-label="${esc(`${label}: ${valText}`)}"><span class="bar-fill ${tone}" style="width:${w.toFixed(1)}%"></span>
+      ${mark != null ? `<span class="bar-mark" style="left:calc(${(mark / max * 100).toFixed(1)}% - 1px)"></span>` : ''}</div>
+    <div class="bar-val">${valText}${sub ? `<small>${sub}</small>` : ''}</div></div>`;
+}
+
+function render(data) {
+  const b = data.benchmark, cms = data.countermeasures;
+
+  // layers
+  const s = b?.score;
+  document.getElementById('layers').innerHTML = [
+    ['Simulation', 'matches the data package', cms.length ? `${cms.filter(c => c.target != null && Math.abs(c.onTimeWithout - c.target) <= 0.03).length} / ${cms.filter(c => c.target != null).length}` : '–',
+      'reference scenarios within 3 points of the organisers\' values'],
+    ['Countermeasures', 'tested, not guessed', cms.length ? `${cms.reduce((a, c) => a + c.items.length, 0)}` : '–',
+      `countermeasure × scenario results, ${cms[0]?.runs ?? 30} runs each, with 95% ranges`],
+    ['AI advisor', 'benchmarked', s ? `${s.acceptable} / ${s.cases}` : '–', 'acceptable picks; every pick checked against a written rule'],
+  ].map(([t, sub, big, p], i) => `<div class="layer"><div class="layer-n">${i + 1}</div><div>
+      <h3>${esc(t)} <span class="dim">— ${esc(sub)}</span></h3><div class="big">${esc(big)}</div><p>${esc(p)}</p></div></div>`).join('');
+
+  // 1 · reference bars
+  document.getElementById('ref-bars').innerHTML = cms.length ? cms.map(c => {
+    const diff = c.target != null ? (c.onTimeWithout - c.target) * 100 : null;
+    const sub = c.target != null ? `reference ${pct(c.target, 0)} · ${diff >= 0 ? '+' : '−'}${Math.abs(diff).toFixed(1)} pts` : 'no reference value';
+    // the colour says whether we match the reference, not whether the plant does well
+    const tone = c.target == null ? '' : Math.abs(diff) <= 3 ? 'good' : 'bad';
+    return barRow(esc(c.label), c.onTimeWithout, 1, pct(c.onTimeWithout), sub, tone, c.target);
+  }).join('') : '<p class="empty">No saved results: run npm run countermeasures.</p>';
+
+  // 2 · countermeasure matrix
+  const ids = cms[0]?.items.map(i => i.id) ?? [];
+  document.getElementById('cm-table').innerHTML = cms.length ? `<thead><tr><th></th>${ids.map(id => {
+    const cat = cms[0].items.find(i => i.id === id)?.category;
+    return `<th>${esc(cmName(id))}<br><span class="dim">${esc(cat ?? '')}</span></th>`;
+  }).join('')}</tr></thead><tbody>${cms.map(c => `<tr><th class="row">${esc(c.label)}<br><span class="dim">${pct(c.onTimeWithout, 0)} on time without</span></th>${
+    ids.map(id => {
+      const it = c.items.find(i => i.id === id);
+      if (!it) return '<td class="v-no-effect">–</td>';
+      const pts = `${it.points >= 0 ? '+' : '−'}${Math.abs(it.points).toFixed(1)} pts`;
+      return `<td class="v-${esc(it.verdict.code)}" title="${esc(`${it.verdict.text} On time ${pct(it.onTimeWith)} (95% range of the change ${it.pointsLo.toFixed(1)} to ${it.pointsHi.toFixed(1)} pts). Profit ${eur(it.profitLo)} to ${eur(it.profitHi)}.`)}">
+        <b>${esc(it.verdict.code.replace('-', ' '))}</b>${pts}<br>${eur(it.profit)}</td>`;
+    }).join('')}</tr>`).join('')}</tbody>` : '';
+  document.getElementById('cm-src').textContent = cms.length
+    ? `Saved by npm run countermeasures on ${day(cms[0].savedAt)} · ${cms[0].shifts} shifts · profit change values unsold extra stock at EUR 0.` : '';
+
+  // 3 · benchmark scorecard
+  if (!b) {
+    document.getElementById('bm-lead').textContent = 'No saved benchmark: run npm run eval:advisor.';
+    return;
+  }
+  const m = b.meta;
+  document.getElementById('bm-lead').innerHTML = `The real AI was asked for a countermeasure in ${m.scenarios.length} scenarios × ${m.profiles.length} CEO profiles × ${m.repeats} repeats
+    = <b>${s.cases} answers</b>. Each answer is scored against a rule written in code, using the same simulated values the AI reads.
+    Average answer time ${s.avgSeconds.toFixed(1)} s.`;
+  const rows = [
+    ['Inside the CEO\'s limits (budget)', s.withinLimits, s.cases, 'enforced in code'],
+    ['Valid answer after at most one retry', s.valid, s.cases, `${s.validFirstTry} valid at the first try`],
+    ['Acceptable pick (best or near tie)', s.acceptable, s.cases, 'the main quality measure'],
+    ['Exactly the rule\'s best pick', s.expected, s.cases, 'the misses are near ties'],
+    ['Says "none" when nothing pays off', s.noneCorrect, s.noneCases, 'no money-losing advice'],
+    ['Same pick in all repeats', s.consistent, s.groups, 'per scenario × profile'],
+    ['Names Operational / Strategic', s.classNamed, s.proposed, 'of the proposals'],
+    ['Numbers found in the simulation data', s.groundedNumbers, s.numbers, 'no invented numbers'],
+  ];
+  document.getElementById('score-bars').innerHTML = rows.map(([label, n, d, sub]) => {
+    const r = d ? n / d : 0;
+    return barRow(esc(label), r, 1, `${n} / ${d}`, `${pct(r, 0)} · ${esc(sub)}`, r >= 0.95 ? 'good' : r >= 0.8 ? 'warn' : 'bad');
+  }).join('');
+  document.getElementById('bm-src').textContent = `Saved by npm run eval:advisor on ${day(b.savedAt)} · ${m.shifts} shifts · card values from 10 runs.`;
+
+  // grid: scenario × profile, one dot per repeat
+  const cell = (sc, pr) => b.cases.filter(c => c.scenario === sc && c.profile === pr).sort((x, y) => x.repeat - y.repeat);
+  const cls = (c) => c.status === 'error' ? 'bad' : c.agree ? 'ok' : c.acceptable ? 'near' : 'bad';
+  const grid = document.getElementById('bm-grid');
+  grid.innerHTML = `<thead><tr><th></th>${m.profiles.map(p => `<th>${esc(PROFILE[p] ?? p)}</th>`).join('')}</tr></thead><tbody>${
+    m.scenarios.map(sc => `<tr><th class="row">${esc(SCENARIO[sc] ?? sc)}</th>${m.profiles.map(pr => {
+      const cs = cell(sc, pr);
+      const picks = [...new Set(cs.map(c => cmName(c.pick)))].join(' / ');
+      return `<td data-sc="${esc(sc)}" data-pr="${esc(pr)}" title="${esc(`Picks: ${picks}. Rule: ${cmName(cs[0]?.expected)}`)}">
+        ${cs.map(c => `<span class="dot ${cls(c)}"></span>`).join('')}<span class="cell-pick">${esc(picks)}</span></td>`;
+    }).join('')}</tr>`).join('')}</tbody>`;
+
+  const detail = document.getElementById('bm-detail');
+  grid.addEventListener('click', (e) => {
+    const td = e.target.closest('td[data-sc]');
+    if (!td) return;
+    grid.querySelectorAll('td.sel').forEach(x => x.classList.remove('sel'));
+    td.classList.add('sel');
+    const cs = cell(td.dataset.sc, td.dataset.pr);
+    const label = { ok: 'best pick', near: 'near tie', bad: 'wrong' };
+    detail.hidden = false;
+    detail.innerHTML = `<h4>${esc(SCENARIO[td.dataset.sc])} · ${esc(PROFILE[td.dataset.pr])}</h4>
+      <p class="dim">Rule: ${esc(cs[0]?.rule ?? '')} → <b>${esc(cmName(cs[0]?.expected))}</b>${
+        (cs[0]?.acceptableSet ?? []).length > 1 ? ` (near ties: ${esc(cs[0].acceptableSet.map(cmName).join(', '))})` : ''}</p>
+      ${cs.map(c => `<div class="rep"><span class="tag ${cls(c)}">${esc(label[cls(c)])}</span>
+        <b>Repeat ${c.repeat}: ${esc(cmName(c.pick))}</b> <span class="dim">· ${c.seconds?.toFixed?.(1) ?? '–'} s · ${c.numbers} numbers, ${c.ungrounded?.length ? `${c.ungrounded.length} not found` : 'all found'}</span>
+        <div>${esc(c.reason)}</div></div>`).join('')}`;
+  });
+}
+
+try {
+  const r = await fetch('/api/evaluation');
+  render(await r.json());
+} catch {
+  document.getElementById('layers').innerHTML = '<p class="empty">Could not load the evaluation data.</p>';
+}
+</script>
+</body>
+</html>
